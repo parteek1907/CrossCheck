@@ -796,10 +796,12 @@ export default function DraftReviewClient({ initialDraft, token }) {
                     if (emailBtn) emailBtn.setAttribute("data-copy-text", b.email);
                     if (bodyEl) {
                       var oldText = bodyEl.textContent || "";
-                      bodyEl.textContent = oldText.replace(
-                        /To: The Principal Nodal Officer \/ Fraud Dispute Cell\n[^\n]+/,
-                        "To: The Principal Nodal Officer / Fraud Dispute Cell\n" + b.name
-                      );
+                      var nl = String.fromCharCode(10);
+                      var lines = oldText.split(nl);
+                      if (lines.length > 1) {
+                        lines[1] = b.name;
+                        bodyEl.textContent = lines.join(nl);
+                      }
                       if (bodyBtn) bodyBtn.setAttribute("data-copy-text", bodyEl.textContent);
                       if (openBtn && subjEl) {
                         openBtn.href = "mailto:" + b.email + "?subject=" + encodeURIComponent(subjEl.textContent) + "&body=" + encodeURIComponent(bodyEl.textContent);
