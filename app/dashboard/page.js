@@ -139,12 +139,51 @@ const I18N = {
   },
 };
 
+const VALID_NAVS = ["dashboard", "history", "vault", "safecircle", "clustering", "settings", "help"];
+
 function CrosscheckAppContent() {
   const router = useRouter();
   const { showToast } = useToast();
 
   // Navigation: 'dashboard' | 'history' | 'vault' | 'safecircle' | 'clustering' | 'settings' | 'help'
-  const [activeNav, setActiveNav] = useState("dashboard");
+  // Persisted across page reloads via URL search params (?tab=...) and localStorage
+  const [activeNav, setActiveNavState] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const urlTab = params.get("tab");
+        if (urlTab && VALID_NAVS.includes(urlTab)) {
+          return urlTab;
+        }
+        const storedTab = localStorage.getItem("crosscheck_active_tab");
+        if (storedTab && VALID_NAVS.includes(storedTab)) {
+          return storedTab;
+        }
+      } catch (e) {
+        console.warn("Could not read initial active tab:", e);
+      }
+    }
+    return "dashboard";
+  });
+
+  const setActiveNav = useCallback((tab) => {
+    if (!VALID_NAVS.includes(tab)) return;
+    setActiveNavState(tab);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("crosscheck_active_tab", tab);
+        const url = new URL(window.location.href);
+        if (tab === "dashboard") {
+          url.searchParams.delete("tab");
+        } else {
+          url.searchParams.set("tab", tab);
+        }
+        window.history.replaceState(null, "", url.toString());
+      } catch (e) {
+        console.warn("Could not persist active tab:", e);
+      }
+    }
+  }, []);
 
   // Mobile drawer state
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
@@ -285,6 +324,50 @@ function CrosscheckAppContent() {
     const title = navTitles[activeNav] || "Dashboard";
     document.title = `${title} | Crosscheck`;
   }, [activeNav]);
+
+  // Sync tab state with browser URL search params (?tab=...) and browser back/forward history
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlTab = params.get("tab");
+      if (urlTab && VALID_NAVS.includes(urlTab)) {
+        setActiveNavState(urlTab);
+        localStorage.setItem("crosscheck_active_tab", urlTab);
+      } else {
+        const storedTab = localStorage.getItem("crosscheck_active_tab");
+        if (storedTab && VALID_NAVS.includes(storedTab)) {
+          setActiveNavState(storedTab);
+          if (storedTab !== "dashboard") {
+            const url = new URL(window.location.href);
+            url.searchParams.set("tab", storedTab);
+            window.history.replaceState(null, "", url.toString());
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Tab hydration error:", e);
+    }
+
+    const handlePopState = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const urlTab = params.get("tab");
+        if (urlTab && VALID_NAVS.includes(urlTab)) {
+          setActiveNavState(urlTab);
+        } else {
+          const stored = localStorage.getItem("crosscheck_active_tab");
+          if (stored && VALID_NAVS.includes(stored)) {
+            setActiveNavState(stored);
+          } else {
+            setActiveNavState("dashboard");
+          }
+        }
+      } catch {}
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   // Global Keyboard Shortcuts: ⌘K for search palette, "N" / "n" for new verification
   useEffect(() => {
