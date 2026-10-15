@@ -7,7 +7,6 @@ import {
   History as HistoryIcon,
   Archive,
   Radio,
-  Globe2,
   Settings as SettingsIcon,
   HelpCircle,
   Search,
@@ -96,7 +95,6 @@ const I18N = {
     history: "History",
     vault: "Evidence Vault",
     safeCircle: "Family Safe-Word",
-    sourceExplorer: "Source Explorer",
     settings: "Settings",
     helpCenter: "Help Center (1930)",
     newVerification: "New verification",
@@ -119,7 +117,6 @@ const I18N = {
     history: "इतिहास",
     vault: "साक्ष्य वॉल्ट",
     safeCircle: "फ़ैमिली सेफ़-वर्ड",
-    sourceExplorer: "स्रोत एक्सप्लोरर",
     settings: "सेटिंग्स",
     helpCenter: "सहायता केंद्र (1930)",
     newVerification: "नया सत्यापन",
@@ -139,7 +136,7 @@ const I18N = {
   },
 };
 
-const VALID_NAVS = ["dashboard", "history", "vault", "safecircle", "clustering", "settings", "help"];
+const VALID_NAVS = ["dashboard", "history", "vault", "safecircle", "settings", "help"];
 
 function CrosscheckAppContent() {
   const router = useRouter();
@@ -258,10 +255,6 @@ function CrosscheckAppContent() {
   const [wordlist, setWordlist] = useState([]);
   const [safeCode, setSafeCode] = useState({ code: "LOADING...", secondsRemaining: 60, progressPercent: 100 });
 
-  // Source Explorer state
-  const [domainQuery, setDomainQuery] = useState("reuters.com");
-  const [domainProfile, setDomainProfile] = useState(null);
-
   // Row action menu dropdown state
   const [activeMenuReportId, setActiveMenuReportId] = useState(null);
 
@@ -302,8 +295,6 @@ function CrosscheckAppContent() {
     window.addEventListener("crosscheck_vault_updated", refreshLocalData);
     window.addEventListener("focus", refreshLocalData);
 
-    fetchDomainProfile("reuters.com");
-
     return () => {
       window.removeEventListener("crosscheck_reports_updated", refreshLocalData);
       window.removeEventListener("crosscheck_profile_updated", refreshLocalData);
@@ -320,7 +311,6 @@ function CrosscheckAppContent() {
       history: "History",
       vault: "Evidence Vault",
       safecircle: "The Family Safe-Word",
-      clustering: "Source Explorer",
       settings: "Settings",
       help: "Help Center",
     };
@@ -778,19 +768,6 @@ function CrosscheckAppContent() {
     }
   };
 
-  const fetchDomainProfile = async (domain) => {
-    if (!domain) return;
-    try {
-      const res = await fetch(`/api/domain-profile/${encodeURIComponent(domain)}`);
-      if (res.ok) {
-        const data = await res.json();
-        setDomainProfile(data);
-      }
-    } catch {
-      setDomainProfile(null);
-    }
-  };
-
   const handleSaveName = () => {
     const clean = tempName.trim() || "Guest";
     const updated = { ...userProfile, displayName: clean };
@@ -977,7 +954,6 @@ function CrosscheckAppContent() {
                 { id: "history", label: t.history, icon: HistoryIcon, badge: reports.length },
                 { id: "vault", label: t.vault, icon: Archive, badge: vaultEntries.length },
                 { id: "safecircle", label: t.safeCircle, icon: KeyRound },
-                { id: "clustering", label: t.sourceExplorer, icon: Globe2 },
               ].map((item) => {
                 const Icon = item.icon;
                 const isActive = activeNav === item.id;
@@ -2849,49 +2825,6 @@ function CrosscheckAppContent() {
                   </div>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* ========================================================
-              SOURCE EXPLORER VIEW
-              ======================================================== */}
-          {activeNav === "clustering" && (
-            <div className="space-y-6 animate-in fade-in-0 duration-200">
-              <div>
-                <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">Source Explorer</h2>
-                <p className="text-xs text-gray-400">Domain authority & syndication network inspection</p>
-              </div>
-
-              <div className="p-6 bg-white dark:bg-[#15171C] border border-gray-200 dark:border-[#252830] rounded-2xl shadow-2xs space-y-4">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={domainQuery}
-                    onChange={(e) => setDomainQuery(e.target.value)}
-                    placeholder="Enter domain (e.g. reuters.com, bbc.com, pib.gov.in)..."
-                    className="flex-1 px-4 py-2 text-xs bg-gray-50 dark:bg-[#111215] border border-gray-200 dark:border-[#292C36] rounded-full focus:outline-none focus:border-gray-900 dark:focus:border-white"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fetchDomainProfile(domainQuery)}
-                    className="px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-full transition-all"
-                  >
-                    Lookup
-                  </button>
-                </div>
-
-                {domainProfile && (
-                  <div className="p-4 bg-gray-50 dark:bg-[#111215] border border-gray-200 dark:border-[#292C36] rounded-xl space-y-2 text-xs">
-                    <div className="flex justify-between font-bold">
-                      <span className="text-gray-900 dark:text-white font-mono">{domainProfile.domain}</span>
-                      <span className="text-emerald-700 dark:text-emerald-400">Reliability: {domainProfile.reliability}/1.0</span>
-                    </div>
-                    <div className="text-gray-500">
-                      Org: {domainProfile.name} • Leaning: {domainProfile.leaning} • Country: {domainProfile.country}
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
           )}
 

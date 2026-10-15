@@ -41,9 +41,6 @@ Powered by **Next.js 16 (Turbopack)**, **Google Gemini Multimodal AI**, **Web Sp
   - Automatically structures formal incident complaints formatted for submission to the National Cyber Crime Reporting Portal (**cybercrime.gov.in**) and Indian Cyber Helpline **1930**.
   - Provides unique Case Tracking IDs, status queues, and one-click printable formal complaint letters.
 
-### 4. 🌐 Source Explorer & Syndication Clustering
-- Evaluates publisher domains, credibility history, and tracking syndication rings to expose synthetic echo chambers and coordinated disinformation campaigns.
-
 ---
 
 ## 🛠️ Technology Stack
@@ -66,7 +63,6 @@ AIdeathon/
 ├── app/
 │   ├── api/
 │   │   ├── analyze-call/      # Gemini AI incoming phone call audio & transcript analyzer
-│   │   ├── domain-profile/    # Source credibility & publisher profile API
 │   │   └── verify/            # Multimodal Gemini claim & image verification API
 │   ├── dashboard/             # Comprehensive citizen workspace & Evidence Vault
 │   ├── demo/                  # Interactive presentation demo flow
