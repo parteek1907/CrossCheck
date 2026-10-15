@@ -44,7 +44,7 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
   const modalRef = useRef(null);
   const textInputRef = useRef(null);
 
-  // Keyboard shortcut Cmd/Ctrl+K handler & Escape key
+  // Keyboard shortcut Esc handler
   useEffect(() => {
     function handleKeyDown(e) {
       if (e.key === "Escape" && isOpen && !isVerifying) {
@@ -55,7 +55,7 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, isVerifying, onClose]);
 
-  // Focus trap and autofocus on open
+  // Focus on open
   useEffect(() => {
     if (isOpen) {
       setErrorMessage("");
@@ -66,7 +66,6 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
         textInputRef.current?.focus();
       }, 50);
     } else {
-      // Clean up object URLs
       if (filePreviewUrl) {
         URL.revokeObjectURL(filePreviewUrl);
         setFilePreviewUrl(null);
@@ -87,21 +86,13 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
     }
   };
 
-  // Check validity for current tab
   const isInputValid = () => {
-    if (activeTab === "text") {
-      return textContent.trim().length >= 5;
-    }
-    if (activeTab === "link") {
-      return isValidUrl(linkUrl.trim());
-    }
-    if (activeTab === "file") {
-      return selectedFile !== null;
-    }
+    if (activeTab === "text") return textContent.trim().length >= 5;
+    if (activeTab === "link") return isValidUrl(linkUrl.trim());
+    if (activeTab === "file") return selectedFile !== null;
     return false;
   };
 
-  // File processing & validation
   const validateAndSetFile = (file) => {
     setErrorMessage("");
     if (!file) return;
@@ -130,7 +121,6 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
     }
   };
 
-  // Drag and Drop handlers
   const handleDragOver = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -146,7 +136,6 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
     }
   };
 
-  // Paste image with Ctrl+V
   const handlePaste = useCallback(
     (e) => {
       if (!isOpen || isVerifying) return;
@@ -187,7 +176,6 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  // Execute verification with real streamed SSE events
   const handleVerify = async () => {
     if (!isInputValid() || isVerifying) return;
 
@@ -259,8 +247,7 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
           } else if (event === "complete") {
             setProgressPct(100);
             setProgressMessage("Audit complete! Opening report...");
-            
-            // Attach media metadata if image was submitted
+
             const reportData = {
               ...data,
               submittedMedia: mediaFile
@@ -297,7 +284,7 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in-0 duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in-0 duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget && !isVerifying) onClose();
       }}
@@ -307,27 +294,27 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
     >
       <div
         ref={modalRef}
-        className="relative w-full max-w-2xl bg-[#131416] border border-[#2D3035] rounded-2xl shadow-[0_24px_60px_rgba(0,0,0,0.6)] text-gray-100 overflow-hidden"
+        className="relative w-full max-w-xl bg-white border border-gray-200 rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.15)] text-gray-900 overflow-hidden"
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#24272C] bg-[#18191C]/80">
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#D95D39]/15 text-[#D95D39] border border-[#D95D39]/30">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-white shadow-sm font-bold text-xs">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
-              <h2 id="modal-title" className="text-base font-semibold text-white tracking-tight">
-                New Verification Audit
+              <h2 id="modal-title" className="text-base font-bold text-gray-900 tracking-tight">
+                New Verification Check
               </h2>
-              <p className="text-xs text-gray-400">
-                Multi-source open news corroboration, clustering & SHA-256 audit
+              <p className="text-xs text-gray-500">
+                Multi-source open wire corroboration & cryptographic proof
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             disabled={isVerifying}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[#25282D] transition-colors disabled:opacity-30 disabled:pointer-events-none"
+            className="p-1.5 rounded-full text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:pointer-events-none"
             title="Close (Esc)"
             aria-label="Close dialog"
           >
@@ -339,21 +326,21 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
         <div className="p-6">
           {!isVerifying && (
             <>
-              {/* Tab Selector */}
-              <div className="flex p-1 mb-5 bg-[#1B1D21] border border-[#26292E] rounded-xl">
+              {/* Pill Tab Selector */}
+              <div className="flex p-1 mb-5 bg-gray-100/80 rounded-full border border-gray-200/60">
                 <button
                   type="button"
                   onClick={() => {
                     setActiveTab("text");
                     setErrorMessage("");
                   }}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-sm font-medium rounded-lg transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-xs font-semibold rounded-full transition-all ${
                     activeTab === "text"
-                      ? "bg-[#25282E] text-white shadow-sm border border-[#343840]"
-                      : "text-gray-400 hover:text-gray-200"
+                      ? "bg-white text-gray-900 shadow-sm border border-gray-200/50"
+                      : "text-gray-500 hover:text-gray-900"
                   }`}
                 >
-                  <FileText className="w-4 h-4" />
+                  <FileText className="w-3.5 h-3.5" />
                   <span>Text Claim</span>
                 </button>
                 <button
@@ -362,13 +349,13 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
                     setActiveTab("link");
                     setErrorMessage("");
                   }}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-sm font-medium rounded-lg transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-xs font-semibold rounded-full transition-all ${
                     activeTab === "link"
-                      ? "bg-[#25282E] text-white shadow-sm border border-[#343840]"
-                      : "text-gray-400 hover:text-gray-200"
+                      ? "bg-white text-gray-900 shadow-sm border border-gray-200/50"
+                      : "text-gray-500 hover:text-gray-900"
                   }`}
                 >
-                  <LinkIcon className="w-4 h-4" />
+                  <LinkIcon className="w-3.5 h-3.5" />
                   <span>Link / URL</span>
                 </button>
                 <button
@@ -377,13 +364,13 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
                     setActiveTab("file");
                     setErrorMessage("");
                   }}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-sm font-medium rounded-lg transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-xs font-semibold rounded-full transition-all ${
                     activeTab === "file"
-                      ? "bg-[#25282E] text-white shadow-sm border border-[#343840]"
-                      : "text-gray-400 hover:text-gray-200"
+                      ? "bg-white text-gray-900 shadow-sm border border-gray-200/50"
+                      : "text-gray-500 hover:text-gray-900"
                   }`}
                 >
-                  <UploadCloud className="w-4 h-4" />
+                  <UploadCloud className="w-3.5 h-3.5" />
                   <span>Document / Image</span>
                 </button>
               </div>
@@ -391,7 +378,7 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
               {/* Tab 1: Text Claim */}
               {activeTab === "text" && (
                 <div>
-                  <label className="block mb-2 text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                  <label className="block mb-2 text-xs font-bold text-gray-700 tracking-tight">
                     Enter Claim, Statement, or Viral Transcript
                   </label>
                   <textarea
@@ -402,12 +389,12 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
                       setTextContent(e.target.value);
                       if (errorMessage) setErrorMessage("");
                     }}
-                    placeholder="Paste circulating headline, statement, message, or transcript to cross-examine..."
-                    className="w-full px-4 py-3 text-sm text-gray-100 bg-[#16181B] border border-[#2D3036] rounded-xl placeholder:text-gray-500 focus:outline-none focus:border-[#D95D39] focus:ring-1 focus:ring-[#D95D39] transition-all resize-none"
+                    placeholder="Paste circulating headline, statement, WhatsApp forward, or transcript to cross-examine..."
+                    className="w-full px-4 py-3 text-sm text-gray-900 bg-gray-50 border border-gray-200 rounded-2xl placeholder:text-gray-400 focus:outline-none focus:bg-white focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-all resize-none"
                   />
-                  <div className="flex items-center justify-between mt-2 text-xs text-gray-400">
+                  <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
                     <span>Minimum 5 characters required</span>
-                    <span className={textContent.length < 5 ? "text-gray-500" : "text-emerald-400"}>
+                    <span className={textContent.length < 5 ? "text-gray-400" : "text-emerald-600 font-semibold"}>
                       {textContent.length} characters
                     </span>
                   </div>
@@ -417,7 +404,7 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
               {/* Tab 2: Link */}
               {activeTab === "link" && (
                 <div>
-                  <label className="block mb-2 text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                  <label className="block mb-2 text-xs font-bold text-gray-700 tracking-tight">
                     Verify Article or Social Media Link
                   </label>
                   <div className="relative">
@@ -429,14 +416,14 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
                         if (errorMessage) setErrorMessage("");
                       }}
                       placeholder="https://example.com/breaking-news-report"
-                      className="w-full pl-10 pr-4 py-3 text-sm text-gray-100 bg-[#16181B] border border-[#2D3036] rounded-xl placeholder:text-gray-500 focus:outline-none focus:border-[#D95D39] focus:ring-1 focus:ring-[#D95D39] transition-all"
+                      className="w-full pl-10 pr-4 py-3 text-sm text-gray-900 bg-gray-50 border border-gray-200 rounded-2xl placeholder:text-gray-400 focus:outline-none focus:bg-white focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-all"
                     />
                     <LinkIcon className="absolute w-4 h-4 text-gray-400 -translate-y-1/2 left-3.5 top-1/2" />
                   </div>
-                  <div className="flex items-center justify-between mt-2 text-xs text-gray-400">
+                  <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
                     <span>Supports HTTP / HTTPS web articles</span>
                     {linkUrl && (
-                      <span className={isValidUrl(linkUrl.trim()) ? "text-emerald-400" : "text-amber-400"}>
+                      <span className={isValidUrl(linkUrl.trim()) ? "text-emerald-600 font-semibold" : "text-amber-600 font-semibold"}>
                         {isValidUrl(linkUrl.trim()) ? "Valid URL format" : "Enter a valid http:// or https:// URL"}
                       </span>
                     )}
@@ -447,7 +434,7 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
               {/* Tab 3: File Upload */}
               {activeTab === "file" && (
                 <div>
-                  <label className="block mb-2 text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                  <label className="block mb-2 text-xs font-bold text-gray-700 tracking-tight">
                     Upload Media or Report File
                   </label>
 
@@ -456,7 +443,7 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
                       onDragOver={handleDragOver}
                       onDrop={handleDrop}
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-[#2F3238] hover:border-[#D95D39]/60 hover:bg-[#1A1C20] rounded-xl cursor-pointer transition-all group"
+                      className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-200 hover:border-gray-900 hover:bg-gray-50/80 rounded-2xl cursor-pointer transition-all group"
                     >
                       <input
                         ref={fileInputRef}
@@ -469,22 +456,22 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
                           }
                         }}
                       />
-                      <div className="flex items-center justify-center w-12 h-12 mb-3 rounded-full bg-[#202227] text-gray-400 group-hover:text-[#D95D39] group-hover:scale-105 transition-all">
+                      <div className="flex items-center justify-center w-12 h-12 mb-3 rounded-full bg-gray-100 text-gray-600 group-hover:text-gray-900 group-hover:scale-105 transition-all">
                         <UploadCloud className="w-6 h-6" />
                       </div>
-                      <p className="text-sm font-medium text-gray-200 text-center">
+                      <p className="text-sm font-semibold text-gray-900 text-center">
                         Drag and drop your file here, or{" "}
-                        <span className="text-[#D95D39] underline underline-offset-2">browse</span>
+                        <span className="text-blue-600 underline underline-offset-2">browse</span>
                       </p>
-                      <p className="mt-1 text-xs text-gray-400 text-center">
+                      <p className="mt-1 text-xs text-gray-500 text-center">
                         Supports PDF and Images (JPG, PNG, WEBP) up to 15MB. Or paste directly (Ctrl+V).
                       </p>
                     </div>
                   ) : (
-                    <div className="p-4 bg-[#181A1E] border border-[#2C2F36] rounded-xl flex items-center justify-between gap-4">
+                    <div className="p-4 bg-gray-50 border border-gray-200 rounded-2xl flex items-center justify-between gap-4">
                       <div className="flex items-center gap-3 overflow-hidden">
                         {filePreviewUrl ? (
-                          <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-black flex-shrink-0 border border-[#3A3D45]">
+                          <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-gray-200 flex-shrink-0 border border-gray-300">
                             <img
                               src={filePreviewUrl}
                               alt="Upload preview"
@@ -492,15 +479,15 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
                             />
                           </div>
                         ) : (
-                          <div className="flex items-center justify-center w-14 h-14 rounded-lg bg-[#24272D] text-gray-300 flex-shrink-0 border border-[#343840]">
-                            <FileIcon className="w-6 h-6 text-[#D95D39]" />
+                          <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gray-200 text-gray-700 flex-shrink-0 border border-gray-300">
+                            <FileIcon className="w-6 h-6" />
                           </div>
                         )}
                         <div className="overflow-hidden">
-                          <p className="text-sm font-medium text-gray-100 truncate">
+                          <p className="text-sm font-bold text-gray-900 truncate">
                             {selectedFile.name}
                           </p>
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-gray-500">
                             {formatFileSize(selectedFile.size)} • {selectedFile.type || "Document"}
                           </p>
                         </div>
@@ -509,7 +496,7 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
                       <button
                         type="button"
                         onClick={removeSelectedFile}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[#25282E] transition-colors"
+                        className="p-1.5 rounded-full text-gray-400 hover:text-gray-900 hover:bg-gray-200 transition-colors"
                         title="Remove file"
                       >
                         <X className="w-4 h-4" />
@@ -518,8 +505,8 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
                   )}
 
                   {/* Mandatory Note */}
-                  <p className="mt-2.5 text-xs text-gray-400 flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                  <p className="mt-2.5 text-xs text-gray-600 flex items-center gap-1.5 font-medium">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                     <span>Images are analysed on your device.</span>
                   </p>
                 </div>
@@ -527,8 +514,8 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
 
               {/* Error Alert */}
               {errorMessage && (
-                <div className="flex items-start gap-2 p-3 mt-4 text-xs font-medium text-red-300 bg-red-950/40 border border-red-800/60 rounded-xl">
-                  <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                <div className="flex items-start gap-2 p-3 mt-4 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-xl">
+                  <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
                   <span>{errorMessage}</span>
                 </div>
               )}
@@ -540,71 +527,71 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
             <div className="py-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 text-[#D95D39] animate-spin" />
-                  <span className="text-sm font-semibold text-white">
-                    Verifying via Open Evidence Network...
+                  <Loader2 className="w-4 h-4 text-gray-900 animate-spin" />
+                  <span className="text-sm font-bold text-gray-900">
+                    Cross-examining open evidence wire...
                   </span>
                 </div>
-                <span className="text-xs font-mono text-[#D95D39] font-medium">
+                <span className="text-xs font-mono font-bold text-gray-900">
                   {progressPct}%
                 </span>
               </div>
 
               {/* Progress Bar */}
-              <div className="w-full h-2 mb-6 overflow-hidden rounded-full bg-[#1E2025]">
+              <div className="w-full h-2 mb-6 overflow-hidden rounded-full bg-gray-100 border border-gray-200/50">
                 <div
-                  className="h-full bg-gradient-to-r from-[#D95D39] to-[#F97316] transition-all duration-300 ease-out"
+                  className="h-full bg-gray-900 rounded-full transition-all duration-300 ease-out"
                   style={{ width: `${Math.max(5, progressPct)}%` }}
                 />
               </div>
 
               {/* Live Stage Badges */}
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <div
-                  className={`flex items-center gap-3 p-3 rounded-xl border text-xs transition-all ${
+                  className={`flex items-center gap-3 p-3 rounded-xl border text-xs font-medium transition-all ${
                     progressPct >= 10
-                      ? "bg-[#181B20] border-emerald-500/30 text-emerald-300"
-                      : "bg-[#15171A] border-[#222429] text-gray-500"
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-900"
+                      : "bg-gray-50 border-gray-200 text-gray-400"
                   }`}
                 >
                   {progressPct >= 25 ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                   ) : (
-                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px]">
+                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] font-bold">
                       1
                     </div>
                   )}
-                  <span>Extracting content & isolating factual claims</span>
+                  <span>Extracting content & isolating factual claim assertions</span>
                 </div>
 
                 <div
-                  className={`flex items-center gap-3 p-3 rounded-xl border text-xs transition-all ${
+                  className={`flex items-center gap-3 p-3 rounded-xl border text-xs font-medium transition-all ${
                     progressPct >= 25
-                      ? "bg-[#181B20] border-emerald-500/30 text-emerald-300"
-                      : "bg-[#15171A] border-[#222429] text-gray-500"
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-900"
+                      : "bg-gray-50 border-gray-200 text-gray-400"
                   }`}
                 >
                   {progressPct >= 60 ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                   ) : (
-                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px]">
+                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] font-bold">
                       2
                     </div>
                   )}
-                  <span>Searching multi-source news wire databases (GDELT, RSS, Gov feeds)</span>
+                  <span>Searching multi-source news wire databases (GDELT, Google News RSS, Gov feeds)</span>
                 </div>
 
                 <div
-                  className={`flex items-center gap-3 p-3 rounded-xl border text-xs transition-all ${
+                  className={`flex items-center gap-3 p-3 rounded-xl border text-xs font-medium transition-all ${
                     progressPct >= 60
-                      ? "bg-[#181B20] border-emerald-500/30 text-emerald-300"
-                      : "bg-[#15171A] border-[#222429] text-gray-500"
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-900"
+                      : "bg-gray-50 border-gray-200 text-gray-400"
                   }`}
                 >
                   {progressPct >= 75 ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                   ) : (
-                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px]">
+                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] font-bold">
                       3
                     </div>
                   )}
@@ -612,16 +599,16 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
                 </div>
 
                 <div
-                  className={`flex items-center gap-3 p-3 rounded-xl border text-xs transition-all ${
+                  className={`flex items-center gap-3 p-3 rounded-xl border text-xs font-medium transition-all ${
                     progressPct >= 75
-                      ? "bg-[#181B20] border-emerald-500/30 text-emerald-300"
-                      : "bg-[#15171A] border-[#222429] text-gray-500"
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-900"
+                      : "bg-gray-50 border-gray-200 text-gray-400"
                   }`}
                 >
                   {progressPct >= 100 ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                   ) : (
-                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px]">
+                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] font-bold">
                       4
                     </div>
                   )}
@@ -629,9 +616,9 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
                 </div>
               </div>
 
-              {/* Current Status Message */}
-              <div className="p-3 mt-4 text-xs font-mono text-gray-300 bg-[#16181C] border border-[#282B31] rounded-xl flex items-center gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-[#D95D39] flex-shrink-0" />
+              {/* Status Message */}
+              <div className="p-3 mt-4 text-xs font-mono text-gray-700 bg-gray-50 border border-gray-200 rounded-xl flex items-center gap-2">
+                <Sparkles className="w-3.5 h-3.5 text-gray-900 flex-shrink-0" />
                 <span className="truncate">{progressMessage}</span>
               </div>
             </div>
@@ -639,19 +626,19 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
 
           {/* Stream Error with Retry */}
           {streamError && !isVerifying && (
-            <div className="p-4 mt-4 bg-red-950/40 border border-red-800/60 rounded-xl">
-              <div className="flex items-start gap-2 text-xs font-medium text-red-300">
-                <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="p-4 mt-4 bg-red-50 border border-red-200 rounded-2xl">
+              <div className="flex items-start gap-2 text-xs font-semibold text-red-800">
+                <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-red-200">Verification Interrupted</p>
-                  <p className="mt-1">{streamError}</p>
+                  <p className="font-bold text-red-900">Verification Interrupted</p>
+                  <p className="mt-1 font-normal text-red-700">{streamError}</p>
                 </div>
               </div>
               <div className="flex justify-end mt-3">
                 <button
                   type="button"
                   onClick={handleVerify}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-red-800 hover:bg-red-700 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-full transition-colors"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   <span>Retry Verification</span>
@@ -663,16 +650,16 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
 
         {/* Modal Footer */}
         {!isVerifying && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-[#24272C] bg-[#16171A]">
-            <div className="text-xs text-gray-400">
-              Press <kbd className="px-1.5 py-0.5 rounded bg-[#25282E] text-gray-300 font-mono text-[11px] border border-[#34373F]">Esc</kbd> to cancel
+          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+            <div className="text-xs text-gray-500">
+              Press <kbd className="px-1.5 py-0.5 rounded bg-white text-gray-700 font-mono text-[11px] border border-gray-200 shadow-2xs">Esc</kbd> to cancel
             </div>
 
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white bg-[#1F2126] hover:bg-[#282A31] rounded-xl border border-[#2D3037] transition-colors"
+                className="px-4 py-2 text-xs font-semibold text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-100 rounded-full border border-gray-200 shadow-2xs transition-colors"
               >
                 Cancel
               </button>
@@ -680,7 +667,7 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
                 type="button"
                 onClick={handleVerify}
                 disabled={!isInputValid()}
-                className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-[#D95D39] hover:bg-[#e46944] disabled:bg-[#34373F] disabled:text-gray-500 disabled:cursor-not-allowed rounded-xl shadow-md transition-all"
+                className="flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-gray-900 hover:bg-black disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed rounded-full shadow-sm transition-all"
               >
                 <ShieldCheck className="w-4 h-4" />
                 <span>Verify</span>
