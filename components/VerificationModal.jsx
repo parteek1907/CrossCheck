@@ -21,7 +21,7 @@ const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const ALLOWED_DOC_TYPES = ["application/pdf"];
 const ALL_ALLOWED_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_DOC_TYPES];
 
-export function VerificationModal({ isOpen, onClose, onComplete }) {
+export function VerificationModal({ isOpen, onClose, onComplete, initialData = null }) {
   const [activeTab, setActiveTab] = useState("text"); // 'text' | 'link' | 'file'
   
   // Tab states
@@ -55,13 +55,21 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, isVerifying, onClose]);
 
-  // Focus on open
+  // Focus and prefill on open
   useEffect(() => {
     if (isOpen) {
       setErrorMessage("");
       setStreamError(null);
       setIsVerifying(false);
       setProgressStage(null);
+
+      if (initialData) {
+        if (initialData.tab) setActiveTab(initialData.tab);
+        if (initialData.text) setTextContent(initialData.text);
+        if (initialData.link) setLinkUrl(initialData.link);
+        if (initialData.file) validateAndSetFile(initialData.file);
+      }
+
       setTimeout(() => {
         textInputRef.current?.focus();
       }, 50);
@@ -74,7 +82,7 @@ export function VerificationModal({ isOpen, onClose, onComplete }) {
       setTextContent("");
       setLinkUrl("");
     }
-  }, [isOpen]);
+  }, [isOpen, initialData]);
 
   // URL Validation
   const isValidUrl = (url) => {

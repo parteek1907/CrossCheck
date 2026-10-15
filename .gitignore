@@ -46,3 +46,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# scratch
+scratch/
+
