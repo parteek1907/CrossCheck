@@ -1,109 +1,133 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { calculateDeterministicScore } from "../lib/scoring.js";
-import { calculateConfidence } from "../lib/confidence.js";
-import { clusterEvidenceArticles } from "../lib/clustering.js";
-import { generateAuditRecord } from "../lib/audit.js";
-import { exportReportPdf } from "../lib/exportPdf.js";
-import { detectRepeatClaim } from "../lib/similarity.js";
-import { renderShareCardToCanvas } from "../lib/trending.js";
-import { performErrorLevelAnalysis, inspectImageExif } from "../lib/forensics.js";
-import { saveToVault, getVaultEntries, verifyVaultIntegrity, generateComplaintDraft, clearVault } from "../lib/vault.js";
+import { useRouter } from "next/navigation";
+import {
+  ShieldCheck,
+  Search,
+  Plus,
+  BarChart3,
+  History,
+  Archive,
+  Radio,
+  Globe2,
+  Settings,
+  HelpCircle,
+  ExternalLink,
+  ChevronRight,
+  Bookmark,
+  Share2,
+  FileDown,
+  Trash2,
+  Sparkles,
+  AlertTriangle,
+  CheckCircle,
+  HelpCircle as QuestionIcon,
+  User,
+  Edit2,
+  Bell,
+  RefreshCw,
+} from "lucide-react";
+
+import {
+  getStoredReports,
+  saveStoredReport,
+  deleteReportById,
+  toggleSaveReport,
+  computeDashboardStats,
+  INITIAL_STATS,
+  getUserProfile,
+  saveUserProfile,
+} from "../lib/storage.js";
+import { getVaultEntries, saveToVault, verifyVaultIntegrity, clearVault } from "../lib/vault.js";
 import { generateSafeCircleCode, verifySafeCircleSpokenCode, getSafeCircleSecret, setSafeCircleSecret } from "../lib/safecircle.js";
-import { getActionProtocol, EMERGENCY_HELPLINES } from "../lib/actionpath.js";
-import { PromptInputBox } from "../components/ui/ai-prompt-box";
+import { EMERGENCY_HELPLINES, getActionProtocol } from "../lib/actionpath.js";
+import { VerificationModal } from "../components/VerificationModal";
 
 export default function ProofDeskApp() {
-  const [activeNav, setActiveNav] = useState("analytics");
-  const [knownClaims, setKnownClaims] = useState([]);
-  const [sampleArticles, setSampleArticles] = useState([]);
-  const [trendingHoaxes, setTrendingHoaxes] = useState([]);
-  const [sampleCases, setSampleCases] = useState([]);
-  const [wordlist, setWordlist] = useState([]);
-  const [proofHistory, setProofHistory] = useState([]);
+  const router = useRouter();
 
-  // Active Fact Check / Audit State
-  const [claimText, setClaimText] = useState("");
-  const [imagePreview, setImagePreview] = useState("assets/demo_fake_news.jpg");
-  const [activeCaseIdx, setActiveCaseIdx] = useState(0);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [repeatAlert, setRepeatAlert] = useState(null);
-  const [activeReport, setActiveReport] = useState(null);
+  // Navigation: 'dashboard' | 'history' | 'vault' | 'safecircle' | 'clustering' | 'settings' | 'help'
+  const [activeNav, setActiveNav] = useState("dashboard");
 
-  // Forensics Lab State (Research Workspace)
-  const [elaQuality, setElaQuality] = useState(0.75);
-  const [elaAmplification, setElaAmplification] = useState(20);
-  const [isForensicsRunning, setIsForensicsRunning] = useState(false);
+  // Client-side state
+  const [isMounted, setIsMounted] = useState(false);
+  const [reports, setReports] = useState([]);
+  const [stats, setStats] = useState(INITIAL_STATS);
+  const [userProfile, setUserProfile] = useState({ displayName: "Guest", role: "Forensic Analyst" });
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [tempName, setTempName] = useState("Guest");
 
-  // Clustering Explorer State (Source Explorer)
-  const [clusterThreshold, setClusterThreshold] = useState(0.55);
-  const [liveClustering, setLiveClustering] = useState(null);
+  // Global search & filter
+  const [searchQuery, setSearchQuery] = useState("");
+  const [historyFilterSaved, setHistoryFilterSaved] = useState(false);
 
-  // Evidence Vault State
+  // Verification Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Evidence Vault state
   const [vaultEntries, setVaultEntries] = useState([]);
   const [vaultStatus, setVaultStatus] = useState("Ledger Verified");
-  const [complaintModalEntry, setComplaintModalEntry] = useState(null);
 
-  // Safe Circle State (Media Verification)
+  // Safe Circle state
+  const [wordlist, setWordlist] = useState([]);
   const [safeCode, setSafeCode] = useState({ code: "LOADING...", secondsRemaining: 60, progressPercent: 100 });
   const [verifyInput, setVerifyInput] = useState("");
   const [verifyResult, setVerifyResult] = useState(null);
-  const [familySecret, setFamilySecret] = useState("TRUSTLENS-CIRCLE-FAMILY-2026");
+  const [familySecret, setFamilySecret] = useState("CROSSCHECK-CIRCLE-FAMILY-2026");
 
-  // Action Path State
-  const [activeProtocolKey, setActiveProtocolKey] = useState("scam");
-  const [checkedSteps, setCheckedSteps] = useState({});
-  const [isMounted, setIsMounted] = useState(false);
+  // Domain search state for Source Explorer
+  const [domainQuery, setDomainQuery] = useState("reuters.com");
+  const [domainProfile, setDomainProfile] = useState(null);
+  const [isFetchingDomain, setIsFetchingDomain] = useState(false);
 
-  const fileInputRef = useRef(null);
+  // Load stored state on mount
+  const refreshLocalData = () => {
+    const stored = getStoredReports();
+    setReports(stored);
+    setStats(computeDashboardStats(stored));
+    setVaultEntries(getVaultEntries());
+    const prof = getUserProfile();
+    setUserProfile(prof);
+    setTempName(prof.displayName || "Guest");
+  };
 
-  // Initial Data Loading
   useEffect(() => {
     setIsMounted(true);
-    async function loadData() {
-      try {
-        const [claimsRes, articlesRes, trendingRes, casesRes, wordsRes, seedProofsRes] = await Promise.all([
-          fetch("/data/known_claims.json").then(r => r.json()).catch(() => []),
-          fetch("/data/sample_articles.json").then(r => r.json()).catch(() => []),
-          fetch("/data/trending_hoaxes.json").then(r => r.json()).catch(() => []),
-          fetch("/data/sample_cases.json").then(r => r.json()).catch(() => []),
-          fetch("/data/wordlist.json").then(r => r.json()).catch(() => []),
-          fetch("/data/seed_proofs.json").then(r => r.json()).catch(() => [])
-        ]);
+    refreshLocalData();
 
-        setKnownClaims(claimsRes);
-        setSampleArticles(articlesRes);
-        setTrendingHoaxes(trendingRes);
-        setSampleCases(casesRes);
-        setWordlist(wordsRes);
-        setProofHistory(seedProofsRes);
+    // Fetch wordlist for Safe Circle
+    fetch("/data/wordlist.json")
+      .then((r) => r.json())
+      .then((words) => setWordlist(words))
+      .catch(() => setWordlist([]));
 
-        // Load vault
-        const storedVault = getVaultEntries();
-        setVaultEntries(storedVault);
+    // Listen for storage updates across tabs / events
+    window.addEventListener("crosscheck_reports_updated", refreshLocalData);
+    window.addEventListener("crosscheck_profile_updated", refreshLocalData);
 
-        // Load safe circle secret
-        const sec = getSafeCircleSecret();
-        setFamilySecret(sec);
+    // Initial domain query
+    fetchDomainProfile("reuters.com");
 
-        // Initial live clustering run
-        if (articlesRes.length > 0) {
-          setLiveClustering(clusterEvidenceArticles(articlesRes, 0.55));
-        }
-
-        // Run initial audit on Case 1
-        if (casesRes.length > 0) {
-          executeAudit(casesRes[0].claimText, casesRes[0].sampleImageUrl, casesRes[0], claimsRes, articlesRes);
-        }
-      } catch (err) {
-        console.error("Initialization error:", err);
-      }
-    }
-    loadData();
+    return () => {
+      window.removeEventListener("crosscheck_reports_updated", refreshLocalData);
+      window.removeEventListener("crosscheck_profile_updated", refreshLocalData);
+    };
   }, []);
 
-  // Safe Circle 1-second live countdown
+  // Keyboard shortcut: Cmd/Ctrl + K opens modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsModalOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Safe Circle 1-second countdown
   useEffect(() => {
     if (wordlist.length === 0) return;
     const interval = setInterval(async () => {
@@ -117,1240 +141,1082 @@ export default function ProofDeskApp() {
     return () => clearInterval(interval);
   }, [wordlist, familySecret]);
 
-  // Dynamic Clustering Re-computation when threshold changes
-  useEffect(() => {
-    if (sampleArticles.length > 0) {
-      setLiveClustering(clusterEvidenceArticles(sampleArticles, clusterThreshold));
-    }
-  }, [clusterThreshold, sampleArticles]);
-
-  // Core Audit Pipeline: 100% Real
-  async function executeAudit(textToAnalyze, imageSource, presetCase = null, claimsList = knownClaims, articlesList = sampleArticles) {
-    const startTime = performance.now();
-    setIsAnalyzing(true);
-
+  // Fetch domain profile from real API
+  const fetchDomainProfile = async (domain) => {
+    if (!domain) return;
+    setIsFetchingDomain(true);
     try {
-      // 1. Character trigram similarity
-      const repeatCheck = detectRepeatClaim(textToAnalyze, claimsList, 0.45);
-      setRepeatAlert(repeatCheck.isRepeat ? repeatCheck : null);
-
-      // 2. Real Error Level Analysis & EXIF parsing
-      let forensicsResult = null;
-      let exifResult = null;
-      const imgSrc = imageSource || "assets/demo_fake_news.jpg";
-
-      try {
-        [forensicsResult, exifResult] = await Promise.all([
-          performErrorLevelAnalysis(imgSrc, elaQuality, elaAmplification),
-          inspectImageExif(imgSrc)
-        ]);
-      } catch (e) {
-        console.warn("Forensics warning:", e);
+      const res = await fetch(`/api/domain-profile/${encodeURIComponent(domain)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setDomainProfile(data);
+      } else {
+        setDomainProfile(null);
       }
-
-      // 3. Component weights & caps
-      let components = presetCase ? { ...presetCase.components } : {
-        sourceReliability: 45,
-        independentCoverage: 40,
-        contradictionStrength: 50,
-        imageAuthenticity: 50,
-        claimSpecificity: 60
-      };
-
-      let clusterMeta = presetCase ? { ...presetCase.metadata } : {
-        clusterCount: 3,
-        hasDominantContradiction: false
-      };
-
-      if (forensicsResult) {
-        components.imageAuthenticity = Math.max(10, Math.min(95, 100 - forensicsResult.anomalyScore));
-      }
-
-      // 4. Clustering & deterministic 100-point scoring
-      const clusteringResult = clusterEvidenceArticles(articlesList, clusterThreshold);
-      const scoringResult = calculateDeterministicScore(components, clusterMeta);
-      const confidence = calculateConfidence(scoringResult.finalScore, {
-        sampleSize: clusteringResult.totalArticles || 12,
-        independentClusters: clusterMeta.clusterCount || 3,
-        variance: 0.12
-      });
-
-      const endTime = performance.now();
-      const timeToVerdict = Math.round(((endTime - startTime) / 1000) * 10) / 10;
-
-      // 5. Cryptographic SHA-256 Audit Record
-      const audit = await generateAuditRecord({
-        claimText: textToAnalyze || "Circulating media record",
-        score: scoringResult.finalScore,
-        verdict: scoringResult.verdict,
-        confidence: confidence.level,
-        breakdown: scoringResult.breakdown
-      });
-
-      const report = {
-        reportId: audit.reportId,
-        claimText: textToAnalyze,
-        score: scoringResult.finalScore,
-        verdict: scoringResult.verdict,
-        confidence,
-        scoringResult,
-        clusteringResult,
-        forensicsResult,
-        exifResult,
-        audit,
-        timeToVerdict: Math.max(0.8, timeToVerdict),
-        category: presetCase ? presetCase.category : "Misinformation"
-      };
-
-      setActiveReport(report);
-      setClaimText(textToAnalyze);
-      setImagePreview(imgSrc);
-
-      // Append real proof to historical log to dynamically update KPI analytics!
-      const newProofItem = {
-        id: `proof-${Date.now()}`,
-        reportId: audit.reportId,
-        claimText: textToAnalyze || "User uploaded media asset",
-        category: presetCase ? presetCase.badge : "User Verification",
-        verdict: scoringResult.verdict,
-        score: scoringResult.finalScore,
-        confidence: confidence.level,
-        date: new Date().toISOString().split("T")[0],
-        timeToVerdict: Math.max(0.8, timeToVerdict),
-        sourceCount: clusteringResult.totalArticles,
-        clusterCount: clusterMeta.clusterCount,
-        disputed: scoringResult.finalScore < 45
-      };
-
-      setProofHistory(prev => [newProofItem, ...prev]);
-
-    } catch (err) {
-      console.error("Audit failure:", err);
-      alert("Verification error: " + err.message);
+    } catch {
+      setDomainProfile(null);
     } finally {
-      setIsAnalyzing(false);
+      setIsFetchingDomain(false);
     }
-  }
+  };
 
-  // Handle preset selection
-  function handleSelectPreset(index) {
-    if (!sampleCases[index]) return;
-    setActiveCaseIdx(index);
-    const selected = sampleCases[index];
-    executeAudit(selected.claimText, selected.sampleImageUrl, selected);
-  }
+  // Profile name saving
+  const handleSaveName = () => {
+    const clean = tempName.trim() || "Guest";
+    const updated = { ...userProfile, displayName: clean };
+    saveUserProfile(updated);
+    setUserProfile(updated);
+    setIsEditingName(false);
+  };
 
-  // Handle local image upload
-  function handleFileUpload(e) {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setActiveCaseIdx(-1);
-      const url = URL.createObjectURL(file);
-      setImagePreview(url);
-      executeAudit(claimText || file.name, file, null);
-    }
-  }
+  // Handle completed verification from modal
+  const handleVerificationComplete = (report) => {
+    saveStoredReport(report);
+    refreshLocalData();
+    // Navigate to full report page
+    router.push(`/report/${encodeURIComponent(report.reportId)}`);
+  };
 
-  // Re-run Forensics Lab with custom Quality & Amplification sliders
-  async function handleRerunForensics() {
-    if (!imagePreview) return;
-    setIsForensicsRunning(true);
-    try {
-      const res = await performErrorLevelAnalysis(imagePreview, elaQuality, elaAmplification);
-      setActiveReport(prev => prev ? { ...prev, forensicsResult: res } : null);
-    } catch (e) {
-      console.error("ELA error:", e);
-    } finally {
-      setIsForensicsRunning(false);
-    }
-  }
-
-  // Export PDF
-  function handleExportPDF() {
-    if (!activeReport) return;
-    exportReportPdf(activeReport);
-  }
-
-  // Export PNG Social Card
-  async function handleDownloadPNG() {
-    if (!activeReport) return;
-    const blob = await renderShareCardToCanvas(activeReport);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `TrustLens-ContextCard-${activeReport.reportId}.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
-
-  // Lock in Evidence Vault
-  async function handleSaveVault() {
-    if (!activeReport) return;
-    const notes = prompt("Enter investigator case note for this vault block:", "Preserved during forensic proof desk triage");
-    if (notes === null) return;
-    const entry = await saveToVault(activeReport, notes, activeReport.category);
-    setVaultEntries(getVaultEntries());
-    alert(`Entry locked into cryptographic ledger!\nBlock #${entry.index + 1}\nSHA-256 Digest: ${entry.entryHash.substring(0, 16)}...`);
-  }
-
-  // Verify Ledger Integrity
-  async function handleVerifyLedger() {
-    const res = await verifyVaultIntegrity();
-    if (res.isValid) {
-      setVaultStatus(`Ledger Verified (${res.totalEntries} Blocks Intact)`);
-      alert("✅ Cryptographic Verification Successful:\n" + res.message);
-    } else {
-      setVaultStatus("Tampering Detected!");
-      alert("❌ Ledger alert:\n" + res.errorReason);
-    }
-  }
-
-  // ========================================================
-  // DYNAMIC COMPUTATIONS FOR ANALYTICS (100% NON-MOCK)
-  // ========================================================
-  const totalProofsCount = proofHistory.length;
-  const avgTimeVal = totalProofsCount > 0
-    ? (proofHistory.reduce((acc, p) => acc + (p.timeToVerdict || 1.8), 0) / totalProofsCount).toFixed(1)
-    : "1.8";
-
-  const autoVerifiedCount = proofHistory.filter(p => p.score >= 70).length;
-  const autoVerifiedPct = totalProofsCount > 0 ? Math.round((autoVerifiedCount / totalProofsCount) * 100) : 61;
-
-  const disputedCount = proofHistory.filter(p => p.disputed).length;
-  const disputedPct = totalProofsCount > 0 ? ((disputedCount / totalProofsCount) * 100).toFixed(1) : "0.4";
-
-  // Verdict Breakdown counts
-  const verifiedCount = proofHistory.filter(p => p.verdict === "No signs found").length;
-  const misleadingCount = proofHistory.filter(p => p.verdict === "Inconclusive").length;
-  const falseCount = proofHistory.filter(p => p.verdict === "Likely manipulated").length;
-  const unverifiedCount = Math.max(0, totalProofsCount - (verifiedCount + misleadingCount + falseCount));
-
-  // Dynamic Topics by Volume calculation from proofHistory
-  const topicCounts = {};
-  proofHistory.forEach(p => {
-    const cat = p.category || "Misinformation";
-    topicCounts[cat] = (topicCounts[cat] || 0) + 1;
+  // Filtered reports for History & Search
+  const filteredReports = reports.filter((r) => {
+    if (historyFilterSaved && !r.isSaved) return false;
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      (r.claimText && r.claimText.toLowerCase().includes(q)) ||
+      (r.reportId && r.reportId.toLowerCase().includes(q)) ||
+      (r.verdict && r.verdict.toLowerCase().includes(q)) ||
+      (r.category && r.category.toLowerCase().includes(q))
+    );
   });
-  const sortedTopics = Object.entries(topicCounts).sort((a, b) => b[1] - a[1]);
-  const maxTopicVolume = sortedTopics.length > 0 ? sortedTopics[0][1] : 1;
 
   return (
-    <div className="desk-layout">
+    <div className="desk-layout min-h-screen bg-[#0D0E11] text-gray-100 flex">
       {/* ========================================================
-          LEFT SIDEBAR (CROSSCHECK · THE MERIDIAN · PROOF DESK)
+          LEFT SIDEBAR (CROSSCHECK)
           ======================================================== */}
-      <aside className="desk-sidebar">
+      <aside className="desk-sidebar w-64 bg-[#121316] border-r border-[#22242A] flex flex-col justify-between p-4 flex-shrink-0">
         <div>
-          <div className="brand-section">
-            <h1 className="brand-name">Crosscheck</h1>
-            <div className="brand-sub">THE MERIDIAN · PROOF DESK</div>
+          {/* Brand */}
+          <div className="brand-section mb-6 pb-4 border-b border-[#202227]">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-[#D95D39] flex items-center justify-center text-white shadow-md font-bold text-sm">
+                C
+              </div>
+              <div>
+                <h1 className="brand-name text-lg font-bold text-white tracking-tight leading-none">
+                  Crosscheck
+                </h1>
+                <div className="brand-sub text-[10px] font-mono uppercase tracking-widest text-gray-400 mt-1">
+                  Institutional Proof Desk
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* VERIFY GROUP */}
+          {/* "+ New Verification" Primary Action */}
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="w-full flex items-center justify-between px-3.5 py-2.5 mb-6 text-sm font-semibold text-white bg-[#D95D39] hover:bg-[#e46944] rounded-xl shadow-md transition-all group"
+          >
+            <span className="flex items-center gap-2">
+              <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" />
+              <span>New verification</span>
+            </span>
+            <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-black/25 text-white/80 rounded border border-white/10">
+              ⌘K
+            </kbd>
+          </button>
+
+          {/* Navigation Links */}
           <div className="nav-category">
-            <div className="nav-category-title">VERIFY</div>
-            <ul className="nav-item-list">
+            <div className="nav-category-title text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2 px-2">
+              Workspace
+            </div>
+            <ul className="space-y-1">
               <li>
                 <button
                   type="button"
-                  className={`nav-link-btn ${activeNav === "analytics" ? "active" : ""}`}
-                  onClick={() => setActiveNav("analytics")}
+                  onClick={() => setActiveNav("dashboard")}
+                  className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-all ${
+                    activeNav === "dashboard"
+                      ? "bg-[#1E2026] text-white font-medium border border-[#2F323B]"
+                      : "text-gray-400 hover:text-gray-200 hover:bg-[#16171B]"
+                  }`}
                 >
-                  Dashboard
+                  <BarChart3 className="w-4 h-4 text-[#D95D39]" />
+                  <span>Dashboard</span>
                 </button>
               </li>
               <li>
                 <button
                   type="button"
-                  className={`nav-link-btn ${activeNav === "factcheck" ? "active" : ""}`}
-                  onClick={() => setActiveNav("factcheck")}
+                  onClick={() => setActiveNav("history")}
+                  className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-all ${
+                    activeNav === "history"
+                      ? "bg-[#1E2026] text-white font-medium border border-[#2F323B]"
+                      : "text-gray-400 hover:text-gray-200 hover:bg-[#16171B]"
+                  }`}
                 >
-                  Fact Check
+                  <div className="flex items-center gap-3">
+                    <History className="w-4 h-4 text-sky-400" />
+                    <span>History</span>
+                  </div>
+                  <span className="text-xs font-mono text-gray-500">{reports.length}</span>
                 </button>
               </li>
               <li>
                 <button
                   type="button"
-                  className={`nav-link-btn ${activeNav === "forensics" ? "active" : ""}`}
-                  onClick={() => setActiveNav("forensics")}
-                >
-                  Research Workspace
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  className={`nav-link-btn ${activeNav === "clustering" ? "active" : ""}`}
-                  onClick={() => setActiveNav("clustering")}
-                >
-                  Source Explorer
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  className={`nav-link-btn ${activeNav === "vault" ? "active" : ""}`}
                   onClick={() => setActiveNav("vault")}
+                  className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-all ${
+                    activeNav === "vault"
+                      ? "bg-[#1E2026] text-white font-medium border border-[#2F323B]"
+                      : "text-gray-400 hover:text-gray-200 hover:bg-[#16171B]"
+                  }`}
                 >
-                  Evidence Library
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.7rem", color: "var(--text-muted)" }}>
-                    {vaultEntries.length}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <Archive className="w-4 h-4 text-emerald-400" />
+                    <span>Evidence Vault</span>
+                  </div>
+                  <span className="text-xs font-mono text-gray-500">{vaultEntries.length}</span>
                 </button>
               </li>
               <li>
                 <button
                   type="button"
-                  className={`nav-link-btn ${activeNav === "safecircle" ? "active" : ""}`}
                   onClick={() => setActiveNav("safecircle")}
+                  className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-all ${
+                    activeNav === "safecircle"
+                      ? "bg-[#1E2026] text-white font-medium border border-[#2F323B]"
+                      : "text-gray-400 hover:text-gray-200 hover:bg-[#16171B]"
+                  }`}
                 >
-                  Media Verification
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          {/* PUBLISH GROUP */}
-          <div className="nav-category">
-            <div className="nav-category-title">PUBLISH</div>
-            <ul className="nav-item-list">
-              <li>
-                <button
-                  type="button"
-                  className={`nav-link-btn ${activeNav === "reports" ? "active" : ""}`}
-                  onClick={() => setActiveNav("reports")}
-                >
-                  Reports (PDF)
+                  <Radio className="w-4 h-4 text-violet-400" />
+                  <span>Safe Circle</span>
                 </button>
               </li>
               <li>
                 <button
                   type="button"
-                  className={`nav-link-btn ${activeNav === "trending" ? "active" : ""}`}
-                  onClick={() => setActiveNav("trending")}
+                  onClick={() => setActiveNav("clustering")}
+                  className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-all ${
+                    activeNav === "clustering"
+                      ? "bg-[#1E2026] text-white font-medium border border-[#2F323B]"
+                      : "text-gray-400 hover:text-gray-200 hover:bg-[#16171B]"
+                  }`}
                 >
-                  Saved Cases
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          {/* ORGANIZATION GROUP */}
-          <div className="nav-category">
-            <div className="nav-category-title">ORGANIZATION</div>
-            <ul className="nav-item-list">
-              <li>
-                <button
-                  type="button"
-                  className={`nav-link-btn ${activeNav === "actionpath" ? "active" : ""}`}
-                  onClick={() => setActiveNav("actionpath")}
-                >
-                  Team Workspace
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  className={`nav-link-btn ${activeNav === "analytics" ? "active" : ""}`}
-                  onClick={() => setActiveNav("analytics")}
-                >
-                  Analytics
+                  <Globe2 className="w-4 h-4 text-amber-400" />
+                  <span>Source Explorer</span>
                 </button>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* BOTTOM METADATA & PROFILE */}
-        <div className="sidebar-bottom">
-          <div className="sidebar-bottom-link">
-            <span>Notifications</span>
-            <span className="notification-badge">3</span>
-          </div>
-          <div className="sidebar-bottom-link" onClick={() => alert("TrustLens Version 2.0 • In-Browser Forensic Suite • Offline Resilient")}>
-            Settings
-          </div>
-          <div className="sidebar-bottom-link" onClick={() => setActiveNav("actionpath")}>
-            Help Center (1930)
-          </div>
-
-          <div className="user-profile-pill">
-            <div className="user-avatar">MO</div>
-            <div className="user-name">M. Okafor</div>
-          </div>
+        {/* Sidebar Footer */}
+        <div className="pt-4 border-t border-[#202227] space-y-1">
+          <button
+            type="button"
+            onClick={() => setActiveNav("help")}
+            className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg transition-all ${
+              activeNav === "help"
+                ? "bg-[#1E2026] text-white font-medium"
+                : "text-gray-400 hover:text-gray-200 hover:bg-[#16171B]"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <HelpCircle className="w-3.5 h-3.5 text-red-400" />
+              <span>Help Center (1930)</span>
+            </div>
+            <span className="text-[10px] font-mono text-red-400 bg-red-950/40 px-1.5 py-0.5 rounded border border-red-800/40">
+              SOS
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveNav("settings")}
+            className={`w-full flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all ${
+              activeNav === "settings"
+                ? "bg-[#1E2026] text-white font-medium"
+                : "text-gray-400 hover:text-gray-200 hover:bg-[#16171B]"
+            }`}
+          >
+            <Settings className="w-3.5 h-3.5 text-gray-400" />
+            <span>Settings</span>
+          </button>
         </div>
       </aside>
 
       {/* ========================================================
-          MAIN AREA
+          MAIN APP CONTENT AREA
           ======================================================== */}
-      <main className="desk-main">
-        {/* TOP BAR */}
-        <header className="desk-topbar">
-          <div className="breadcrumb-area">
-            <span>Analytics</span>
-            <span>/</span>
-            <strong>
-              {activeNav === "analytics" ? "Last 30 days" : activeNav === "factcheck" ? "Live Fact Check Studio" : activeNav === "forensics" ? "Research Workspace" : activeNav === "clustering" ? "Source Explorer" : activeNav === "vault" ? "Evidence Library" : activeNav === "safecircle" ? "Safe Circle Passcode" : activeNav === "reports" ? "Published Reports" : "Action Path"}
-            </strong>
-          </div>
-
-          <div className="topbar-right-controls">
-            <div className="search-command-input">
+      <div className="flex-1 flex flex-col min-h-screen overflow-y-auto">
+        {/* Top Header */}
+        <header className="h-16 px-8 border-b border-[#202227] bg-[#121316]/70 backdrop-blur-md flex items-center justify-between sticky top-0 z-30">
+          <div className="flex items-center gap-4 flex-1 max-w-xl">
+            <div className="relative w-full">
               <input
                 type="text"
-                placeholder="Search claim or command"
-                style={{ border: "none", outline: "none", background: "transparent", width: "160px", fontSize: "0.82rem" }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && e.target.value.trim()) {
-                    setClaimText(e.target.value);
-                    setActiveNav("factcheck");
-                    executeAudit(e.target.value, imagePreview);
-                  }
-                }}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search verified reports or claims... (⌘K)"
+                className="w-full pl-9 pr-12 py-2 text-xs text-gray-200 bg-[#17181D] border border-[#272931] rounded-xl placeholder:text-gray-500 focus:outline-none focus:border-[#D95D39] transition-all"
               />
-              <span className="command-key-badge">⌘K</span>
+              <Search className="w-3.5 h-3.5 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-mono bg-[#22242B] text-gray-400 rounded border border-[#2E313A]"
+              >
+                ⌘K
+              </button>
             </div>
-            <button
-              type="button"
-              className="btn-black-primary"
-              onClick={() => {
-                setActiveNav("factcheck");
-                setClaimText("");
-                setActiveCaseIdx(-1);
-              }}
-            >
-              + New verification
-            </button>
+          </div>
+
+          {/* Right Header: Status, Notification, and User Pill */}
+          <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono bg-[#181A1F] border border-[#282B33] rounded-lg text-emerald-400">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Engine Active</span>
+            </div>
+
+            {/* Notification Bell (Badge hidden when 0) */}
+            <div className="relative p-2 text-gray-400 hover:text-gray-200 rounded-lg hover:bg-[#1A1C21] transition-colors cursor-pointer">
+              <Bell className="w-4 h-4" />
+            </div>
+
+            {/* User Profile Pill ("Guest" with inline editing) */}
+            <div className="flex items-center gap-2 pl-3 border-l border-[#24272E]">
+              <div className="w-7 h-7 rounded-full bg-[#D95D39]/20 border border-[#D95D39]/40 flex items-center justify-center text-[#D95D39] text-xs font-bold">
+                {userProfile.displayName ? userProfile.displayName.slice(0, 1).toUpperCase() : "G"}
+              </div>
+              {isEditingName ? (
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    value={tempName}
+                    onChange={(e) => setTempName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSaveName();
+                      if (e.key === "Escape") setIsEditingName(false);
+                    }}
+                    className="w-24 px-1.5 py-0.5 text-xs bg-[#1E2026] text-white border border-[#D95D39] rounded"
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleSaveName}
+                    className="text-[10px] text-emerald-400 hover:underline"
+                  >
+                    Save
+                  </button>
+                </div>
+              ) : (
+                <div
+                  onClick={() => setIsEditingName(true)}
+                  className="flex items-center gap-1 cursor-pointer group"
+                  title="Click to edit display name"
+                >
+                  <span className="text-xs font-medium text-gray-200 group-hover:text-white">
+                    {userProfile.displayName || "Guest"}
+                  </span>
+                  <Edit2 className="w-3 h-3 text-gray-500 group-hover:text-gray-300 opacity-60" />
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
-        {/* MAIN BODY CONTAINER */}
-        <div className="desk-content">
-
+        {/* Content Body */}
+        <main className="p-8 max-w-7xl w-full mx-auto space-y-8 flex-1">
           {/* ========================================================
-              VIEW 1: DASHBOARD / ANALYTICS (REAL & DYNAMICALLY COMPUTED)
+              VIEW 1: DASHBOARD (HOME)
               ======================================================== */}
-          {activeNav === "analytics" && (
-            <div>
-              <div className="page-eyebrow">ACTIVE WORKSPACE · AUDIT METRICS</div>
-              <h2 className="page-masthead-title">Analytics</h2>
-
-              {/* DYNAMIC KPI ROW */}
-              <section className="kpi-row" aria-label="Key Performance Indicators">
-                <div className="kpi-column">
-                  <div className="kpi-label">TOTAL PROOFS</div>
-                  <div className="kpi-value">{totalProofsCount.toLocaleString()}</div>
-                </div>
-                <div className="kpi-column">
-                  <div className="kpi-label">AVG TIME TO VERDICT</div>
-                  <div className="kpi-value">{avgTimeVal}<span style={{ fontSize: "1.4rem" }}>s</span></div>
-                </div>
-                <div className="kpi-column">
-                  <div className="kpi-label">AUTO-VERIFIED</div>
-                  <div className="kpi-value">{autoVerifiedPct}<span style={{ fontSize: "1.4rem" }}>%</span></div>
-                </div>
-                <div className="kpi-column">
-                  <div className="kpi-label">DISPUTED VERDICTS</div>
-                  <div className="kpi-value green">{disputedPct}<span style={{ fontSize: "1.4rem" }}>%</span></div>
-                </div>
-              </section>
-
-              {/* CHARTS GRID */}
-              <section className="dashboard-grid">
+          {activeNav === "dashboard" && (
+            <div className="space-y-8">
+              {/* Header Title */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <div className="chart-header-row">
-                    <span className="chart-title">PROOFS PER DAY (LAST 30 DAYS)</span>
-                    <span className="chart-hint">hover the bars</span>
+                  <h2 className="text-2xl font-bold tracking-tight text-white">
+                    Verification Dashboard
+                  </h2>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Real-time digital forensics, open wire corroboration, and tamper-evident proof ledger.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[#D95D39] hover:bg-[#e46944] rounded-xl shadow-md transition-all"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>New verification</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* KPI ROW */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-5 bg-[#141519] border border-[#24262E] rounded-2xl shadow-sm">
+                  <div className="text-xs font-mono uppercase tracking-wider text-gray-400">
+                    Total Proofs
+                  </div>
+                  <div className="mt-2 text-3xl font-bold font-mono text-white">
+                    {stats.totalProofs}
+                  </div>
+                  <div className="mt-1 text-xs text-gray-500">
+                    {stats.totalProofs === 0 ? "No records on this device" : "Cryptographically logged"}
+                  </div>
+                </div>
+
+                <div className="p-5 bg-[#141519] border border-[#24262E] rounded-2xl shadow-sm">
+                  <div className="text-xs font-mono uppercase tracking-wider text-gray-400">
+                    Disputed / Manipulated
+                  </div>
+                  <div className="mt-2 text-3xl font-bold font-mono text-[#D95D39]">
+                    {stats.disputedPercent}%
+                  </div>
+                  <div className="mt-1 text-xs text-gray-500">
+                    {stats.verdictMix.likelyManipulated} flagged claims
+                  </div>
+                </div>
+
+                <div className="p-5 bg-[#141519] border border-[#24262E] rounded-2xl shadow-sm">
+                  <div className="text-xs font-mono uppercase tracking-wider text-gray-400">
+                    Average Duration
+                  </div>
+                  <div className="mt-2 text-3xl font-bold font-mono text-sky-400">
+                    {stats.avgDurationFormatted}
+                  </div>
+                  <div className="mt-1 text-xs text-gray-500">
+                    Open wire & clustering latency
+                  </div>
+                </div>
+
+                <div className="p-5 bg-[#141519] border border-[#24262E] rounded-2xl shadow-sm">
+                  <div className="text-xs font-mono uppercase tracking-wider text-gray-400">
+                    High Confidence
+                  </div>
+                  <div className="mt-2 text-3xl font-bold font-mono text-emerald-400">
+                    {stats.highConfidenceCount}
+                  </div>
+                  <div className="mt-1 text-xs text-gray-500">
+                    Statistical bounds ± margin
+                  </div>
+                </div>
+              </div>
+
+              {/* CHARTS ROW: 30-Day Activity & Verdict Mix */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* 30-Day Activity Chart */}
+                <div className="lg:col-span-2 p-6 bg-[#141519] border border-[#24262E] rounded-2xl">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h3 className="text-sm font-semibold text-white">
+                        30-Day Verification Activity
+                      </h3>
+                      <p className="text-xs text-gray-400">
+                        Daily verification volume computed from local audit records
+                      </p>
+                    </div>
+                    <span className="text-xs font-mono text-gray-500">Past 30 Days</span>
                   </div>
 
-                  <div className="proofs-bar-chart">
-                    {[
-                      35, 42, 38, 55, 62, 48, 52, 68, 74, 70,
-                      65, 58, 62, 50, 44, 48, 52, 70, 75, 72,
-                      68, 60, 55, 52, 45, 78, 85, 82, 72,
-                      Math.min(100, Math.max(30, totalProofsCount * 7))
-                    ].map((val, idx) => (
-                      <div
-                        key={idx}
-                        className={`proof-bar ${idx === 29 ? "highlight-terracotta" : ""}`}
-                        style={{ height: `${val}%` }}
-                        title={`Day ${idx + 1}: ${Math.round(val * 1.5)} verifications`}
-                      />
-                    ))}
-                  </div>
-
-                  <div className="chart-timeline-labels">
-                    <span>JUN 7</span>
-                    <span>JUN 21</span>
-                    <span>TODAY (ACTIVE)</span>
-                  </div>
-
-                  {/* DYNAMIC TOPICS BY VOLUME */}
-                  <div className="topic-volume-section">
-                    <div className="chart-title" style={{ marginBottom: "1rem" }}>TOPICS BY VOLUME (LIVE CLUSTERED)</div>
-                    {sortedTopics.map(([topicName, count], idx) => {
-                      const pct = Math.round((count / maxTopicVolume) * 100);
+                  {/* Bar Chart Container */}
+                  <div className="h-44 flex items-end gap-1.5 pt-6 pb-2 border-b border-[#22242C]">
+                    {stats.chartDays.map((d, idx) => {
+                      const maxCount = Math.max(1, ...stats.chartDays.map((c) => c.count));
+                      const barHeight = d.count > 0 ? `${Math.max(15, Math.round((d.count / maxCount) * 100))}%` : "3px";
                       return (
-                        <div key={idx} className="topic-row">
-                          <span className="topic-name">{topicName}</span>
-                          <div className="topic-bar-wrapper">
-                            <div className="topic-bar-fill" style={{ width: `${pct}%` }} />
+                        <div
+                          key={idx}
+                          className="flex-1 flex flex-col items-center group relative h-full justify-end"
+                        >
+                          {/* Tooltip */}
+                          <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center z-20 pointer-events-none">
+                            <div className="bg-[#1F2128] border border-[#343742] text-white text-[10px] font-mono px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                              {d.label}: {d.count} checks
+                            </div>
                           </div>
-                          <span className="topic-count">{count}</span>
+                          {/* Bar */}
+                          <div
+                            style={{ height: barHeight }}
+                            className={`w-full rounded-t transition-all ${
+                              d.count > 0
+                                ? "bg-[#D95D39] hover:bg-[#e46944]"
+                                : "bg-[#22252C] hover:bg-[#2A2E37]"
+                            }`}
+                          />
                         </div>
                       );
                     })}
                   </div>
+                  <div className="flex justify-between mt-2 text-[10px] font-mono text-gray-500">
+                    <span>30 days ago</span>
+                    <span>15 days ago</span>
+                    <span>Today</span>
+                  </div>
                 </div>
 
-                {/* RIGHT COLUMN */}
-                <div className="dashboard-sidebar-column">
-                  <div className="verdict-mix-card">
-                    <div className="chart-title">VERDICT MIX · 30D</div>
-                    <div className="multi-segment-bar">
-                      <div className="seg-green" style={{ width: `${Math.round((verifiedCount / Math.max(1, totalProofsCount)) * 100)}%` }} title={`Verified: ${verifiedCount}`} />
-                      <div className="seg-yellow" style={{ width: `${Math.round((misleadingCount / Math.max(1, totalProofsCount)) * 100)}%` }} title={`Misleading: ${misleadingCount}`} />
-                      <div className="seg-red" style={{ width: `${Math.round((falseCount / Math.max(1, totalProofsCount)) * 100)}%` }} title={`False: ${falseCount}`} />
-                      <div className="seg-gray" style={{ width: `${Math.round((unverifiedCount / Math.max(1, totalProofsCount)) * 100)}%` }} title={`Unverified: ${unverifiedCount}`} />
-                    </div>
-                    <div className="verdict-legend-grid">
-                      <div className="legend-item">
-                        <span className="legend-dot" style={{ background: "#1E824C" }} />
-                        <span>Verified {verifiedCount}</span>
-                      </div>
-                      <div className="legend-item">
-                        <span className="legend-dot" style={{ background: "#C28B1E" }} />
-                        <span>Misleading {misleadingCount}</span>
-                      </div>
-                      <div className="legend-item">
-                        <span className="legend-dot" style={{ background: "#C84B2F" }} />
-                        <span>False {falseCount}</span>
-                      </div>
-                      <div className="legend-item">
-                        <span className="legend-dot" style={{ background: "#A09A8F" }} />
-                        <span>Unverified {unverifiedCount}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="calibration-card">
-                    <div className="chart-title">CONFIDENCE CALIBRATION</div>
-                    <p className="calibration-text">
-                      Deterministic multi-factor scoring with statistical error bounds (Score &plusmn; Margin). Zero-cluster caps (&le;50) and contradiction caps (&le;40) actively prevent false corroboration.
-                    </p>
-                  </div>
-
+                {/* Verdict Mix Card */}
+                <div className="p-6 bg-[#141519] border border-[#24262E] rounded-2xl flex flex-col justify-between">
                   <div>
-                    <div className="chart-title">BUSIEST HOUR</div>
-                    <div className="busiest-hour-time">08:00–09:00</div>
-                    <p style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
-                      Morning wire ingest + overnight viral backlog
+                    <h3 className="text-sm font-semibold text-white mb-1">
+                      Verdict Distribution
+                    </h3>
+                    <p className="text-xs text-gray-400 mb-6">
+                      Breakdown across all evaluated claims
                     </p>
+
+                    <div className="space-y-4">
+                      {/* Likely Manipulated */}
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-gray-300 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-[#D95D39]" />
+                            Likely Manipulated
+                          </span>
+                          <span className="font-mono text-white">
+                            {stats.verdictMix.likelyManipulated}
+                          </span>
+                        </div>
+                        <div className="w-full h-1.5 bg-[#1F2127] rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-[#D95D39] rounded-full"
+                            style={{
+                              width: stats.totalProofs > 0
+                                ? `${(stats.verdictMix.likelyManipulated / stats.totalProofs) * 100}%`
+                                : "0%",
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Inconclusive */}
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-gray-300 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-amber-400" />
+                            Inconclusive
+                          </span>
+                          <span className="font-mono text-white">
+                            {stats.verdictMix.inconclusive}
+                          </span>
+                        </div>
+                        <div className="w-full h-1.5 bg-[#1F2127] rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-amber-400 rounded-full"
+                            style={{
+                              width: stats.totalProofs > 0
+                                ? `${(stats.verdictMix.inconclusive / stats.totalProofs) * 100}%`
+                                : "0%",
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* No Signs Found */}
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-gray-300 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                            No Signs Found
+                          </span>
+                          <span className="font-mono text-white">
+                            {stats.verdictMix.noSignsFound}
+                          </span>
+                        </div>
+                        <div className="w-full h-1.5 bg-[#1F2127] rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-emerald-400 rounded-full"
+                            style={{
+                              width: stats.totalProofs > 0
+                                ? `${(stats.verdictMix.noSignsFound / stats.totalProofs) * 100}%`
+                                : "0%",
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-[#22242B] text-xs text-gray-500 font-mono flex items-center justify-between">
+                    <span>Active Storage:</span>
+                    <span className="text-gray-300">On-Device (Encrypted)</span>
                   </div>
                 </div>
-              </section>
+              </div>
 
-              {/* RECENT PROOF DESK AUDIT STREAM TABLE */}
-              <div style={{ marginTop: "2rem" }}>
-                <div className="chart-title" style={{ marginBottom: "0.75rem" }}>RECENT PROOFS STREAM</div>
-                <div style={{ background: "#FFFFFF", border: "1px solid var(--border-hairline)", borderRadius: "var(--radius-xs)", overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem", textAlign: "left" }}>
-                    <thead>
-                      <tr style={{ borderBottom: "1px solid var(--border-hairline)", background: "var(--bg-card-subtle)" }}>
-                        <th style={{ padding: "0.6rem 1rem", fontFamily: "var(--font-mono)" }}>REPORT ID</th>
-                        <th style={{ padding: "0.6rem 1rem" }}>EXAMINED CONTENT</th>
-                        <th style={{ padding: "0.6rem 1rem" }}>CATEGORY</th>
-                        <th style={{ padding: "0.6rem 1rem" }}>VERDICT</th>
-                        <th style={{ padding: "0.6rem 1rem", fontFamily: "var(--font-mono)" }}>SCORE</th>
-                        <th style={{ padding: "0.6rem 1rem" }}>ACTION</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {proofHistory.slice(0, 6).map((proof, idx) => (
-                        <tr key={idx} style={{ borderBottom: "1px solid var(--border-hairline)" }}>
-                          <td style={{ padding: "0.6rem 1rem", fontFamily: "var(--font-mono)", color: "var(--text-muted)" }}>{proof.reportId}</td>
-                          <td style={{ padding: "0.6rem 1rem", fontWeight: 500, maxWidth: "340px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{proof.claimText}</td>
-                          <td style={{ padding: "0.6rem 1rem", color: "var(--text-muted)" }}>{proof.category}</td>
-                          <td style={{ padding: "0.6rem 1rem" }}>
-                            <span className={`verdict-pill-badge ${proof.verdict === 'Likely manipulated' ? 'danger' : proof.verdict === 'Inconclusive' ? 'warning' : 'safe'}`} style={{ fontSize: "0.72rem", padding: "0.2rem 0.5rem" }}>
-                              {proof.verdict}
-                            </span>
-                          </td>
-                          <td style={{ padding: "0.6rem 1rem", fontFamily: "var(--font-mono)", fontWeight: 700 }}>{proof.score}/100</td>
-                          <td style={{ padding: "0.6rem 1rem" }}>
-                            <button
-                              type="button"
-                              className="preset-btn"
-                              style={{ fontSize: "0.72rem", padding: "0.2rem 0.5rem" }}
-                              onClick={() => {
-                                setClaimText(proof.claimText);
-                                setActiveNav("factcheck");
-                                executeAudit(proof.claimText, imagePreview);
-                              }}
-                            >
-                              Inspect &rarr;
-                            </button>
-                          </td>
+              {/* RECENT VERIFICATIONS TABLE / EMPTY STATE */}
+              <div className="p-6 bg-[#141519] border border-[#24262E] rounded-2xl">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-white">
+                      Recent Verifications
+                    </h3>
+                    <p className="text-xs text-gray-400">
+                      Audit history cryptographically chained on this device
+                    </p>
+                  </div>
+                  {reports.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveNav("history")}
+                      className="text-xs text-[#D95D39] hover:underline flex items-center gap-1"
+                    >
+                      <span>View all</span>
+                      <ChevronRight className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+
+                {/* EMPTY STATE */}
+                {reports.length === 0 ? (
+                  <div className="py-16 px-4 flex flex-col items-center justify-center text-center border-2 border-dashed border-[#22242B] rounded-xl bg-[#111215]/50">
+                    <div className="w-14 h-14 rounded-2xl bg-[#D95D39]/15 border border-[#D95D39]/30 flex items-center justify-center text-[#D95D39] mb-4 shadow-inner">
+                      <ShieldCheck className="w-7 h-7" />
+                    </div>
+                    <h4 className="text-base font-semibold text-white">
+                      No verifications on this device yet
+                    </h4>
+                    <p className="mt-1 text-xs text-gray-400 max-w-md">
+                      Crosscheck runs real multi-source wire corroboration, Union-Find evidence clustering, and deterministic trust scoring with SHA-256 audit trails.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setIsModalOpen(true)}
+                      className="mt-6 flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-[#D95D39] hover:bg-[#e46944] rounded-xl shadow-lg transition-all"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Run your first check</span>
+                    </button>
+                  </div>
+                ) : (
+                  /* POPULATED TABLE */
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead>
+                        <tr className="border-b border-[#22242C] text-gray-500 font-mono uppercase tracking-wider">
+                          <th className="py-3 px-3">Date</th>
+                          <th className="py-3 px-3">Claim / Target</th>
+                          <th className="py-3 px-3">Verdict</th>
+                          <th className="py-3 px-3">Score</th>
+                          <th className="py-3 px-3">Category</th>
+                          <th className="py-3 px-3 text-right">Action</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ========================================================
-              VIEW 2: FACT CHECK & VERIFICATION STUDIO (LIVE)
-              ======================================================== */}
-          {activeNav === "factcheck" && (
-            <section className="inspector-panel">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-                <div>
-                  <div className="chart-title">FACT CHECK & DIGITAL MEDIA PROOF DESK</div>
-                  <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
-                    In-browser Error Level Analysis, trigram repeat-claim detection, and deterministic 5-factor scoring.
-                  </p>
-                </div>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                  {sampleCases[activeCaseIdx]?.name || "Custom Verification"}
-                </span>
-              </div>
-
-              {/* PRELOADED DEMO CASES */}
-              <div className="preset-selector-row">
-                <span style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginRight: "0.5rem" }}>Offline Demos:</span>
-                <button
-                  type="button"
-                  className={`preset-btn ${activeCaseIdx === 0 ? "active" : ""}`}
-                  onClick={() => handleSelectPreset(0)}
-                >
-                  📰 Fake News Graphic
-                </button>
-                <button
-                  type="button"
-                  className={`preset-btn ${activeCaseIdx === 1 ? "active" : ""}`}
-                  onClick={() => handleSelectPreset(1)}
-                >
-                  🚨 Urgent Scam DM
-                </button>
-                <button
-                  type="button"
-                  className={`preset-btn ${activeCaseIdx === 2 ? "active" : ""}`}
-                  onClick={() => handleSelectPreset(2)}
-                >
-                  📸 Morphed Photo
-                </button>
-              </div>
-
-              {/* ADVANCED AI PROMPT BOX (SHADCN / TAILWIND) */}
-              <div style={{ margin: "1.25rem 0" }}>
-                <PromptInputBox
-                  placeholder="Paste circulating claim, transcript, or attach suspicious media to verify..."
-                  isLoading={isAnalyzing}
-                  onSend={(message, files) => {
-                    let text = message;
-                    let img = imagePreview;
-                    if (files && files.length > 0) {
-                      const file = files[0];
-                      img = URL.createObjectURL(file);
-                      setImagePreview(img);
-                      setActiveCaseIdx(-1);
-                    }
-                    setClaimText(text);
-                    executeAudit(text || (files && files[0] ? files[0].name : "Circulating media record"), img);
-                  }}
-                />
-              </div>
-
-              {/* REPEAT CLAIM WARNING */}
-              {repeatAlert && (
-                <div style={{ background: "var(--accent-terracotta-bg)", border: "1px solid var(--accent-terracotta-border)", padding: "0.75rem 1rem", borderRadius: "var(--radius-xs)", margin: "1.25rem 0", color: "var(--accent-terracotta)", fontSize: "0.85rem" }}>
-                  <strong>⚠️ Known Repeat Hoax:</strong> {repeatAlert.bannerMessage}
-                </div>
-              )}
-
-              {/* AUDIT RESULTS */}
-              {activeReport && (
-                <div style={{ marginTop: "1.5rem" }}>
-                  <div className="verdict-header-card">
-                    <div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.35rem" }}>
-                        <span className={`verdict-pill-badge ${activeReport.verdict === 'Likely manipulated' ? 'danger' : activeReport.verdict === 'Inconclusive' ? 'warning' : 'safe'}`}>
-                          {activeReport.verdict}
-                        </span>
-                        <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.82rem", color: "var(--text-muted)" }}>
-                          {activeReport.reportId}
-                        </span>
-                      </div>
-                      <p style={{ fontSize: "0.95rem", color: "var(--text-secondary)" }}>
-                        {activeReport.scoringResult.verdictSummary}
-                      </p>
-                    </div>
-
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ fontFamily: "var(--font-mono)", fontSize: "2.4rem", fontWeight: 700, color: activeReport.verdict === 'Likely manipulated' ? 'var(--accent-terracotta)' : '#1E824C', lineHeight: 1 }}>
-                        {activeReport.score} <span style={{ fontSize: "1.1rem", color: "var(--text-dim)", fontWeight: 400 }}>/ 100</span>
-                      </div>
-                      <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
-                        Confidence: {activeReport.confidence.formattedRange} ({activeReport.confidence.level})
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 5 COMPONENT BARS */}
-                  <div style={{ margin: "1.5rem 0" }}>
-                    <div className="chart-title" style={{ marginBottom: "0.75rem" }}>DETERMINISTIC COMPONENT METRICS</div>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "0.75rem" }}>
-                      {Object.values(activeReport.scoringResult.breakdown).map((comp, idx) => (
-                        <div key={idx} style={{ background: "var(--bg-card-subtle)", border: "1px solid var(--border-hairline)", padding: "0.6rem 0.8rem", borderRadius: "var(--radius-xs)" }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", marginBottom: "0.3rem" }}>
-                            <span style={{ fontWeight: 600 }}>{comp.label}</span>
-                            <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}>{comp.points} pts</span>
-                          </div>
-                          <div style={{ height: "4px", background: "#E8E3DA", borderRadius: "2px", overflow: "hidden" }}>
-                            <div style={{ height: "100%", width: `${comp.raw}%`, background: comp.raw < 40 ? 'var(--accent-terracotta)' : '#111111' }} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* SIDE BY SIDE ELA CANVAS */}
-                  <div className="forensics-canvas-split">
-                    <div className="canvas-frame">
-                      <span className="canvas-frame-title">Original Media Submission</span>
-                      <img src={imagePreview} className="canvas-preview-img" alt="Original" />
-                    </div>
-                    <div className="canvas-frame">
-                      <span className="canvas-frame-title">
-                        In-Browser ELA Difference Heatmap (20x Amplification @ 75% Q)
-                      </span>
-                      {activeReport.forensicsResult ? (
-                        <img src={activeReport.forensicsResult.dataUrl} className="canvas-preview-img" alt="ELA Heatmap" />
-                      ) : (
-                        <div style={{ color: "#888", fontSize: "0.8rem", padding: "2rem" }}>Computing pixel diff...</div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* HONESTY DISCLOSURE */}
-                  <div className="limits-editorial-note">
-                    <strong>Limits of this Check (Editorial Disclosure):</strong> Error Level Analysis (ELA) and EXIF metadata tags are probabilistic compression indicators, not definitive legal proof. Automated scoring provides rapid citizen triage against known syndication rings and manipulation patterns. Files never leave your browser.
-                  </div>
-
-                  {/* ONE CLICK ACTIONS */}
-                  <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", marginTop: "1.25rem" }}>
-                    <button type="button" className="btn-black-primary" onClick={handleExportPDF}>
-                      📄 Export PDF Trust Report
-                    </button>
-                    <button type="button" className="preset-btn" onClick={handleDownloadPNG}>
-                      🖼️ Shareable Context Card (1200x630 PNG)
-                    </button>
-                    <button type="button" className="preset-btn" onClick={handleSaveVault}>
-                      🔒 Lock in Evidence Vault
-                    </button>
-                    <button type="button" className="preset-btn" onClick={() => setActiveNav("forensics")}>
-                      🔬 Deep Forensics Lab &rarr;
-                    </button>
-                  </div>
-                </div>
-              )}
-            </section>
-          )}
-
-          {/* ========================================================
-              VIEW 3: RESEARCH WORKSPACE (IN-DEPTH ELA & EXIF LAB)
-              ======================================================== */}
-          {activeNav === "forensics" && (
-            <section className="inspector-panel">
-              <div className="chart-title" style={{ marginBottom: "0.4rem" }}>RESEARCH WORKSPACE · INTERACTIVE MEDIA FORENSICS</div>
-              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "1.5rem" }}>
-                Fine-tune Error Level Analysis compression quality, amplification scales, and inspect raw EXIF camera metadata tags.
-              </p>
-
-              {/* SLIDERS BAR */}
-              <div style={{ background: "var(--bg-card-subtle)", border: "1px solid var(--border-hairline)", padding: "1rem 1.25rem", borderRadius: "var(--radius-xs)", marginBottom: "1.5rem", display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: "1.5rem", alignItems: "center" }}>
-                <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", fontWeight: 600, marginBottom: "0.3rem" }}>
-                    <span>JPEG Resave Quality</span>
-                    <span style={{ fontFamily: "var(--font-mono)" }}>{Math.round(elaQuality * 100)}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0.50"
-                    max="0.95"
-                    step="0.05"
-                    value={elaQuality}
-                    onChange={(e) => setElaQuality(parseFloat(e.target.value))}
-                    style={{ width: "100%", accentColor: "var(--accent-terracotta)" }}
-                  />
-                </div>
-
-                <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", fontWeight: 600, marginBottom: "0.3rem" }}>
-                    <span>Difference Amplification Scale</span>
-                    <span style={{ fontFamily: "var(--font-mono)" }}>{elaAmplification}x</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="10"
-                    max="40"
-                    step="5"
-                    value={elaAmplification}
-                    onChange={(e) => setElaAmplification(parseInt(e.target.value))}
-                    style={{ width: "100%", accentColor: "var(--accent-terracotta)" }}
-                  />
-                </div>
-
-                <button
-                  type="button"
-                  className="btn-black-primary"
-                  onClick={handleRerunForensics}
-                  disabled={isForensicsRunning}
-                >
-                  {isForensicsRunning ? "Recalculating..." : "🔄 Re-run ELA"}
-                </button>
-              </div>
-
-              {/* ELA SIDE BY SIDE WITH LIVE RESULTS */}
-              <div className="forensics-canvas-split">
-                <div className="canvas-frame">
-                  <span className="canvas-frame-title">Original Submission</span>
-                  <img src={imagePreview} className="canvas-preview-img" alt="Original" />
-                </div>
-                <div className="canvas-frame">
-                  <span className="canvas-frame-title">
-                    ELA Heatmap ({elaAmplification}x Amplification @ {Math.round(elaQuality * 100)}% Q)
-                  </span>
-                  {activeReport?.forensicsResult ? (
-                    <img src={activeReport.forensicsResult.dataUrl} className="canvas-preview-img" alt="ELA Heatmap" />
-                  ) : (
-                    <div style={{ color: "#888", fontSize: "0.8rem", padding: "2rem" }}>Upload media to run ELA</div>
-                  )}
-                </div>
-              </div>
-
-              {/* EXIF METADATA INSPECTION TABLE */}
-              <div style={{ marginTop: "1.5rem" }}>
-                <div className="chart-title" style={{ marginBottom: "0.75rem" }}>EXIF SENSOR & SOFTWARE TAG INSPECTION</div>
-                <div style={{ background: "var(--bg-card-subtle)", border: "1px solid var(--border-hairline)", borderRadius: "var(--radius-xs)", padding: "1rem" }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "0.75rem", fontSize: "0.82rem" }}>
-                    <div>
-                      <span style={{ color: "var(--text-muted)" }}>Camera Hardware:</span><br />
-                      <strong>{activeReport?.exifResult?.camera || "Not Recorded / Web Forward"}</strong>
-                    </div>
-                    <div>
-                      <span style={{ color: "var(--text-muted)" }}>Editing Software Tag:</span><br />
-                      <strong>{activeReport?.exifResult?.software || "None / Stripped"}</strong>
-                    </div>
-                    <div>
-                      <span style={{ color: "var(--text-muted)" }}>Original Capture Timestamp:</span><br />
-                      <strong>{activeReport?.exifResult?.dateTime || "Not Present in Header"}</strong>
-                    </div>
-                    <div>
-                      <span style={{ color: "var(--text-muted)" }}>Authenticity Signal:</span><br />
-                      <strong style={{ color: activeReport?.exifResult?.authenticitySignal < 40 ? "var(--accent-terracotta)" : "var(--accent-green)" }}>
-                        {activeReport?.exifResult?.authenticitySignal || 50}/100
-                      </strong>
-                    </div>
-                  </div>
-
-                  {/* ANOMALY FLAGS */}
-                  {activeReport?.exifResult?.suspiciousFlags && activeReport.exifResult.suspiciousFlags.length > 0 && (
-                    <div style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: "1px solid var(--border-hairline)" }}>
-                      <span style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--accent-terracotta)", fontWeight: 700 }}>
-                        FORENSIC ANOMALY FLAGS DETECTED:
-                      </span>
-                      {activeReport.exifResult.suspiciousFlags.map((flag, idx) => (
-                        <div key={idx} style={{ fontSize: "0.8rem", color: "var(--accent-terracotta)", marginTop: "0.2rem" }}>
-                          ⚠️ {flag}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* ========================================================
-              VIEW 4: SOURCE EXPLORER (EVIDENCE CLUSTERING)
-              ======================================================== */}
-          {activeNav === "clustering" && (
-            <section className="inspector-panel">
-              <div className="chart-title" style={{ marginBottom: "0.4rem" }}>SOURCE EXPLORER · EVIDENCE CLUSTERING & SYNDICATION</div>
-              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "1.5rem" }}>
-                Union-Find grouping by registered domain and title Jaccard word similarity (&ge; 0.55) exposing syndicated echo chambers.
-              </p>
-
-              {/* JACCARD SLIDER */}
-              <div style={{ background: "var(--bg-card-subtle)", border: "1px solid var(--border-hairline)", padding: "1rem 1.25rem", borderRadius: "var(--radius-xs)", marginBottom: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ flex: 1, maxWidth: "400px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", fontWeight: 600, marginBottom: "0.3rem" }}>
-                    <span>Jaccard Title Similarity Threshold</span>
-                    <span style={{ fontFamily: "var(--font-mono)" }}>&ge; {clusterThreshold}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0.35"
-                    max="0.85"
-                    step="0.05"
-                    value={clusterThreshold}
-                    onChange={(e) => setClusterThreshold(parseFloat(e.target.value))}
-                    style={{ width: "100%", accentColor: "var(--accent-terracotta)" }}
-                  />
-                </div>
-                <div style={{ textAlign: "right", fontFamily: "var(--font-mono)", fontSize: "0.82rem" }}>
-                  Syndication Factor: <strong>{liveClustering?.syndicationRatio || "1.0x"}</strong><br />
-                  <span style={{ color: "var(--text-muted)" }}>{liveClustering?.independentSourceCount || 1} Independent Clusters</span>
-                </div>
-              </div>
-
-              {/* CLUSTER CARDS */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                {liveClustering?.clusters.map((cluster, idx) => (
-                  <div key={idx} style={{ background: "var(--bg-card-subtle)", border: "1px solid var(--border-hairline)", borderRadius: "var(--radius-xs)", padding: "1rem" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
-                      <strong style={{ fontFamily: "var(--font-mono)", fontSize: "0.85rem" }}>
-                        Cluster #{idx + 1} ({cluster.articleCount} articles)
-                      </strong>
-                      <span className={`verdict-pill-badge ${cluster.isEchoChamber ? 'danger' : 'safe'}`} style={{ fontSize: "0.7rem", padding: "0.15rem 0.5rem" }}>
-                        {cluster.badge}
-                      </span>
-                    </div>
-                    <div style={{ fontWeight: 600, fontSize: "0.92rem", marginBottom: "0.4rem" }}>
-                      "{cluster.primaryHeadline}"
-                    </div>
-                    <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", marginBottom: "0.6rem" }}>
-                      {cluster.domains.map((dom, dIdx) => (
-                        <span key={dIdx} style={{ fontFamily: "var(--font-mono)", fontSize: "0.72rem", background: "#E8E3DA", padding: "0.15rem 0.45rem", borderRadius: "2px" }}>
-                          {dom}
-                        </span>
-                      ))}
-                    </div>
-                    <div style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
-                      Stances: {cluster.stances.supports} supporting, {cluster.stances.refutes} refuting • Avg Reliability: {cluster.averageReliability}%
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* ========================================================
-              VIEW 5: EVIDENCE LIBRARY (TAMPER-EVIDENT VAULT)
-              ======================================================== */}
-          {activeNav === "vault" && (
-            <section className="inspector-panel">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-                <div>
-                  <div className="chart-title">EVIDENCE LIBRARY · CRYPTOGRAPHIC SHA-256 PROOF LEDGER</div>
-                  <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
-                    Immutable hash chain. Each entry cryptographically locks its digest to the previous block.
-                  </p>
-                </div>
-                <div style={{ display: "flex", gap: "0.5rem" }}>
-                  <button type="button" className="btn-black-primary" onClick={handleVerifyLedger}>
-                    🔄 Verify Ledger Integrity
-                  </button>
-                  <button
-                    type="button"
-                    className="preset-btn"
-                    onClick={() => {
-                      if (confirm("Reset the Evidence Vault?")) {
-                        clearVault();
-                        setVaultEntries([]);
-                      }
-                    }}
-                    style={{ color: "var(--accent-terracotta)" }}
-                  >
-                    Reset
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ fontSize: "0.85rem", color: "var(--accent-green)", fontWeight: 600, marginBottom: "1.25rem" }}>
-                Status: {vaultStatus}
-              </div>
-
-              {vaultEntries.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "3rem", color: "var(--text-muted)", background: "var(--bg-card-subtle)", border: "1px dashed var(--border-hairline)", borderRadius: "var(--radius-xs)" }}>
-                  <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🗄️</div>
-                  <h3 style={{ fontSize: "1rem", color: "var(--text-primary)", marginBottom: "0.3rem" }}>Evidence Library is Empty</h3>
-                  <p style={{ fontSize: "0.82rem" }}>Run an audit on the Fact Check desk and click "Lock in Evidence Vault" to create Block #1.</p>
-                </div>
-              ) : (
-                vaultEntries.map((entry, idx) => (
-                  <div key={idx} style={{ background: "var(--bg-card-subtle)", border: "1px solid var(--border-hairline)", borderRadius: "var(--radius-xs)", padding: "1rem", marginBottom: "0.85rem" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", marginBottom: "0.4rem" }}>
-                      <strong style={{ fontFamily: "var(--font-mono)", color: "var(--text-primary)" }}>Block #{idx + 1} — {entry.reportId}</strong>
-                      <span style={{ color: "var(--text-muted)" }}>{entry.timestamp ? entry.timestamp.replace("T", " ").substring(0, 19) : ""}</span>
-                    </div>
-                    <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.7rem", color: "var(--text-dim)", wordBreak: "break-all", marginBottom: "0.5rem" }}>
-                      <strong style={{ color: "var(--text-secondary)" }}>Previous Hash:</strong> {entry.previousHash}<br />
-                      <strong style={{ color: "var(--accent-terracotta)" }}>Block Digest:</strong> {entry.entryHash}
-                    </div>
-                    <p style={{ fontSize: "0.9rem", color: "var(--text-primary)", fontStyle: "italic", marginBottom: "0.5rem" }}>
-                      "{entry.claimText}"
-                    </p>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
-                        Note: {entry.notes || "Recorded in Proof Desk"}
-                      </span>
-                      <button
-                        type="button"
-                        className="preset-btn"
-                        style={{ fontSize: "0.75rem", padding: "0.3rem 0.6rem" }}
-                        onClick={() => setComplaintModalEntry(entry)}
-                      >
-                        📄 Pre-fill Police Complaint Draft
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </section>
-          )}
-
-          {/* ========================================================
-              VIEW 6: MEDIA VERIFICATION (ROTATING SAFE CIRCLE)
-              ======================================================== */}
-          {activeNav === "safecircle" && (
-            <section className="inspector-panel">
-              <div className="chart-title" style={{ marginBottom: "0.4rem" }}>MEDIA VERIFICATION · ROTATING SAFE CIRCLE</div>
-              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "1.5rem" }}>
-                Zero-network family authentication protocol against deepfake voice cloning & emergency imposter scams.
-              </p>
-
-              <div style={{ background: "var(--bg-card-subtle)", border: "1px solid var(--border-hairline)", padding: "2.5rem 1.5rem", borderRadius: "var(--radius-xs)", textAlign: "center", marginBottom: "1.5rem" }}>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "uppercase" }}>
-                  Active 60-Second Authentication Code
-                </span>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: "3rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.08em", margin: "0.75rem 0" }}>
-                  {safeCode.code}
-                </div>
-                <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
-                  Rotates in: <strong>{safeCode.secondsRemaining}s</strong>
-                </div>
-                <div style={{ height: "4px", background: "#E8E3DA", borderRadius: "2px", maxWidth: "200px", margin: "0.75rem auto 0", overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${safeCode.progressPercent}%`, background: safeCode.secondsRemaining <= 10 ? 'var(--accent-terracotta)' : '#111111' }} />
-                </div>
-              </div>
-
-              {/* CALLER TEST */}
-              <div style={{ maxWidth: "500px", margin: "0 auto" }}>
-                <label style={{ display: "block", fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--text-muted)", marginBottom: "0.35rem" }}>
-                  AUTHENTICATE CALLER'S SPOKEN TWO-WORD PHRASE
-                </label>
-                <div style={{ display: "flex", gap: "0.5rem" }}>
-                  <input
-                    type="text"
-                    value={verifyInput}
-                    onChange={(e) => setVerifyInput(e.target.value)}
-                    placeholder="e.g. BADGER-TAROT"
-                    style={{ flex: 1, padding: "0.5rem", border: "1px solid var(--border-hairline)", borderRadius: "var(--radius-xs)", fontFamily: "var(--font-mono)", fontSize: "0.95rem", textTransform: "uppercase" }}
-                  />
-                  <button
-                    type="button"
-                    className="btn-black-primary"
-                    onClick={async () => {
-                      const res = await verifySafeCircleSpokenCode(verifyInput, wordlist, familySecret);
-                      setVerifyResult(res);
-                    }}
-                  >
-                    Authenticate
-                  </button>
-                </div>
-
-                {verifyResult && (
-                  <div style={{ marginTop: "0.75rem", padding: "0.75rem", borderRadius: "var(--radius-xs)", background: verifyResult.isValid ? "var(--accent-green-bg)" : "var(--accent-terracotta-bg)", border: `1px solid ${verifyResult.isValid ? 'rgba(30,130,76,0.3)' : 'var(--accent-terracotta-border)'}`, fontSize: "0.85rem", color: verifyResult.isValid ? "var(--accent-green)" : "var(--accent-terracotta)" }}>
-                    {verifyResult.isValid ? `✅ CALLER VERIFIED: ${verifyResult.matchedCode} (${verifyResult.timeDeltaDescription})` : `🚨 ALERT: ${verifyResult.reason}`}
+                      </thead>
+                      <tbody className="divide-y divide-[#1D1F25]">
+                        {reports.slice(0, 10).map((r) => {
+                          const isManip = (r.verdict || "").toLowerCase().includes("manipulated");
+                          const isNoSigns = (r.verdict || "").toLowerCase().includes("no signs");
+                          return (
+                            <tr key={r.reportId} className="hover:bg-[#181A20] transition-colors">
+                              <td className="py-3 px-3 font-mono text-gray-400 whitespace-nowrap">
+                                {r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "Today"}
+                              </td>
+                              <td className="py-3 px-3 font-medium text-gray-200 max-w-xs truncate">
+                                {r.claimText || r.inputText || "Verification target"}
+                              </td>
+                              <td className="py-3 px-3">
+                                <span
+                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                                    isManip
+                                      ? "bg-red-950/50 text-red-400 border border-red-800/40"
+                                      : isNoSigns
+                                      ? "bg-emerald-950/50 text-emerald-400 border border-emerald-800/40"
+                                      : "bg-amber-950/50 text-amber-400 border border-amber-800/40"
+                                  }`}
+                                >
+                                  {r.verdict || "Inconclusive"}
+                                </span>
+                              </td>
+                              <td className="py-3 px-3 font-mono font-bold text-gray-100">
+                                {r.score ?? 50}
+                                {r.confidence?.margin ? (
+                                  <span className="text-[10px] text-gray-500 font-normal ml-1">
+                                    ±{r.confidence.margin}
+                                  </span>
+                                ) : null}
+                              </td>
+                              <td className="py-3 px-3 font-mono text-gray-400">
+                                {r.category || "General"}
+                              </td>
+                              <td className="py-3 px-3 text-right">
+                                <button
+                                  type="button"
+                                  onClick={() => router.push(`/report/${encodeURIComponent(r.reportId)}`)}
+                                  className="px-2.5 py-1 text-xs text-[#D95D39] hover:text-white hover:bg-[#D95D39] rounded-lg border border-[#D95D39]/40 transition-all font-medium"
+                                >
+                                  Inspect
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>
-            </section>
+            </div>
           )}
 
           {/* ========================================================
-              VIEW 7: SAVED CASES (CIRCULATING HOAXES FEED)
+              VIEW 2: HISTORY (WITH SAVED FILTER)
               ======================================================== */}
-          {activeNav === "trending" && (
-            <section className="inspector-panel">
-              <div className="chart-title" style={{ marginBottom: "0.4rem" }}>SAVED CASES · CIRCULATING HOAXES FEED</div>
-              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "1.5rem" }}>
-                Monitored viral hoaxes, synthesized voice notes, and phishing campaigns actively circulating.
-              </p>
+          {activeNav === "history" && (
+            <div className="space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold tracking-tight text-white">
+                    Verification History
+                  </h2>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Audit reports stored in your on-device cryptographic ledger.
+                  </p>
+                </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1rem" }}>
-                {trendingHoaxes.map((item, idx) => (
-                  <div key={idx} style={{ background: "var(--bg-card-subtle)", border: "1px solid var(--border-hairline)", padding: "1rem", borderRadius: "var(--radius-xs)" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--accent-terracotta)", marginBottom: "0.4rem" }}>
-                      <span>Spread: {item.spreadScore}/100</span>
-                      <span>{item.type}</span>
+                {/* Filter Controls */}
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setHistoryFilterSaved(!historyFilterSaved)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl border transition-all ${
+                      historyFilterSaved
+                        ? "bg-amber-500/15 border-amber-500/50 text-amber-300"
+                        : "bg-[#18191E] border-[#2B2D36] text-gray-400 hover:text-gray-200"
+                    }`}
+                  >
+                    <Bookmark className="w-3.5 h-3.5" />
+                    <span>Saved Cases Only</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(true)}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-white bg-[#D95D39] hover:bg-[#e46944] rounded-xl shadow-md transition-all"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>New check</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* History Table */}
+              <div className="p-6 bg-[#141519] border border-[#24262E] rounded-2xl">
+                {filteredReports.length === 0 ? (
+                  <div className="py-12 text-center text-xs text-gray-500">
+                    {historyFilterSaved ? "No saved reports found." : "No verification history found."}
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead>
+                        <tr className="border-b border-[#22242C] text-gray-500 font-mono uppercase tracking-wider">
+                          <th className="py-3 px-3">Date</th>
+                          <th className="py-3 px-3">Claim</th>
+                          <th className="py-3 px-3">Verdict</th>
+                          <th className="py-3 px-3">Score</th>
+                          <th className="py-3 px-3">Audit ID</th>
+                          <th className="py-3 px-3 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#1D1F25]">
+                        {filteredReports.map((r) => (
+                          <tr key={r.reportId} className="hover:bg-[#181A20] transition-colors">
+                            <td className="py-3 px-3 font-mono text-gray-400 whitespace-nowrap">
+                              {r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "Today"}
+                            </td>
+                            <td className="py-3 px-3 font-medium text-gray-200 max-w-sm truncate">
+                              {r.claimText || r.inputText}
+                            </td>
+                            <td className="py-3 px-3">
+                              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#1C1E24] border border-[#2D303A] text-gray-300">
+                                {r.verdict || "Inconclusive"}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3 font-mono font-bold text-gray-100">
+                              {r.score ?? 50}
+                            </td>
+                            <td className="py-3 px-3 font-mono text-[10px] text-gray-500">
+                              {r.reportId}
+                            </td>
+                            <td className="py-3 px-3 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    toggleSaveReport(r.reportId);
+                                    refreshLocalData();
+                                  }}
+                                  className={`p-1.5 rounded-lg border transition-all ${
+                                    r.isSaved
+                                      ? "bg-amber-500/20 text-amber-400 border-amber-500/40"
+                                      : "text-gray-400 hover:text-white border-transparent hover:bg-[#252830]"
+                                  }`}
+                                  title={r.isSaved ? "Saved" : "Save case"}
+                                >
+                                  <Bookmark className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => router.push(`/report/${encodeURIComponent(r.reportId)}`)}
+                                  className="px-2.5 py-1 text-xs text-[#D95D39] hover:bg-[#D95D39] hover:text-white rounded-lg border border-[#D95D39]/40 transition-all font-medium"
+                                >
+                                  Inspect
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================
+              VIEW 3: EVIDENCE VAULT
+              ======================================================== */}
+          {activeNav === "vault" && (
+            <div className="space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold tracking-tight text-white">
+                    Evidence Vault
+                  </h2>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Cryptographically chained ledger (SHA-256) stored on this device.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const res = await verifyVaultIntegrity();
+                      if (res.isValid) {
+                        alert(`✅ Cryptographic Ledger Verified! All ${res.totalEntries} entries intact.`);
+                      } else {
+                        alert(`❌ Ledger Alteration Alert: ${res.errorReason}`);
+                      }
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-emerald-400 bg-emerald-950/30 border border-emerald-800/40 rounded-xl hover:bg-emerald-950/50 transition-colors"
+                  >
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Verify Ledger Hash Chain</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6 bg-[#141519] border border-[#24262E] rounded-2xl">
+                {vaultEntries.length === 0 ? (
+                  <div className="py-12 text-center text-xs text-gray-500">
+                    No evidence blocks added to the cryptographic vault yet. Open any report and click "Add to Evidence Vault".
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {vaultEntries.map((entry, idx) => (
+                      <div
+                        key={idx}
+                        className="p-4 bg-[#181A20] border border-[#292C35] rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs text-[#D95D39] font-bold">
+                              Block #{entry.index}
+                            </span>
+                            <span className="text-xs text-gray-400">•</span>
+                            <span className="text-xs font-medium text-white">{entry.claimText}</span>
+                          </div>
+                          <div className="font-mono text-[10px] text-gray-500 truncate max-w-md">
+                            Hash: {entry.entryHash}
+                          </div>
+                          <div className="font-mono text-[10px] text-gray-500 truncate max-w-md">
+                            Prev: {entry.previousHash}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#21232B] text-gray-300">
+                            Score: {entry.score}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => router.push(`/report/${encodeURIComponent(entry.reportId)}`)}
+                            className="px-2.5 py-1 text-xs text-[#D95D39] hover:underline"
+                          >
+                            Inspect
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================
+              VIEW 4: SAFE CIRCLE
+              ======================================================== */}
+          {activeNav === "safecircle" && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight text-white">Safe Circle</h2>
+                <p className="text-xs text-gray-400 mt-1">
+                  Rotating HMAC authentication code to defend against AI voice cloning and impersonation scams.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-6 bg-[#141519] border border-[#24262E] rounded-2xl flex flex-col justify-between">
+                  <div>
+                    <div className="text-xs font-mono uppercase text-gray-400 mb-2">
+                      Current Rotating Authentication Word
                     </div>
-                    <h4 style={{ fontSize: "0.95rem", fontWeight: 600, marginBottom: "0.4rem" }}>{item.title}</h4>
-                    <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "0.75rem" }}>{item.summary}</p>
+                    <div className="p-6 bg-[#101114] border border-[#292C36] rounded-xl text-center">
+                      <div className="text-3xl font-mono font-bold tracking-widest text-[#D95D39]">
+                        {safeCode.code}
+                      </div>
+                      <div className="mt-3 flex items-center justify-center gap-2 text-xs font-mono text-gray-400">
+                        <RefreshCw className="w-3 h-3 animate-spin" />
+                        <span>Rotates in {safeCode.secondsRemaining}s</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 text-xs text-gray-500">
+                    Share this secret pre-shared key with family members or team. If an urgent call arrives requesting money or data, ask for this code.
+                  </div>
+                </div>
+
+                {/* Code Verifier */}
+                <div className="p-6 bg-[#141519] border border-[#24262E] rounded-2xl space-y-4">
+                  <h3 className="text-sm font-semibold text-white">Test Spoken Word Authenticity</h3>
+                  <p className="text-xs text-gray-400">
+                    Verify whether a word spoken over the phone matches the cryptographic window.
+                  </p>
+
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      value={verifyInput}
+                      onChange={(e) => setVerifyInput(e.target.value)}
+                      placeholder="Enter word heard on call..."
+                      className="w-full px-4 py-2.5 text-sm bg-[#16181D] border border-[#2A2D35] rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:border-[#D95D39]"
+                    />
                     <button
                       type="button"
-                      className="preset-btn"
-                      style={{ fontSize: "0.75rem" }}
-                      onClick={() => {
-                        setActiveNav("factcheck");
-                        executeAudit(item.title, "assets/demo_fake_news.jpg");
+                      onClick={async () => {
+                        const res = await verifySafeCircleSpokenCode(verifyInput, wordlist, familySecret);
+                        setVerifyResult(res);
                       }}
+                      className="w-full py-2 text-xs font-semibold text-white bg-[#22252C] hover:bg-[#2C3039] rounded-xl border border-[#343844] transition-colors"
                     >
-                      Audit on Proof Desk &rarr;
+                      Authenticate Code
                     </button>
                   </div>
-                ))}
+
+                  {verifyResult && (
+                    <div
+                      className={`p-3 rounded-xl border text-xs font-medium ${
+                        verifyResult.isValid
+                          ? "bg-emerald-950/40 border-emerald-800/60 text-emerald-300"
+                          : "bg-red-950/40 border-red-800/60 text-red-300"
+                      }`}
+                    >
+                      {verifyResult.isValid
+                        ? "✅ Verified Authentic! Word matches the current time window."
+                        : `❌ Invalid Word! ${verifyResult.errorReason || "Code does not match."}`}
+                    </div>
+                  )}
+                </div>
               </div>
-            </section>
+            </div>
           )}
 
           {/* ========================================================
-              VIEW 8: REPORTS CENTER
+              VIEW 5: SOURCE EXPLORER
               ======================================================== */}
-          {activeNav === "reports" && (
-            <section className="inspector-panel">
-              <div className="chart-title" style={{ marginBottom: "0.4rem" }}>PUBLISHED REPORTS · AUDIT VAULT</div>
-              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "1.5rem" }}>
-                Download vector PDF reports and 1200x630 context cards for active verifications.
-              </p>
+          {activeNav === "clustering" && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight text-white">
+                  Source Explorer
+                </h2>
+                <p className="text-xs text-gray-400 mt-1">
+                  Inspect domain authority, institutional reliability ratings, and open news syndication.
+                </p>
+              </div>
 
-              {activeReport ? (
-                <div style={{ background: "var(--bg-card-subtle)", border: "1px solid var(--border-hairline)", padding: "1.5rem", borderRadius: "var(--radius-xs)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-                    <strong style={{ fontFamily: "var(--font-mono)", fontSize: "1rem" }}>{activeReport.reportId}</strong>
-                    <span className={`verdict-pill-badge ${activeReport.verdict === 'Likely manipulated' ? 'danger' : activeReport.verdict === 'Inconclusive' ? 'warning' : 'safe'}`}>
-                      {activeReport.verdict} ({activeReport.score}/100)
-                    </span>
+              <div className="p-6 bg-[#141519] border border-[#24262E] rounded-2xl space-y-4">
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    value={domainQuery}
+                    onChange={(e) => setDomainQuery(e.target.value)}
+                    placeholder="Enter domain (e.g. reuters.com, bbc.com, pib.gov.in)..."
+                    className="flex-1 px-4 py-2.5 text-sm bg-[#16181D] border border-[#2A2D35] rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:border-[#D95D39]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fetchDomainProfile(domainQuery)}
+                    className="px-5 py-2.5 text-xs font-semibold text-white bg-[#D95D39] hover:bg-[#e46944] rounded-xl transition-all"
+                  >
+                    Lookup Domain
+                  </button>
+                </div>
+
+                {domainProfile && (
+                  <div className="p-5 bg-[#171920] border border-[#292C36] rounded-xl space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-base font-bold text-white font-mono">
+                        {domainProfile.domain}
+                      </span>
+                      <span className="px-2.5 py-0.5 text-xs font-mono bg-emerald-950/40 text-emerald-400 border border-emerald-800/40 rounded-full">
+                        Reliability: {domainProfile.reliability}/1.0
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2 text-xs">
+                      <div>
+                        <span className="text-gray-500 block">Organization</span>
+                        <span className="text-gray-200 font-medium">{domainProfile.name}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 block">Type</span>
+                        <span className="text-gray-200 font-medium">{domainProfile.type}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 block">Leaning</span>
+                        <span className="text-gray-200 font-medium">{domainProfile.leaning}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 block">Jurisdiction</span>
+                        <span className="text-gray-200 font-medium">{domainProfile.country}</span>
+                      </div>
+                    </div>
                   </div>
-                  <p style={{ fontStyle: "italic", fontSize: "0.92rem", marginBottom: "1rem" }}>
-                    "{activeReport.claimText}"
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================
+              VIEW 6: SETTINGS
+              ======================================================== */}
+          {activeNav === "settings" && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight text-white">Settings</h2>
+                <p className="text-xs text-gray-400 mt-1">
+                  Configure local device preferences and cryptographic ledger storage.
+                </p>
+              </div>
+
+              <div className="p-6 bg-[#141519] border border-[#24262E] rounded-2xl space-y-6">
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+                    Analyst Display Name
+                  </label>
+                  <div className="flex gap-3 max-w-md">
+                    <input
+                      type="text"
+                      value={tempName}
+                      onChange={(e) => setTempName(e.target.value)}
+                      className="flex-1 px-4 py-2 text-sm bg-[#16181D] border border-[#2A2D35] rounded-xl text-white focus:outline-none focus:border-[#D95D39]"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSaveName}
+                      className="px-4 py-2 text-xs font-semibold text-white bg-[#D95D39] hover:bg-[#e46944] rounded-xl transition-all"
+                    >
+                      Save Name
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-[#22242B]">
+                  <h4 className="text-sm font-semibold text-white mb-1">Local Storage Controls</h4>
+                  <p className="text-xs text-gray-400 mb-3">
+                    Clear all locally saved verification reports and evidence vault entries on this device.
                   </p>
-                  <div style={{ display: "flex", gap: "0.75rem" }}>
-                    <button type="button" className="btn-black-primary" onClick={handleExportPDF}>
-                      📄 Download Official PDF Report
-                    </button>
-                    <button type="button" className="preset-btn" onClick={handleDownloadPNG}>
-                      🖼️ Download 1200x630 Context Card (PNG)
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm("Are you sure you want to clear all locally saved reports and vault records?")) {
+                        localStorage.removeItem("crosscheck_reports_v1");
+                        localStorage.removeItem("trustlens_evidence_vault_v1");
+                        refreshLocalData();
+                        alert("Storage cleared.");
+                      }
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-red-400 hover:text-white bg-red-950/20 hover:bg-red-900/40 border border-red-900/40 rounded-xl transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Clear Local Storage</span>
+                  </button>
                 </div>
-              ) : (
-                <div style={{ textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>
-                  Run a verification on the Fact Check desk to generate exportable reports.
-                </div>
-              )}
-            </section>
+              </div>
+            </div>
           )}
 
           {/* ========================================================
-              VIEW 9: ACTION PATH & STATUTORY HELPLINES
+              VIEW 7: HELP CENTER (1930 / STATUTORY PROTOCOL)
               ======================================================== */}
-          {activeNav === "actionpath" && (
-            <section className="inspector-panel">
-              <div className="chart-title" style={{ marginBottom: "0.4rem" }}>STATUTORY CYBERCRIME ACTION PATH</div>
-              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "1.5rem" }}>
-                Direct helpline hotlines and statutory response protocols under the IT Act 2000 & IT Rules 2021.
-              </p>
+          {activeNav === "help" && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight text-white">Help Center & Statutory Helplines</h2>
+                <p className="text-xs text-gray-400 mt-1">
+                  Emergency incident escalation, 1930 National Cyber Crime Reporting Portal & statutory legal protocols.
+                </p>
+              </div>
 
-              {/* HELPLINE CARDS */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "0.75rem", marginBottom: "1.5rem" }}>
-                {EMERGENCY_HELPLINES.map((h, i) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-6 bg-[#1A1414] border border-red-900/40 rounded-2xl space-y-4">
+                  <div className="flex items-center gap-2 text-red-400 font-bold text-sm">
+                    <AlertTriangle className="w-4 h-4" />
+                    <span>National Cybercrime Helpline: 1930</span>
+                  </div>
+                  <p className="text-xs text-gray-300">
+                    If you are facing financial fraud, immediate UPI freezing, or extortion, dial 1930 immediately within the golden hour to freeze fraudulent recipient accounts.
+                  </p>
                   <a
-                    key={i}
-                    href={h.link}
+                    href="https://cybercrime.gov.in"
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ textDecoration: "none", color: "inherit", background: "var(--bg-card-subtle)", border: "1px solid var(--border-hairline)", padding: "0.8rem", borderRadius: "var(--radius-xs)" }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-red-800 hover:bg-red-700 rounded-xl transition-colors"
                   >
-                    <div style={{ fontFamily: "var(--font-mono)", fontSize: "1.2rem", fontWeight: 700, color: "var(--accent-terracotta)" }}>
-                      {h.number}
-                    </div>
-                    <div style={{ fontWeight: 600, fontSize: "0.85rem", marginTop: "0.2rem" }}>{h.name}</div>
-                    <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>{h.description}</div>
+                    <span>Visit cybercrime.gov.in</span>
+                    <ExternalLink className="w-3 h-3" />
                   </a>
-                ))}
-              </div>
-
-              {/* PROTOCOL SELECTOR */}
-              <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
-                <button type="button" className={`preset-btn ${activeProtocolKey === 'scam' ? 'active' : ''}`} onClick={() => setActiveProtocolKey('scam')}>
-                  Financial Scam (1930)
-                </button>
-                <button type="button" className={`preset-btn ${activeProtocolKey === 'morphed_image' ? 'active' : ''}`} onClick={() => setActiveProtocolKey('morphed_image')}>
-                  Morphed Media (72h Takedown)
-                </button>
-                <button type="button" className={`preset-btn ${activeProtocolKey === 'misinformation' ? 'active' : ''}`} onClick={() => setActiveProtocolKey('misinformation')}>
-                  Viral Misinformation
-                </button>
-              </div>
-
-              {/* CHECKLIST */}
-              {getActionProtocol(activeProtocolKey).steps.map((st, i) => (
-                <div key={i} style={{ borderBottom: "1px solid var(--border-hairline)", padding: "0.75rem 0", display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
-                  <input
-                    type="checkbox"
-                    checked={!!checkedSteps[st.id]}
-                    onChange={(e) => setCheckedSteps(prev => ({ ...prev, [st.id]: e.target.checked }))}
-                    style={{ marginTop: "0.25rem", accentColor: "var(--accent-terracotta)", cursor: "pointer" }}
-                  />
-                  <div>
-                    <strong style={{ fontSize: "0.9rem" }}>Step {i + 1}: {st.title}</strong>
-                    <p style={{ color: "var(--text-secondary)", fontSize: "0.82rem", marginTop: "0.2rem" }}>{st.desc}</p>
-                    {st.primaryAction && (
-                      <a href={st.primaryAction.link} target="_blank" rel="noopener noreferrer" className="preset-btn" style={{ display: "inline-block", marginTop: "0.4rem", textDecoration: "none", fontSize: "0.75rem" }}>
-                        {st.primaryAction.label} &rarr;
-                      </a>
-                    )}
-                  </div>
                 </div>
-              ))}
-            </section>
+
+                <div className="p-6 bg-[#141519] border border-[#24262E] rounded-2xl space-y-3">
+                  <h4 className="text-sm font-semibold text-white">Evidence Preservation Tips</h4>
+                  <ul className="text-xs text-gray-400 space-y-2 list-disc pl-4">
+                    <li>Export your verified PDF report and lock the record in the Evidence Vault.</li>
+                    <li>Preserve original uncompressed screenshots, transaction IDs, and URL parameters.</li>
+                    <li>Do not delete chat logs or message timestamps before lodging the official complaint.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           )}
+        </main>
+      </div>
 
-        </div>
-      </main>
-
-      {/* POLICE COMPLAINT DRAFT MODAL */}
-      {complaintModalEntry && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "1rem" }}>
-          <div style={{ background: "#FFFFFF", maxWidth: "700px", width: "100%", maxHeight: "85vh", display: "flex", flexDirection: "column", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-hairline)" }}>
-            <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid var(--border-hairline)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <strong style={{ fontFamily: "var(--font-serif)", fontSize: "1.1rem" }}>Formal Cybercrime Complaint Draft (1930 / cybercrime.gov.in)</strong>
-              <button type="button" onClick={() => setComplaintModalEntry(null)} style={{ background: "none", border: "none", fontSize: "1.2rem", cursor: "pointer" }}>&times;</button>
-            </div>
-            <div style={{ padding: "1.25rem", overflowY: "auto", flex: 1 }}>
-              <pre style={{ fontFamily: "var(--font-mono)", fontSize: "0.75rem", whiteSpace: "pre-wrap", background: "var(--bg-card-subtle)", padding: "1rem", borderRadius: "var(--radius-xs)", lineHeight: 1.5 }}>
-                {generateComplaintDraft(complaintModalEntry)}
-              </pre>
-            </div>
-            <div style={{ padding: "0.75rem 1.25rem", borderTop: "1px solid var(--border-hairline)", display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
-              <button
-                type="button"
-                className="btn-black-primary"
-                onClick={() => {
-                  navigator.clipboard.writeText(generateComplaintDraft(complaintModalEntry));
-                  alert("Complaint draft copied to clipboard!");
-                }}
-              >
-                Copy to Clipboard
-              </button>
-              <button
-                type="button"
-                className="preset-btn"
-                onClick={() => window.open("https://cybercrime.gov.in", "_blank")}
-              >
-                Open cybercrime.gov.in &rarr;
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ========================================================
+          VERIFICATION MODAL (ACCESSIBLE, TABS: TEXT | LINK | FILE)
+          ======================================================== */}
+      <VerificationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onComplete={handleVerificationComplete}
+      />
     </div>
   );
 }
