@@ -365,7 +365,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-md animate-in fade-in-0 duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in-0 duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) handleClose();
       }}
@@ -375,26 +375,26 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
     >
       <div
         ref={modalRef}
-        className="relative w-full max-w-xl backdrop-blur-2xl bg-white/90 dark:bg-[#11141D]/90 border border-white/80 dark:border-white/10 rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.35)] text-gray-900 dark:text-gray-100 overflow-hidden"
+        className="relative w-full max-w-xl bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/20 dark:border-[#2D2B27] rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.35)] text-[#181818] dark:text-[#F6F3EB] overflow-hidden"
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/40 dark:border-white/10 bg-white/30 dark:bg-white/[0.02]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#181818]/15 dark:border-[#2D2B27] bg-[#FAF7F0] dark:bg-[#1E1C19]">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-500/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 border border-blue-400/30 shadow-xs font-bold text-xs">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] border border-[#181818]/20 shadow-xs font-bold text-xs">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
-              <h2 id="modal-title" className="text-base font-bold text-gray-900 dark:text-white tracking-tight">
+              <h2 id="modal-title" className="text-base font-editorial font-bold text-[#181818] dark:text-[#F6F3EB] tracking-tight">
                 New Verification Check
               </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-[#55524B] dark:text-[#A8A29E] font-serif">
                 Multi-source open wire corroboration & cryptographic proof
               </p>
             </div>
           </div>
           <button
             onClick={handleClose}
-            className="p-1.5 rounded-full text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1.5 rounded-full text-[#747068] hover:text-[#181818] dark:hover:text-[#F6F3EB] hover:bg-[#EFECE4] dark:hover:bg-[#252320] transition-colors cursor-pointer"
             title="Close (Esc)"
             aria-label="Close dialog"
           >
@@ -407,17 +407,17 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
           {!isVerifying && (
             <>
               {/* Pill Tab Selector */}
-              <div className="flex p-1 mb-5 backdrop-blur-md bg-white/60 dark:bg-black/25 rounded-full border border-white/70 dark:border-white/10 shadow-xs">
+              <div className="flex p-1 mb-5 bg-[#FAF7F0] dark:bg-[#1E1C19] rounded-full border border-[#181818]/15 dark:border-[#2D2B27] shadow-xs">
                 <button
                   type="button"
                   onClick={() => {
                     setActiveTab("text");
                     setErrorMessage("");
                   }}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-xs font-semibold rounded-full transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-xs font-semibold rounded-full transition-all active:scale-[0.98] ${
                     activeTab === "text"
-                      ? "bg-white dark:bg-[#1F2330] text-gray-900 dark:text-white shadow-sm border border-white/80 dark:border-white/15"
-                      : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                      ? "bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] shadow-sm"
+                      : "text-[#747068] hover:text-[#181818] dark:hover:text-[#F6F3EB]"
                   }`}
                 >
                   <FileText className="w-3.5 h-3.5" />
@@ -429,10 +429,10 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                     setActiveTab("link");
                     setErrorMessage("");
                   }}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-xs font-semibold rounded-full transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-xs font-semibold rounded-full transition-all active:scale-[0.98] ${
                     activeTab === "link"
-                      ? "bg-white dark:bg-[#1F2330] text-gray-900 dark:text-white shadow-sm border border-white/80 dark:border-white/15"
-                      : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                      ? "bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] shadow-sm"
+                      : "text-[#747068] hover:text-[#181818] dark:hover:text-[#F6F3EB]"
                   }`}
                 >
                   <LinkIcon className="w-3.5 h-3.5" />
@@ -444,10 +444,10 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                     setActiveTab("file");
                     setErrorMessage("");
                   }}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-xs font-semibold rounded-full transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-xs font-semibold rounded-full transition-all active:scale-[0.98] ${
                     activeTab === "file"
-                      ? "bg-white dark:bg-[#1F2330] text-gray-900 dark:text-white shadow-sm border border-white/80 dark:border-white/15"
-                      : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                      ? "bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] shadow-sm"
+                      : "text-[#747068] hover:text-[#181818] dark:hover:text-[#F6F3EB]"
                   }`}
                 >
                   <UploadCloud className="w-3.5 h-3.5" />
@@ -458,7 +458,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
               {/* Tab 1: Text Claim */}
               {activeTab === "text" && (
                 <div>
-                  <label className="block mb-2 text-xs font-bold text-gray-700 dark:text-gray-300 tracking-tight">
+                  <label className="block mb-2 text-xs font-mono font-bold text-[#181818] dark:text-[#F6F3EB] uppercase tracking-wider">
                     Enter Claim, Statement, or Viral Transcript
                   </label>
                   <textarea
@@ -470,16 +470,16 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                       if (errorMessage) setErrorMessage("");
                     }}
                     placeholder="Paste circulating headline, statement, WhatsApp forward, or transcript to cross-examine..."
-                    className="w-full px-4 py-3 text-sm text-gray-900 dark:text-white backdrop-blur-md bg-white/60 dark:bg-black/25 border border-white/70 dark:border-white/10 rounded-2xl placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all resize-none shadow-xs"
+                    className="w-full px-4 py-3 text-sm text-[#181818] dark:text-[#F6F3EB] bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] rounded-2xl placeholder:text-[#747068] focus:outline-none focus:ring-1 focus:ring-[#181818] dark:focus:ring-[#F4EFEB] transition-all resize-none shadow-xs font-serif"
                   />
-                  <div className="flex items-center justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between mt-2 text-xs text-[#55524B] dark:text-[#A8A29E]">
+                    <div className="flex items-center gap-2 font-mono">
                       <span>Minimum 5 characters required</span>
                       {textContent.length > 0 && (
                         <button
                           type="button"
                           onClick={() => setTextContent("")}
-                          className="text-gray-400 hover:text-gray-800 dark:hover:text-white flex items-center gap-0.5 text-[11px] underline cursor-pointer"
+                          className="text-[#747068] hover:text-[#181818] dark:hover:text-[#F6F3EB] flex items-center gap-0.5 text-[11px] underline cursor-pointer"
                         >
                           <X className="w-3 h-3" />
                           <span>Clear</span>
@@ -492,14 +492,14 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                           setActiveTab("file");
                           setTimeout(() => fileInputRef.current?.click(), 50);
                         }}
-                        className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white flex items-center gap-1 text-[11px] font-semibold cursor-pointer ml-2"
+                        className="text-[#181818] dark:text-[#F6F3EB] flex items-center gap-1 text-[11px] font-semibold cursor-pointer ml-2 hover:underline"
                         title="Attach an image to this claim"
                       >
-                        <ImageIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                        <ImageIcon className="w-3.5 h-3.5" />
                         <span>Attach Image</span>
                       </button>
                     </div>
-                    <span className={textContent.length < 5 ? "text-gray-400" : "text-emerald-600 dark:text-emerald-400 font-semibold"}>
+                    <span className={`font-mono text-xs ${textContent.length < 5 ? "text-[#747068]" : "text-[#2D6A4F] dark:text-[#74C69D] font-bold"}`}>
                       {textContent.length} characters
                     </span>
                   </div>
@@ -509,7 +509,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
               {/* Tab 2: Link */}
               {activeTab === "link" && (
                 <div>
-                  <label className="block mb-2 text-xs font-bold text-gray-700 dark:text-gray-300 tracking-tight">
+                  <label className="block mb-2 text-xs font-mono font-bold text-[#181818] dark:text-[#F6F3EB] uppercase tracking-wider">
                     Verify Article or Social Media Link
                   </label>
                   <div className="relative">
@@ -521,24 +521,24 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                         if (errorMessage) setErrorMessage("");
                       }}
                       placeholder="https://example.com/breaking-news-report"
-                      className="w-full pl-10 pr-10 py-3 text-sm text-gray-900 dark:text-white backdrop-blur-md bg-white/60 dark:bg-black/25 border border-white/70 dark:border-white/10 rounded-2xl placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all shadow-xs"
+                      className="w-full pl-10 pr-10 py-3 text-sm text-[#181818] dark:text-[#F6F3EB] bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] rounded-2xl placeholder:text-[#747068] focus:outline-none focus:ring-1 focus:ring-[#181818] dark:focus:ring-[#F4EFEB] transition-all shadow-xs font-mono"
                     />
-                    <LinkIcon className="absolute w-4 h-4 text-gray-400 -translate-y-1/2 left-3.5 top-1/2" />
+                    <LinkIcon className="absolute w-4 h-4 text-[#747068] -translate-y-1/2 left-3.5 top-1/2" />
                     {linkUrl.length > 0 && (
                       <button
                         type="button"
                         onClick={() => setLinkUrl("")}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-800 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/10 rounded-full cursor-pointer"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#747068] hover:text-[#181818] dark:hover:text-[#F6F3EB] hover:bg-[#EFECE4] rounded-full cursor-pointer"
                         title="Clear link"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
-                  <div className="flex items-center justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center justify-between mt-2 text-xs text-[#55524B] dark:text-[#A8A29E] font-mono">
                     <span>Supports HTTP / HTTPS web articles</span>
                     {linkUrl && (
-                      <span className={isValidUrl(linkUrl.trim()) ? "text-emerald-600 dark:text-emerald-400 font-semibold" : "text-amber-600 dark:text-amber-400 font-semibold"}>
+                      <span className={isValidUrl(linkUrl.trim()) ? "text-[#2D6A4F] dark:text-[#74C69D] font-bold" : "text-[#C84630] font-bold"}>
                         {isValidUrl(linkUrl.trim()) ? "Valid URL format" : "Enter a valid http:// or https:// URL"}
                       </span>
                     )}
@@ -549,7 +549,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
               {/* Tab 3: File Upload */}
               {activeTab === "file" && (
                 <div>
-                  <label className="block mb-2 text-xs font-bold text-gray-700 dark:text-gray-300 tracking-tight">
+                  <label className="block mb-2 text-xs font-mono font-bold text-[#181818] dark:text-[#F6F3EB] uppercase tracking-wider">
                     Upload Media or Report File
                   </label>
 
@@ -558,7 +558,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                       onDragOver={handleDragOver}
                       onDrop={handleDrop}
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-white/80 dark:border-white/15 hover:border-blue-500/50 backdrop-blur-md bg-white/40 dark:bg-white/[0.03] hover:bg-white/60 dark:hover:bg-white/[0.06] rounded-2xl cursor-pointer transition-all group shadow-xs"
+                      className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-[#181818]/20 dark:border-[#2D2B27] hover:border-[#181818] dark:hover:border-[#F4EFEB] bg-[#FAF7F0] dark:bg-[#1E1C19] hover:bg-[#EFECE4] dark:hover:bg-[#252320] rounded-2xl cursor-pointer transition-all group shadow-xs"
                     >
                       <input
                         ref={fileInputRef}
@@ -571,22 +571,22 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                           }
                         }}
                       />
-                      <div className="flex items-center justify-center w-12 h-12 mb-3 rounded-full bg-blue-500/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 border border-blue-400/30 group-hover:scale-105 transition-all shadow-xs">
+                      <div className="flex items-center justify-center w-12 h-12 mb-3 rounded-full bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] border border-[#181818]/20 group-hover:scale-105 transition-all shadow-xs">
                         <UploadCloud className="w-6 h-6" />
                       </div>
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white text-center">
+                      <p className="text-sm font-semibold text-[#181818] dark:text-[#F6F3EB] text-center font-editorial">
                         Drag and drop your file here, or{" "}
-                        <span className="text-blue-600 dark:text-blue-400 underline underline-offset-2">browse</span>
+                        <span className="underline underline-offset-2 font-bold">browse</span>
                       </p>
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-center">
+                      <p className="mt-1 text-xs text-[#747068] text-center font-mono">
                         Supports PDF and Images (JPG, PNG, WEBP) up to 15MB. Or paste directly (Ctrl+V).
                       </p>
                     </div>
                   ) : (
-                    <div className="p-4 backdrop-blur-md bg-white/60 dark:bg-[#131620]/50 border border-white/70 dark:border-white/10 rounded-2xl flex items-center justify-between gap-4 shadow-xs">
+                    <div className="p-4 bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] rounded-2xl flex items-center justify-between gap-4 shadow-xs">
                       <div className="flex items-center gap-3 overflow-hidden">
                         {filePreviewUrl ? (
-                          <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-800 flex-shrink-0 border border-white/80 dark:border-white/10">
+                          <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-white dark:bg-[#141312] flex-shrink-0 border border-[#181818]/20">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={filePreviewUrl}
@@ -595,15 +595,15 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                             />
                           </div>
                         ) : (
-                          <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 flex-shrink-0 border border-white/80 dark:border-white/10">
+                          <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-[#FCFAF6] dark:bg-[#141312] text-[#181818] dark:text-[#F6F3EB] flex-shrink-0 border border-[#181818]/20">
                             <FileIcon className="w-6 h-6" />
                           </div>
                         )}
                         <div className="overflow-hidden">
-                          <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
+                          <p className="text-sm font-bold text-[#181818] dark:text-[#F6F3EB] truncate font-mono">
                             {selectedFile.name}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                          <p className="text-xs text-[#747068] font-mono">
                             {formatFileSize(selectedFile.size)} • {selectedFile.type || "Document"}
                           </p>
                         </div>
@@ -612,7 +612,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                       <button
                         type="button"
                         onClick={removeSelectedFile}
-                        className="p-1.5 rounded-full text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/10 transition-colors"
+                        className="p-1.5 rounded-full text-[#747068] hover:text-[#181818] dark:hover:text-[#F6F3EB] hover:bg-[#EFECE4] transition-colors"
                         title="Remove file"
                       >
                         <X className="w-4 h-4" />
@@ -622,7 +622,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
 
                   {/* Context / Question for Media */}
                   <div className="mt-3.5">
-                    <label className="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 tracking-tight">
+                    <label className="block mb-1.5 text-xs font-mono font-bold text-[#181818] dark:text-[#F6F3EB] uppercase tracking-wider">
                       Specific Question or Claim (Optional)
                     </label>
                     <input
@@ -630,16 +630,16 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                       value={fileContext}
                       onChange={(e) => setFileContext(e.target.value)}
                       placeholder="e.g. 'is this person dead', 'did this happen?'"
-                      className="w-full px-3.5 py-2.5 text-xs sm:text-sm text-gray-900 dark:text-white backdrop-blur-md bg-white/60 dark:bg-black/25 border border-white/70 dark:border-white/10 rounded-xl placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all shadow-xs"
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-sm text-[#181818] dark:text-[#F6F3EB] bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] rounded-xl placeholder:text-[#747068] focus:outline-none focus:ring-1 focus:ring-[#181818] dark:focus:ring-[#F4EFEB] transition-all shadow-xs font-serif"
                     />
-                    <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
+                    <p className="mt-1 text-[11px] text-[#747068] font-serif">
                       If asking about a person, the AI identifies who they are and cross-examines news wires and fact-check records.
                     </p>
                   </div>
 
                   {/* Mandatory Note */}
-                  <p className="mt-2.5 text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1.5 font-medium">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                  <p className="mt-2.5 text-xs text-[#2D6A4F] dark:text-[#74C69D] flex items-center gap-1.5 font-medium font-mono">
+                    <ShieldCheck className="w-4 h-4 text-[#2D6A4F] dark:text-[#74C69D] flex-shrink-0" />
                     <span>Images are analysed on your device.</span>
                   </p>
                 </div>
@@ -647,8 +647,8 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
 
               {/* Error Alert */}
               {errorMessage && (
-                <div className="flex items-start gap-2 p-3 mt-4 text-xs font-semibold text-red-700 dark:text-red-300 backdrop-blur-md bg-red-500/10 border border-red-500/20 rounded-xl">
-                  <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                <div className="flex items-start gap-2 p-3 mt-4 text-xs font-semibold text-[#78281F] dark:text-[#FCDFD7] bg-[#FDF1EE] dark:bg-[#2B1B19] border border-[#C84630]/30 rounded-xl font-mono">
+                  <AlertCircle className="w-4 h-4 text-[#C84630] flex-shrink-0 mt-0.5" />
                   <span>{errorMessage}</span>
                 </div>
               )}
@@ -660,20 +660,20 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
             <div className="py-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 text-blue-600 dark:text-blue-400 animate-spin" />
-                  <span className="text-sm font-bold text-gray-900 dark:text-white">
+                  <Loader2 className="w-4 h-4 text-[#181818] dark:text-[#F6F3EB] animate-spin" />
+                  <span className="text-sm font-editorial font-bold text-[#181818] dark:text-[#F6F3EB]">
                     Cross-examining open evidence wire...
                   </span>
                 </div>
-                <span className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400">
+                <span className="text-xs font-mono font-bold text-[#181818] dark:text-[#F6F3EB]">
                   {progressPct}%
                 </span>
               </div>
 
               {/* Progress Bar */}
-              <div className="w-full h-2 mb-6 overflow-hidden rounded-full backdrop-blur-md bg-white/50 dark:bg-black/30 border border-white/60 dark:border-white/10">
+              <div className="w-full h-2 mb-6 overflow-hidden rounded-full bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/15 dark:border-[#2D2B27]">
                 <div
-                  className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full transition-all duration-300 ease-out"
+                  className="h-full bg-[#181818] dark:bg-[#F4EFEB] rounded-full transition-all duration-300 ease-out"
                   style={{ width: `${Math.max(5, progressPct)}%` }}
                 />
               </div>
@@ -683,14 +683,14 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                 <div
                   className={`flex items-center gap-3 p-3 rounded-2xl border text-xs font-medium transition-all ${
                     progressPct >= 10
-                      ? "backdrop-blur-md bg-emerald-500/15 dark:bg-emerald-400/10 border-emerald-400/40 text-emerald-950 dark:text-emerald-200 shadow-xs"
-                      : "backdrop-blur-md bg-white/40 dark:bg-white/[0.03] border-white/60 dark:border-white/10 text-gray-400"
+                      ? "bg-[#EDF7F1] dark:bg-[#1B2820] border-[#2D6A4F]/40 text-[#1B4332] dark:text-[#D8F3DC] shadow-xs"
+                      : "bg-[#FAF7F0] dark:bg-[#1E1C19] border-[#181818]/10 dark:border-[#2D2B27] text-[#747068]"
                   }`}
                 >
                   {progressPct >= 25 ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-[#2D6A4F] dark:text-[#74C69D] flex-shrink-0" />
                   ) : (
-                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] font-bold">
+                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] font-bold font-mono">
                       1
                     </div>
                   )}
@@ -700,14 +700,14 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                 <div
                   className={`flex items-center gap-3 p-3 rounded-2xl border text-xs font-medium transition-all ${
                     progressPct >= 25
-                      ? "backdrop-blur-md bg-emerald-500/15 dark:bg-emerald-400/10 border-emerald-400/40 text-emerald-950 dark:text-emerald-200 shadow-xs"
-                      : "backdrop-blur-md bg-white/40 dark:bg-white/[0.03] border-white/60 dark:border-white/10 text-gray-400"
+                      ? "bg-[#EDF7F1] dark:bg-[#1B2820] border-[#2D6A4F]/40 text-[#1B4332] dark:text-[#D8F3DC] shadow-xs"
+                      : "bg-[#FAF7F0] dark:bg-[#1E1C19] border-[#181818]/10 dark:border-[#2D2B27] text-[#747068]"
                   }`}
                 >
                   {progressPct >= 60 ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-[#2D6A4F] dark:text-[#74C69D] flex-shrink-0" />
                   ) : (
-                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] font-bold">
+                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] font-bold font-mono">
                       2
                     </div>
                   )}
@@ -717,14 +717,14 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                 <div
                   className={`flex items-center gap-3 p-3 rounded-2xl border text-xs font-medium transition-all ${
                     progressPct >= 60
-                      ? "backdrop-blur-md bg-emerald-500/15 dark:bg-emerald-400/10 border-emerald-400/40 text-emerald-950 dark:text-emerald-200 shadow-xs"
-                      : "backdrop-blur-md bg-white/40 dark:bg-white/[0.03] border-white/60 dark:border-white/10 text-gray-400"
+                      ? "bg-[#EDF7F1] dark:bg-[#1B2820] border-[#2D6A4F]/40 text-[#1B4332] dark:text-[#D8F3DC] shadow-xs"
+                      : "bg-[#FAF7F0] dark:bg-[#1E1C19] border-[#181818]/10 dark:border-[#2D2B27] text-[#747068]"
                   }`}
                 >
                   {progressPct >= 75 ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-[#2D6A4F] dark:text-[#74C69D] flex-shrink-0" />
                   ) : (
-                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] font-bold">
+                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] font-bold font-mono">
                       3
                     </div>
                   )}
@@ -734,14 +734,14 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                 <div
                   className={`flex items-center gap-3 p-3 rounded-2xl border text-xs font-medium transition-all ${
                     progressPct >= 75
-                      ? "backdrop-blur-md bg-emerald-500/15 dark:bg-emerald-400/10 border-emerald-400/40 text-emerald-950 dark:text-emerald-200 shadow-xs"
-                      : "backdrop-blur-md bg-white/40 dark:bg-white/[0.03] border-white/60 dark:border-white/10 text-gray-400"
+                      ? "bg-[#EDF7F1] dark:bg-[#1B2820] border-[#2D6A4F]/40 text-[#1B4332] dark:text-[#D8F3DC] shadow-xs"
+                      : "bg-[#FAF7F0] dark:bg-[#1E1C19] border-[#181818]/10 dark:border-[#2D2B27] text-[#747068]"
                   }`}
                 >
                   {progressPct >= 100 ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-[#2D6A4F] dark:text-[#74C69D] flex-shrink-0" />
                   ) : (
-                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] font-bold">
+                    <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px] font-bold font-mono">
                       4
                     </div>
                   )}
@@ -750,8 +750,8 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
               </div>
 
               {/* Status Message */}
-              <div className="p-3 mt-4 text-xs font-mono text-gray-800 dark:text-gray-200 backdrop-blur-md bg-white/60 dark:bg-black/25 border border-white/70 dark:border-white/10 rounded-xl flex items-center gap-2 shadow-xs">
-                <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0 animate-pulse" />
+              <div className="p-3 mt-4 text-xs font-mono text-[#181818] dark:text-[#F6F3EB] bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/15 dark:border-[#2D2B27] rounded-xl flex items-center gap-2 shadow-xs">
+                <Sparkles className="w-3.5 h-3.5 text-[#C84630] flex-shrink-0 animate-pulse" />
                 <span className="truncate">{progressMessage}</span>
               </div>
 
@@ -760,7 +760,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="px-4 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white backdrop-blur-md bg-white/60 dark:bg-white/10 hover:bg-white dark:hover:bg-white/15 rounded-full border border-white/80 dark:border-white/10 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  className="px-4 py-1.5 text-xs font-semibold text-[#55524B] dark:text-[#A8A29E] hover:text-[#181818] dark:hover:text-[#F6F3EB] bg-[#FAF7F0] dark:bg-[#1E1C19] hover:bg-[#EFECE4] rounded-full border border-[#181818]/20 dark:border-[#2D2B27] transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-[0.98]"
                 >
                   <X className="w-3.5 h-3.5" />
                   <span>Cancel Check</span>
@@ -771,19 +771,19 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
 
           {/* Stream Error with Retry */}
           {streamError && !isVerifying && (
-            <div className="p-4 mt-4 backdrop-blur-md bg-red-500/10 border border-red-500/20 rounded-2xl">
-              <div className="flex items-start gap-2 text-xs font-semibold text-red-800 dark:text-red-300">
-                <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="p-4 mt-4 bg-[#FDF1EE] dark:bg-[#2B1B19] border border-[#C84630]/30 rounded-2xl">
+              <div className="flex items-start gap-2 text-xs font-semibold text-[#78281F] dark:text-[#FCDFD7]">
+                <AlertCircle className="w-4 h-4 text-[#C84630] flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-bold text-red-900 dark:text-red-200">Verification Interrupted</p>
-                  <p className="mt-1 font-normal text-red-700 dark:text-red-300">{streamError}</p>
+                  <p className="font-bold font-mono text-[#C84630]">Verification Interrupted</p>
+                  <p className="mt-1 font-normal font-serif text-[#78281F] dark:text-[#FCDFD7]">{streamError}</p>
                 </div>
               </div>
               <div className="flex justify-end mt-3">
                 <button
                   type="button"
                   onClick={handleVerify}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-full transition-colors shadow-xs"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-[#C84630] hover:bg-[#A8321E] rounded-full transition-colors shadow-xs active:scale-[0.98]"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   <span>Retry Verification</span>
@@ -795,16 +795,16 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
 
         {/* Modal Footer */}
         {!isVerifying && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-white/40 dark:border-white/10 bg-white/30 dark:bg-white/[0.02]">
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              Press <kbd className="px-1.5 py-0.5 rounded backdrop-blur-md bg-white/60 dark:bg-white/10 text-gray-700 dark:text-gray-300 font-mono text-[11px] border border-white/80 dark:border-white/15 shadow-2xs">Esc</kbd> to cancel
+          <div className="flex items-center justify-between px-6 py-4 border-t border-[#181818]/15 dark:border-[#2D2B27] bg-[#FAF7F0] dark:bg-[#1E1C19]">
+            <div className="text-xs text-[#747068] font-mono">
+              Press <kbd className="px-1.5 py-0.5 rounded bg-[#FCFAF6] dark:bg-[#141312] text-[#55524B] dark:text-[#A8A29E] font-mono text-[11px] border border-[#181818]/20 dark:border-[#2D2B27] shadow-2xs">Esc</kbd> to cancel
             </div>
 
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white backdrop-blur-md bg-white/60 dark:bg-white/10 hover:bg-white dark:hover:bg-white/15 rounded-full border border-white/80 dark:border-white/10 shadow-xs transition-colors"
+                className="px-4 py-2 text-xs font-semibold text-[#55524B] dark:text-[#A8A29E] hover:text-[#181818] dark:hover:text-[#F6F3EB] bg-[#FCFAF6] dark:bg-[#181715] hover:bg-[#EFECE4] rounded-full border border-[#181818]/20 dark:border-[#2D2B27] shadow-xs transition-colors font-mono"
               >
                 Cancel
               </button>
@@ -812,7 +812,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                 type="button"
                 onClick={handleVerify}
                 disabled={!isInputValid()}
-                className="flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-full shadow-[0_4px_15px_rgba(37,99,235,0.3)] border border-blue-400/30 transition-all"
+                className="flex items-center gap-2 px-5 py-2 text-xs font-bold text-[#F6F3EB] bg-[#181818] dark:bg-[#F4EFEB] dark:text-[#181818] hover:bg-black disabled:opacity-40 disabled:cursor-not-allowed rounded-full shadow-md border border-[#181818]/30 transition-all active:scale-[0.98]"
               >
                 <ShieldCheck className="w-4 h-4" />
                 <span>Verify</span>

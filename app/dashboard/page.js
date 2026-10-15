@@ -857,13 +857,12 @@ function CrosscheckAppContent() {
   });
 
   return (
-    <div className="h-[100dvh] w-screen overflow-hidden bg-[#F8FAFC] dark:bg-[#0A0C10] text-gray-900 dark:text-gray-100 font-sans flex antialiased relative selection:bg-blue-500/20">
+    <div className="h-[100dvh] w-screen overflow-hidden bg-[#F6F3EB] dark:bg-[#141312] text-[#181818] dark:text-[#F4EFEB] font-sans flex antialiased relative selection:bg-[#181818] selection:text-[#F6F3EB]">
       {/* ========================================================
-          AMBIENT LUMINOUS GLASS AURAS (Dynamic Background Depth)
+          WARM EDITORIAL AMBIENT TEXTURE (Newspaper Parchment Light)
           ======================================================== */}
-      <div className="absolute top-[-10%] left-[-5%] w-[45vw] h-[45vw] rounded-full bg-gradient-to-br from-blue-500/12 via-indigo-500/8 to-transparent blur-[130px] pointer-events-none -z-10" />
-      <div className="absolute bottom-[-15%] right-[-5%] w-[50vw] h-[50vw] rounded-full bg-gradient-to-tl from-cyan-500/10 via-purple-500/8 to-transparent blur-[140px] pointer-events-none -z-10" />
-      <div className="absolute top-[35%] left-[20%] w-[35vw] h-[35vw] rounded-full bg-gradient-to-tr from-sky-400/6 via-blue-500/5 to-transparent blur-[110px] pointer-events-none -z-10" />
+      <div className="absolute top-[-10%] left-[-5%] w-[45vw] h-[45vw] rounded-full bg-[#EAE4D9]/40 dark:bg-[#1F1E1B]/40 blur-[130px] pointer-events-none -z-10" />
+      <div className="absolute bottom-[-15%] right-[-5%] w-[50vw] h-[50vw] rounded-full bg-[#E4DDD0]/35 dark:bg-[#1A1916]/30 blur-[140px] pointer-events-none -z-10" />
 
       {/* ========================================================
           MOBILE FLOATING HAMBURGER (MD:HIDDEN)
@@ -871,7 +870,7 @@ function CrosscheckAppContent() {
       <button
         type="button"
         onClick={() => setIsMobileDrawerOpen(true)}
-        className="fixed top-4 left-4 z-40 md:hidden p-2.5 rounded-2xl backdrop-blur-xl bg-white/75 dark:bg-[#131620]/75 border border-white/80 dark:border-white/10 text-gray-700 dark:text-gray-200 shadow-lg active:scale-95 transition-all"
+        className="fixed top-4 left-4 z-40 md:hidden p-2.5 rounded-2xl bg-[#FCFAF6] dark:bg-[#1C1B18] border border-[#181818]/15 dark:border-[#2D2B27] text-[#181818] dark:text-[#F4EFEB] shadow-md active:scale-95 transition-all"
         aria-label="Open navigation menu"
       >
         <Menu className="w-5 h-5" />
@@ -882,16 +881,16 @@ function CrosscheckAppContent() {
           ======================================================== */}
       {isMobileDrawerOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-md md:hidden transition-all duration-300"
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden transition-all duration-300"
           onClick={() => setIsMobileDrawerOpen(false)}
         />
       )}
 
       {/* ========================================================
-          FIXED FROSTED SIDEBAR DOCK (260PX WIDE, 100VH)
+          FIXED EDITORIAL SIDEBAR DOCK (260PX WIDE, 100VH)
           ======================================================== */}
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-40 h-[100dvh] backdrop-blur-2xl bg-white/75 dark:bg-[#0D1017]/75 border-r border-white/80 dark:border-white/10 flex flex-col justify-between transition-all duration-300 ease-in-out shadow-[4px_0_30px_rgba(0,0,0,0.03)] dark:shadow-[4px_0_30px_rgba(0,0,0,0.3)] ${
+        className={`fixed top-0 left-0 bottom-0 z-40 h-[100dvh] bg-[#FAF7F0] dark:bg-[#191816] border-r border-[#181818]/12 dark:border-[#2D2B27] flex flex-col justify-between transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-[4px_0_24px_rgba(24,24,24,0.02)] dark:shadow-[4px_0_24px_rgba(0,0,0,0.4)] ${
           isMobileDrawerOpen
             ? "translate-x-0 w-[260px] p-6 shadow-2xl"
             : "-translate-x-full md:translate-x-0 w-20 min-[1100px]:w-[260px] p-4 min-[1100px]:p-6"
@@ -902,12 +901,12 @@ function CrosscheckAppContent() {
           {/* Brand Logo & Close for Mobile */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5" title="Crosscheck">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-blue-500/25 border border-white/30">
+              <div className="w-8 h-8 rounded-xl bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] flex items-center justify-center flex-shrink-0 shadow-xs border border-[#181818] dark:border-[#F4EFEB]">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-5 h-5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07L19.07 4.93" />
                 </svg>
               </div>
-              <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 dark:from-white dark:via-gray-100 dark:to-gray-300 bg-clip-text text-transparent hidden min-[1100px]:inline">
+              <span className="font-editorial text-2xl font-bold tracking-tight text-[#181818] dark:text-[#F4EFEB] hidden min-[1100px]:inline">
                 Crosscheck
               </span>
             </div>
@@ -915,14 +914,14 @@ function CrosscheckAppContent() {
               <button
                 type="button"
                 onClick={() => setIsMobileDrawerOpen(false)}
-                className="p-1.5 rounded-full text-gray-400 hover:text-gray-900 dark:hover:text-white md:hidden"
+                className="p-1.5 rounded-full text-[#747068] hover:text-[#181818] dark:hover:text-white md:hidden"
               >
                 <X className="w-5 h-5" />
               </button>
             )}
           </div>
 
-          {/* Primary "+ New verification" button (ILLUMINATED GLASS PILL) */}
+          {/* Primary "+ New verification" button (NEWSPAPER BLACK INK CTA) */}
           <button
             type="button"
             title={t.newVerification}
@@ -931,28 +930,28 @@ function CrosscheckAppContent() {
               setIsModalOpen(true);
               setIsMobileDrawerOpen(false);
             }}
-            className="w-full h-10 px-3.5 flex items-center justify-center gap-2 text-xs font-bold text-white bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-xl shadow-[0_4px_20px_rgba(37,99,235,0.3)] border border-blue-400/30 transition-all active:scale-[0.98] cursor-pointer"
+            className="w-full h-10 px-3.5 flex items-center justify-center gap-2 text-xs font-mono uppercase tracking-[0.14em] font-bold text-[#F6F3EB] bg-[#181818] hover:bg-[#2C2A26] dark:bg-[#F4EFEB] dark:text-[#181818] dark:hover:bg-white rounded-xl shadow-xs border border-[#181818] dark:border-[#F4EFEB] transition-all duration-200 active:scale-[0.98] cursor-pointer"
           >
             <Plus className="w-4 h-4 flex-shrink-0" />
             <span className="hidden min-[1100px]:inline tracking-tight">{t.newVerification}</span>
           </button>
 
-          {/* Search field (⌘K hint for search palette - TRANSLUCENT) */}
+          {/* Search field (⌘K hint for search palette - NEWSPAPER STYLE) */}
           <div
             onClick={() => setIsCommandPaletteOpen(true)}
             title={`${t.searchPlaceholder} (⌘K)`}
-            className="h-10 px-3 rounded-xl border border-white/80 dark:border-white/10 bg-white/50 dark:bg-white/[0.04] hover:bg-white/80 dark:hover:bg-white/[0.08] backdrop-blur-md flex items-center justify-between cursor-pointer transition-all shadow-xs hover:border-blue-400/40"
+            className="h-10 px-3 rounded-xl border border-[#181818]/15 dark:border-[#2D2B27] bg-[#FCFAF6] dark:bg-[#1F1E1B] hover:bg-[#F0EDE4] dark:hover:bg-[#282622] flex items-center justify-between cursor-pointer transition-all duration-200 shadow-xs hover:border-[#181818]/40"
           >
-            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-2 text-xs text-[#747068] dark:text-[#9E998F]">
               <Search className="w-4 h-4 flex-shrink-0" />
               <span className="hidden min-[1100px]:inline truncate">{t.searchPlaceholder}</span>
             </div>
-            <kbd className="hidden min-[1100px]:inline px-1.5 py-0.5 text-[10px] font-mono text-gray-400 bg-white/80 dark:bg-white/10 rounded-md border border-black/5 dark:border-white/10">
+            <kbd className="hidden min-[1100px]:inline px-1.5 py-0.5 text-[10px] font-mono text-[#55524B] dark:text-[#9E998F] bg-[#EFECE3] dark:bg-[#282622] rounded-md border border-[#181818]/10 dark:border-[#3D3A34]">
               ⌘K
             </kbd>
           </div>
 
-          {/* Middle Navigation (Translucent active capsules) */}
+          {/* Middle Navigation (Newspaper active tabs) */}
           <nav aria-label="Main Navigation" className="pt-2">
             <ul className="space-y-1.5">
               {[
@@ -973,10 +972,10 @@ function CrosscheckAppContent() {
                         setIsMobileDrawerOpen(false);
                       }}
                       aria-current={isActive ? "page" : undefined}
-                      className={`w-full h-10 px-3 rounded-xl flex items-center justify-between text-xs font-semibold transition-all duration-200 focus-visible:ring-2 focus-visible:ring-blue-500/40 cursor-pointer ${
+                      className={`w-full h-10 px-3 rounded-xl flex items-center justify-between text-xs transition-all duration-200 cursor-pointer ${
                         isActive
-                          ? "bg-blue-600/10 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30 dark:border-blue-400/25 shadow-xs backdrop-blur-md font-bold"
-                          : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/[0.06] border border-transparent"
+                          ? "bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] border border-[#181818] dark:border-[#F4EFEB] shadow-xs font-bold"
+                          : "text-[#55524B] dark:text-[#9E998F] hover:text-[#181818] dark:hover:text-[#F4EFEB] hover:bg-[#EFECE3] dark:hover:bg-[#24221F] border border-transparent font-medium"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -984,7 +983,11 @@ function CrosscheckAppContent() {
                         <span className="hidden min-[1100px]:inline">{item.label}</span>
                       </div>
                       {item.badge !== undefined && item.badge > 0 && (
-                        <span className="hidden min-[1100px]:inline text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/20">
+                        <span className={`hidden min-[1100px]:inline text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
+                          isActive
+                            ? "bg-[#33312D] text-[#F6F3EB] dark:bg-[#E0DDD5] dark:text-[#181818] border-white/20 dark:border-black/20"
+                            : "bg-[#EFECE3] dark:bg-[#282622] text-[#181818] dark:text-[#F4EFEB] border-[#181818]/10 dark:border-[#3D3A34]"
+                        }`}>
                           {item.badge}
                         </span>
                       )}
@@ -997,7 +1000,7 @@ function CrosscheckAppContent() {
         </div>
 
         {/* Bottom: Settings, Help Center (1930), User Chip, Privacy Note */}
-        <div className="mt-auto pt-4 border-t border-white/60 dark:border-white/10 space-y-2">
+        <div className="mt-auto pt-4 border-t border-[#181818]/10 dark:border-[#2D2B27] space-y-2">
           <button
             type="button"
             title={t.settings}
@@ -1006,10 +1009,10 @@ function CrosscheckAppContent() {
               setIsMobileDrawerOpen(false);
             }}
             aria-current={activeNav === "settings" ? "page" : undefined}
-            className={`w-full h-10 px-3 rounded-xl flex items-center gap-3 text-xs font-semibold transition-all cursor-pointer ${
+            className={`w-full h-10 px-3 rounded-xl flex items-center gap-3 text-xs transition-all duration-200 cursor-pointer ${
               activeNav === "settings"
-                ? "bg-blue-600/10 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30 dark:border-blue-400/25 font-bold"
-                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/[0.06] border border-transparent"
+                ? "bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] border border-[#181818] dark:border-[#F4EFEB] font-bold shadow-xs"
+                : "text-[#55524B] dark:text-[#9E998F] hover:text-[#181818] dark:hover:text-[#F4EFEB] hover:bg-[#EFECE3] dark:hover:bg-[#24221F] border border-transparent font-medium"
             }`}
           >
             <SettingsIcon className="w-4 h-4 flex-shrink-0" />
@@ -1024,28 +1027,28 @@ function CrosscheckAppContent() {
               setIsMobileDrawerOpen(false);
             }}
             aria-current={activeNav === "help" ? "page" : undefined}
-            className={`w-full h-10 px-3 rounded-xl flex items-center justify-between text-xs font-semibold transition-all cursor-pointer ${
+            className={`w-full h-10 px-3 rounded-xl flex items-center justify-between text-xs transition-all duration-200 cursor-pointer ${
               activeNav === "help"
-                ? "bg-blue-600/10 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30 dark:border-blue-400/25 font-bold"
-                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/[0.06] border border-transparent"
+                ? "bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] border border-[#181818] dark:border-[#F4EFEB] font-bold shadow-xs"
+                : "text-[#55524B] dark:text-[#9E998F] hover:text-[#181818] dark:hover:text-[#F4EFEB] hover:bg-[#EFECE3] dark:hover:bg-[#24221F] border border-transparent font-medium"
             }`}
           >
             <div className="flex items-center gap-3">
               <HelpCircle className="w-4 h-4 flex-shrink-0" />
               <span className="hidden min-[1100px]:inline">{t.helpCenter}</span>
             </div>
-            <span className="hidden min-[1100px]:inline text-[10px] font-bold text-red-600 dark:text-red-400 bg-red-500/10 border border-red-500/20 px-1.5 py-0.2 rounded-full">
+            <span className="hidden min-[1100px]:inline text-[10px] font-mono font-bold text-[#C84630] dark:text-[#E05A44] bg-[#FDF1EE] dark:bg-[#2B1512] border border-[#F7C4BC] dark:border-[#52241D] px-1.5 py-0.5 rounded-full">
               SOS
             </span>
           </button>
 
-          {/* User Chip (FROSTED CAPSULE) */}
+          {/* User Chip (NEWSPAPER WARM BOX) */}
           <div className="pt-2">
             <div
               title={`${userProfile.displayName || "Guest"} — Stored on this device`}
-              className="p-2.5 rounded-xl backdrop-blur-md bg-white/60 dark:bg-white/[0.04] border border-white/80 dark:border-white/10 flex items-center gap-2.5 shadow-xs"
+              className="p-2.5 rounded-xl bg-[#FCFAF6] dark:bg-[#1C1B18] border border-[#181818]/12 dark:border-[#2D2B27] flex items-center gap-2.5 shadow-xs"
             >
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-xs">
+              <div className="w-7 h-7 rounded-lg bg-[#181818] dark:bg-[#F4EFEB] text-[#F6F3EB] dark:text-[#181818] flex items-center justify-center text-xs font-editorial font-bold flex-shrink-0 shadow-xs">
                 {userProfile.displayName ? userProfile.displayName.slice(0, 1).toUpperCase() : "G"}
               </div>
               <div className="hidden min-[1100px]:block overflow-hidden flex-1">
@@ -1059,10 +1062,10 @@ function CrosscheckAppContent() {
                         if (e.key === "Enter") handleSaveName();
                         if (e.key === "Escape") setIsEditingName(false);
                       }}
-                      className="w-20 px-1 py-0.5 text-xs border border-gray-300 dark:border-gray-700 bg-white dark:bg-black rounded"
+                      className="w-20 px-1 py-0.5 text-xs border border-[#181818]/30 dark:border-gray-700 bg-white dark:bg-black rounded"
                       autoFocus
                     />
-                    <button onClick={handleSaveName} className="text-[10px] text-blue-600 font-bold">
+                    <button onClick={handleSaveName} className="text-[10px] text-[#181818] dark:text-[#F4EFEB] font-bold underline">
                       Save
                     </button>
                   </div>
@@ -1072,10 +1075,10 @@ function CrosscheckAppContent() {
                     className="cursor-pointer group truncate"
                     title="Click to edit name"
                   >
-                    <span className="text-xs font-bold text-gray-900 dark:text-white truncate block">
+                    <span className="text-xs font-bold text-[#181818] dark:text-[#F4EFEB] truncate block font-sans">
                       {userProfile.displayName || "Guest"}
                     </span>
-                    <span className="text-[10px] text-gray-400 block truncate">
+                    <span className="text-[10px] text-[#747068] dark:text-[#9E998F] block truncate font-mono">
                       Stored on this device
                     </span>
                   </div>
@@ -1085,7 +1088,7 @@ function CrosscheckAppContent() {
           </div>
 
           {/* Small Privacy Note */}
-          <p className="hidden min-[1100px]:block text-[10px] text-gray-400 text-center pt-1 font-medium">
+          <p className="hidden min-[1100px]:block text-[10px] font-mono text-[#747068] dark:text-[#9E998F] text-center pt-1 font-medium tracking-wide">
             Images are analysed on your device.
           </p>
         </div>
@@ -1100,19 +1103,27 @@ function CrosscheckAppContent() {
           {/* ========================================================
               DASHBOARD VIEW
               ======================================================== */}
+          {/* ========================================================
+              DASHBOARD VIEW
+              ======================================================== */}
           {activeNav === "dashboard" && (
             <div className="space-y-8 animate-in fade-in-0 duration-200">
-              {/* Page Header (No buttons here!) */}
+              {/* Page Header (Broadsheet Newspaper Headline) */}
               <div className="pl-12 md:pl-0">
-                <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#747068] dark:text-[#9E998F] font-bold">
+                    EST. 2026 • DAILY FORENSIC WIRE
+                  </span>
+                </div>
+                <h1 className="text-3xl sm:text-4xl font-editorial font-bold text-[#181818] dark:text-[#F4EFEB] tracking-tight">
                   {t.dashboard}
                 </h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-[#747068] dark:text-[#9E998F] mt-1 font-mono">
                   Real-time digital forensics, open wire corroboration, and tamper-evident proof ledger.
                 </p>
               </div>
 
-              {/* QUICK-CHECK DROPZONE CARD (STEP 5 - FROSTED LIQUID GLASS) */}
+              {/* QUICK-CHECK DROPZONE CARD (NEWSPAPER SEARCH BOX STYLE) */}
               <div
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleDropzoneDrop}
@@ -1120,169 +1131,172 @@ function CrosscheckAppContent() {
                   setModalPrefill(null);
                   setIsModalOpen(true);
                 }}
-                className="p-5 sm:p-6 border-2 border-dashed border-blue-400/40 dark:border-blue-500/30 hover:border-blue-500 dark:hover:border-blue-400 bg-white/60 dark:bg-[#131620]/50 hover:bg-white/80 dark:hover:bg-[#181C28]/70 backdrop-blur-xl rounded-2xl cursor-pointer transition-all duration-300 flex items-center justify-between gap-4 group shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:shadow-blue-500/10"
+                className="p-5 sm:p-6 border border-[#181818]/15 dark:border-[#2D2B27] hover:border-[#181818]/40 dark:hover:border-[#504C44] bg-[#FCFAF6] dark:bg-[#181715] hover:bg-[#FAF7F0] dark:hover:bg-[#1E1C19] rounded-2xl cursor-pointer transition-all duration-300 flex items-center justify-between gap-4 group newspaper-card shadow-xs"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-11 h-11 rounded-xl bg-blue-600/10 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform backdrop-blur-md shadow-xs">
+                  <div className="w-11 h-11 rounded-xl bg-[#181818] dark:bg-[#F4EFEB] text-[#F6F3EB] dark:text-[#181818] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-xs">
                     <Sparkles className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white tracking-tight">
+                    <h2 className="text-xs sm:text-sm font-bold text-[#181818] dark:text-[#F4EFEB] tracking-tight font-sans">
                       {t.quickDropzone}
                     </h2>
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                    <p className="text-[11px] text-[#747068] dark:text-[#9E998F] mt-0.5 font-mono">
                       {t.quickDropzoneHint}
                     </p>
                   </div>
                 </div>
-                <kbd className="hidden sm:inline px-2.5 py-1 text-[10px] font-mono text-gray-500 dark:text-gray-300 bg-white/80 dark:bg-white/10 rounded-lg border border-white/80 dark:border-white/10 shadow-xs backdrop-blur-md">
+                <kbd className="hidden sm:inline px-2.5 py-1 text-[10px] font-mono text-[#181818] dark:text-[#F4EFEB] bg-[#FAF7F0] dark:bg-[#22201D] rounded-lg border border-[#181818]/15 dark:border-[#33302B] shadow-2xs">
                   Press N
                 </kbd>
               </div>
 
-              {/* KPI ROW (4 EQUAL HEIGHT CARDS - FROSTED SPECULAR GLASS) */}
+              {/* KPI ROW (4 EQUAL HEIGHT BROADSHEET METRIC CARDS) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* 1. Total Proofs */}
-                <div className="p-5 backdrop-blur-xl bg-white/70 dark:bg-[#131620]/65 border border-white/80 dark:border-white/10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.25)] hover:shadow-lg hover:border-blue-400/30 transition-all duration-300 flex flex-col justify-between group">
-                  <div className="text-[11px] font-mono uppercase text-gray-400 dark:text-gray-400 font-semibold tracking-wider">
+                <div className="p-5 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/12 dark:border-[#2D2B27] rounded-2xl shadow-xs hover:border-[#181818]/30 dark:hover:border-[#444039] newspaper-card flex flex-col justify-between group">
+                  <div className="text-[10px] font-mono uppercase text-[#747068] dark:text-[#9E998F] font-bold tracking-[0.15em]">
                     {t.totalProofs}
                   </div>
-                  <div className="my-2 text-3xl font-extrabold font-mono text-gray-900 dark:text-white group-hover:translate-x-0.5 transition-transform">
+                  <div className="my-2 text-3xl font-bold font-mono text-[#181818] dark:text-[#F4EFEB] group-hover:translate-x-0.5 transition-transform">
                     {isLoading ? "—" : stats.totalProofs > 0 ? stats.totalProofs : "—"}
                   </div>
-                  <div className="text-[11px] text-gray-400">
+                  <div className="text-[11px] font-mono text-[#747068] dark:text-[#9E998F]">
                     {t.totalProofsCaption}
                   </div>
                 </div>
 
-                {/* 2. Flagged Claims */}
-                <div className="p-5 backdrop-blur-xl bg-white/70 dark:bg-[#131620]/65 border border-white/80 dark:border-white/10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.25)] hover:shadow-lg hover:border-red-400/30 transition-all duration-300 flex flex-col justify-between group">
-                  <div className="text-[11px] font-mono uppercase text-gray-400 dark:text-gray-400 font-semibold tracking-wider">
+                {/* 2. Flagged Claims (Terracotta Accent) */}
+                <div className="p-5 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/12 dark:border-[#2D2B27] rounded-2xl shadow-xs hover:border-[#C84630]/40 newspaper-card flex flex-col justify-between group">
+                  <div className="text-[10px] font-mono uppercase text-[#747068] dark:text-[#9E998F] font-bold tracking-[0.15em]">
                     {t.flaggedClaims}
                   </div>
-                  <div className={`my-2 text-3xl font-extrabold font-mono group-hover:translate-x-0.5 transition-transform ${stats.totalProofs > 0 ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-white"}`}>
+                  <div className={`my-2 text-3xl font-bold font-mono group-hover:translate-x-0.5 transition-transform ${stats.totalProofs > 0 ? "text-[#C84630] dark:text-[#E06D53]" : "text-[#181818] dark:text-[#F4EFEB]"}`}>
                     {isLoading || stats.totalProofs === 0 ? "—" : `${stats.disputedPercent}%`}
                   </div>
-                  <div className="text-[11px] text-gray-400">
+                  <div className="text-[11px] font-mono text-[#747068] dark:text-[#9E998F]">
                     {t.flaggedClaimsCaption}
                   </div>
                 </div>
 
                 {/* 3. Average time to verdict */}
-                <div className="p-5 backdrop-blur-xl bg-white/70 dark:bg-[#131620]/65 border border-white/80 dark:border-white/10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.25)] hover:shadow-lg hover:border-blue-400/30 transition-all duration-300 flex flex-col justify-between group">
-                  <div className="text-[11px] font-mono uppercase text-gray-400 dark:text-gray-400 font-semibold tracking-wider">
+                <div className="p-5 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/12 dark:border-[#2D2B27] rounded-2xl shadow-xs hover:border-[#181818]/30 dark:hover:border-[#444039] newspaper-card flex flex-col justify-between group">
+                  <div className="text-[10px] font-mono uppercase text-[#747068] dark:text-[#9E998F] font-bold tracking-[0.15em]">
                     {t.avgDuration}
                   </div>
-                  <div className={`my-2 text-3xl font-extrabold font-mono group-hover:translate-x-0.5 transition-transform ${stats.totalProofs > 0 ? "text-blue-600 dark:text-blue-400" : "text-gray-900 dark:text-white"}`}>
+                  <div className="my-2 text-3xl font-bold font-mono group-hover:translate-x-0.5 transition-transform text-[#181818] dark:text-[#F4EFEB]">
                     {isLoading || stats.totalProofs === 0 ? "—" : stats.avgDurationFormatted}
                   </div>
-                  <div className="text-[11px] text-gray-400">
+                  <div className="text-[11px] font-mono text-[#747068] dark:text-[#9E998F]">
                     {t.avgDurationCaption}
                   </div>
                 </div>
 
-                {/* 4. High-confidence results */}
-                <div className="p-5 backdrop-blur-xl bg-white/70 dark:bg-[#131620]/65 border border-white/80 dark:border-white/10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.25)] hover:shadow-lg hover:border-emerald-400/30 transition-all duration-300 flex flex-col justify-between group">
-                  <div className="text-[11px] font-mono uppercase text-gray-400 dark:text-gray-400 font-semibold tracking-wider">
+                {/* 4. High-confidence results (Forest Green Accent) */}
+                <div className="p-5 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/12 dark:border-[#2D2B27] rounded-2xl shadow-xs hover:border-[#2D6A4F]/40 newspaper-card flex flex-col justify-between group">
+                  <div className="text-[10px] font-mono uppercase text-[#747068] dark:text-[#9E998F] font-bold tracking-[0.15em]">
                     {t.highConfidence}
                   </div>
-                  <div className={`my-2 text-3xl font-extrabold font-mono group-hover:translate-x-0.5 transition-transform ${stats.totalProofs > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-gray-900 dark:text-white"}`}>
+                  <div className={`my-2 text-3xl font-bold font-mono group-hover:translate-x-0.5 transition-transform ${stats.totalProofs > 0 ? "text-[#2D6A4F] dark:text-[#52B788]" : "text-[#181818] dark:text-[#F4EFEB]"}`}>
                     {isLoading || stats.totalProofs === 0 ? "—" : stats.highConfidenceCount}
                   </div>
-                  <div className="text-[11px] text-gray-400">
+                  <div className="text-[11px] font-mono text-[#747068] dark:text-[#9E998F]">
                     {t.highConfidenceCaption}
                   </div>
                 </div>
               </div>
 
-              {/* CHARTS ROW: 30-DAY ACTIVITY & VERDICT MIX (FROSTED LIQUID GLASS) */}
+              {/* CHARTS ROW: 30-DAY ACTIVITY & VERDICT MIX (NEWSPAPER CARDS) */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* 30-Day Activity Chart */}
-                <div className="lg:col-span-2 p-6 backdrop-blur-xl bg-white/70 dark:bg-[#131620]/65 border border-white/80 dark:border-white/10 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] flex flex-col justify-between transition-all duration-300">
-                  <div className="flex items-center justify-between mb-4">
+                <div className="lg:col-span-2 p-6 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/12 dark:border-[#2D2B27] rounded-2xl shadow-xs flex flex-col justify-between transition-all duration-300 newspaper-card">
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#181818]/10 dark:border-[#2D2B27]">
                     <div>
-                      <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                      <h3 className="text-base font-editorial font-bold text-[#181818] dark:text-[#F4EFEB]">
                         30-Day Verification Activity
                       </h3>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs font-mono text-[#747068] dark:text-[#9E998F] mt-0.5">
                         Daily verification volume computed from local audit records
                       </p>
                     </div>
-                    <span className="text-[10px] font-mono text-gray-400 bg-white/60 dark:bg-white/10 px-2 py-0.5 rounded-md border border-white/80 dark:border-white/10">
+                    <span className="text-[10px] font-mono text-[#747068] dark:text-[#9E998F] bg-[#FAF7F0] dark:bg-[#22201D] px-2.5 py-1 rounded-md border border-[#181818]/15 dark:border-[#33302B]">
                       Past 30 Days
                     </span>
                   </div>
 
                   {stats.totalProofs === 0 ? (
-                    <div className="h-44 flex items-center justify-center text-center text-xs text-gray-400 border border-dashed border-white/80 dark:border-white/10 rounded-xl my-2 bg-white/30 dark:bg-white/[0.02]">
+                    <div className="h-44 flex items-center justify-center text-center text-xs font-mono text-[#747068] border border-dashed border-[#181818]/20 dark:border-[#2D2B27] rounded-xl my-2 bg-[#FAF7F0] dark:bg-[#1E1C19]">
                       No activity yet. Run a check to see your trend.
                     </div>
                   ) : (
                     <>
-                      <div className="h-44 flex items-end gap-1.5 pt-6 pb-2 border-b border-gray-100 dark:border-white/10">
+                      <div className="h-44 flex items-end gap-1.5 pt-6 pb-2 border-b border-[#181818]/10 dark:border-[#2D2B27]">
                         {stats.chartDays.map((d, idx) => {
                           const maxCount = Math.max(1, ...stats.chartDays.map((c) => c.count));
                           const barHeight = d.count > 0 ? `${Math.max(15, Math.round((d.count / maxCount) * 100))}%` : "4px";
+                          const isToday = idx === stats.chartDays.length - 1;
                           return (
                             <div
                               key={idx}
                               className="flex-1 flex flex-col items-center group relative h-full justify-end"
                             >
                               <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center z-20 pointer-events-none">
-                                <div className="backdrop-blur-xl bg-slate-900/90 dark:bg-white/95 text-white dark:text-gray-900 text-[10px] font-mono px-2.5 py-1 rounded-lg shadow-xl border border-white/20 dark:border-black/10 whitespace-nowrap">
+                                <div className="bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] text-[10px] font-mono px-2.5 py-1 rounded-lg shadow-xl border border-[#181818]/20 whitespace-nowrap">
                                   {d.label}: {d.count} checks
                                 </div>
                               </div>
                               <div
                                 style={{ height: barHeight }}
-                                className={`w-full rounded-t transition-all ${
+                                className={`w-full rounded-xs transition-all ${
                                   d.count > 0
-                                    ? "bg-gradient-to-t from-blue-600 via-indigo-600 to-indigo-500 hover:brightness-110 shadow-xs shadow-blue-500/20"
-                                    : "bg-gray-200/60 dark:bg-white/10 hover:bg-gray-300/70"
+                                    ? isToday
+                                      ? "bg-[#C84630] hover:brightness-110 shadow-xs"
+                                      : "bg-[#181818] dark:bg-[#F4EFEB] hover:bg-[#C84630] dark:hover:bg-[#C84630]"
+                                    : "bg-[#E6E1D6] dark:bg-[#282622] hover:bg-[#DCD6CD]"
                                 }`}
                               />
                             </div>
                           );
                         })}
                       </div>
-                      <div className="flex justify-between mt-2 text-[10px] font-mono text-gray-400">
+                      <div className="flex justify-between mt-2 text-[10px] font-mono text-[#747068] dark:text-[#9E998F]">
                         <span>30 days ago</span>
                         <span>15 days ago</span>
-                        <span>Today</span>
+                        <span className="font-bold text-[#181818] dark:text-[#F4EFEB]">Today</span>
                       </div>
                     </>
                   )}
                 </div>
 
                 {/* Verdict Distribution */}
-                <div className="p-6 backdrop-blur-xl bg-white/70 dark:bg-[#131620]/65 border border-white/80 dark:border-white/10 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] flex flex-col justify-between transition-all duration-300">
+                <div className="p-6 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/12 dark:border-[#2D2B27] rounded-2xl shadow-xs flex flex-col justify-between transition-all duration-300 newspaper-card">
                   <div>
-                    <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">
+                    <h3 className="text-base font-editorial font-bold text-[#181818] dark:text-[#F4EFEB] mb-1">
                       Verdict Distribution
                     </h3>
-                    <p className="text-xs text-gray-400 mb-6">
+                    <p className="text-xs font-mono text-[#747068] dark:text-[#9E998F] mb-6">
                       Breakdown across all evaluated claims
                     </p>
 
                     {stats.totalProofs === 0 ? (
-                      <div className="h-32 flex items-center justify-center text-center text-xs text-gray-400 border border-dashed border-white/80 dark:border-white/10 rounded-xl bg-white/30 dark:bg-white/[0.02]">
+                      <div className="h-32 flex items-center justify-center text-center text-xs font-mono text-[#747068] border border-dashed border-[#181818]/20 dark:border-[#2D2B27] rounded-xl bg-[#FAF7F0] dark:bg-[#1E1C19]">
                         No verdicts recorded yet.
                       </div>
                     ) : (
                       <div className="space-y-4">
                         <div>
                           <div className="flex justify-between text-xs mb-1.5">
-                            <span className="text-gray-700 dark:text-gray-300 flex items-center gap-1.5 font-medium">
-                              <span className="w-2 h-2 rounded-full bg-red-600 shadow-xs shadow-red-500/50" />
+                            <span className="text-[#181818] dark:text-[#F4EFEB] flex items-center gap-1.5 font-medium">
+                              <span className="w-2 h-2 rounded-full bg-[#C84630]" />
                               Likely Manipulated
                             </span>
-                            <span className="font-mono font-bold text-gray-900 dark:text-white">
+                            <span className="font-mono font-bold text-[#181818] dark:text-[#F4EFEB]">
                               {stats.verdictMix.likelyManipulated}
                             </span>
                           </div>
-                          <div className="w-full h-2 bg-gray-100/90 dark:bg-white/10 rounded-full overflow-hidden backdrop-blur-xs">
+                          <div className="w-full h-2 bg-[#EFECE4] dark:bg-[#262420] rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-gradient-to-r from-red-600 to-rose-500 rounded-full shadow-xs shadow-red-500/30"
+                              className="h-full bg-[#C84630] rounded-full"
                               style={{
                                 width: stats.totalProofs > 0
                                   ? `${(stats.verdictMix.likelyManipulated / stats.totalProofs) * 100}%`
@@ -1294,17 +1308,17 @@ function CrosscheckAppContent() {
 
                         <div>
                           <div className="flex justify-between text-xs mb-1.5">
-                            <span className="text-gray-700 dark:text-gray-300 flex items-center gap-1.5 font-medium">
-                              <span className="w-2 h-2 rounded-full bg-amber-500 shadow-xs shadow-amber-500/50" />
+                            <span className="text-[#181818] dark:text-[#F4EFEB] flex items-center gap-1.5 font-medium">
+                              <span className="w-2 h-2 rounded-full bg-[#C58F2C]" />
                               Inconclusive
                             </span>
-                            <span className="font-mono font-bold text-gray-900 dark:text-white">
+                            <span className="font-mono font-bold text-[#181818] dark:text-[#F4EFEB]">
                               {stats.verdictMix.inconclusive}
                             </span>
                           </div>
-                          <div className="w-full h-2 bg-gray-100/90 dark:bg-white/10 rounded-full overflow-hidden backdrop-blur-xs">
+                          <div className="w-full h-2 bg-[#EFECE4] dark:bg-[#262420] rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full shadow-xs shadow-amber-500/30"
+                              className="h-full bg-[#C58F2C] rounded-full"
                               style={{
                                 width: stats.totalProofs > 0
                                   ? `${(stats.verdictMix.inconclusive / stats.totalProofs) * 100}%`
@@ -1316,17 +1330,17 @@ function CrosscheckAppContent() {
 
                         <div>
                           <div className="flex justify-between text-xs mb-1.5">
-                            <span className="text-gray-700 dark:text-gray-300 flex items-center gap-1.5 font-medium">
-                              <span className="w-2 h-2 rounded-full bg-emerald-600 shadow-xs shadow-emerald-500/50" />
+                            <span className="text-[#181818] dark:text-[#F4EFEB] flex items-center gap-1.5 font-medium">
+                              <span className="w-2 h-2 rounded-full bg-[#2D6A4F]" />
                               No Signs Found
                             </span>
-                            <span className="font-mono font-bold text-gray-900 dark:text-white">
+                            <span className="font-mono font-bold text-[#181818] dark:text-[#F4EFEB]">
                               {stats.verdictMix.noSignsFound}
                             </span>
                           </div>
-                          <div className="w-full h-2 bg-gray-100/90 dark:bg-white/10 rounded-full overflow-hidden backdrop-blur-xs">
+                          <div className="w-full h-2 bg-[#EFECE4] dark:bg-[#262420] rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-gradient-to-r from-emerald-600 to-teal-500 rounded-full shadow-xs shadow-emerald-500/30"
+                              className="h-full bg-[#2D6A4F] rounded-full"
                               style={{
                                 width: stats.totalProofs > 0
                                   ? `${(stats.verdictMix.noSignsFound / stats.totalProofs) * 100}%`
@@ -1339,25 +1353,25 @@ function CrosscheckAppContent() {
                     )}
                   </div>
 
-                  <div className="mt-6 pt-4 border-t border-gray-100 dark:border-white/10 text-xs text-gray-400 font-mono flex items-center justify-between">
+                  <div className="mt-6 pt-4 border-t border-[#181818]/10 dark:border-[#2D2B27] text-xs text-[#747068] dark:text-[#9E998F] font-mono flex items-center justify-between">
                     <span>Active Storage:</span>
-                    <span className="text-gray-900 dark:text-white font-bold">Stored on this device</span>
+                    <span className="text-[#181818] dark:text-[#F4EFEB] font-bold">Stored on this device</span>
                   </div>
                 </div>
               </div>
 
-              {/* RECENT VERIFICATIONS TABLE (FROSTED LIQUID GLASS CONTAINER) */}
-              <div className="p-6 backdrop-blur-xl bg-white/70 dark:bg-[#131620]/65 border border-white/80 dark:border-white/10 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] transition-all duration-300">
-                <div className="flex items-center justify-between mb-4">
+              {/* RECENT VERIFICATIONS TABLE (BROADSHEET DOCKET TABLE) */}
+              <div className="p-6 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/12 dark:border-[#2D2B27] rounded-2xl shadow-xs transition-all duration-300 newspaper-card">
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#181818]/10 dark:border-[#2D2B27]">
                   <div>
-                    <h3 className="text-sm font-bold text-gray-900 dark:text-white">{t.recentVerifications}</h3>
-                    <p className="text-xs text-gray-400">Live cryptographic proof records stored on this device</p>
+                    <h3 className="text-base font-editorial font-bold text-[#181818] dark:text-[#F4EFEB]">{t.recentVerifications}</h3>
+                    <p className="text-xs font-mono text-[#747068] dark:text-[#9E998F] mt-0.5">Live cryptographic proof records stored on this device</p>
                   </div>
                   {reports.length > 0 && (
                     <button
                       type="button"
                       onClick={() => setActiveNav("history")}
-                      className="text-xs text-blue-600 dark:text-blue-400 font-bold hover:underline flex items-center gap-1"
+                      className="text-xs text-[#181818] dark:text-[#F4EFEB] font-bold hover:underline font-mono flex items-center gap-1"
                     >
                       <span>View all</span>
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -1366,13 +1380,13 @@ function CrosscheckAppContent() {
                 </div>
 
                 {reports.length === 0 ? (
-                  /* Calm empty state with "Run your first check" button */
-                  <div className="py-16 px-4 flex flex-col items-center justify-center text-center border-2 border-dashed border-white/80 dark:border-white/10 rounded-xl bg-white/40 dark:bg-white/[0.02] backdrop-blur-sm">
-                    <div className="w-12 h-12 rounded-2xl bg-blue-600/10 dark:bg-blue-500/15 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-3 shadow-xs">
+                  /* Calm empty state with newspaper CTA button */
+                  <div className="py-16 px-4 flex flex-col items-center justify-center text-center border border-dashed border-[#181818]/20 dark:border-[#2D2B27] rounded-xl bg-[#FAF7F0] dark:bg-[#1E1C19]">
+                    <div className="w-12 h-12 rounded-xl bg-[#181818] dark:bg-[#F4EFEB] text-[#F6F3EB] dark:text-[#181818] flex items-center justify-center mb-3 shadow-xs">
                       <ShieldCheck className="w-6 h-6" />
                     </div>
-                    <h4 className="text-sm font-bold text-gray-900 dark:text-white">No verifications on this device yet</h4>
-                    <p className="mt-1 text-xs text-gray-400 max-w-sm">
+                    <h4 className="text-sm font-bold text-[#181818] dark:text-[#F4EFEB] font-editorial text-base">No verifications on this device yet</h4>
+                    <p className="mt-1 text-xs font-mono text-[#747068] dark:text-[#9E998F] max-w-sm">
                       Submit any viral headline, WhatsApp message, or photo to run multi-source news wire verification.
                     </p>
                     <button
@@ -1381,7 +1395,7 @@ function CrosscheckAppContent() {
                         setModalPrefill(null);
                         setIsModalOpen(true);
                       }}
-                      className="mt-5 flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-full shadow-[0_4px_20px_rgba(37,99,235,0.3)] border border-blue-400/30 transition-all focus-visible:ring-2 focus-visible:ring-blue-600"
+                      className="mt-5 flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-[#F6F3EB] bg-[#181818] hover:bg-black dark:bg-[#F4EFEB] dark:text-[#181818] dark:hover:bg-white rounded-xl shadow-xs border border-[#181818]/20 transition-all active:scale-[0.98] cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>{t.runFirstCheck}</span>
@@ -1392,7 +1406,7 @@ function CrosscheckAppContent() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
                       <thead>
-                        <tr className="border-b border-gray-100 dark:border-white/10 text-gray-400 font-semibold uppercase tracking-wider text-[10px] font-mono">
+                        <tr className="border-b border-[#181818]/10 dark:border-[#2D2B27] text-[#747068] dark:text-[#9E998F] font-bold uppercase tracking-wider text-[10px] font-mono">
                           <th className="py-3 px-3">Verdict</th>
                           <th className="py-3 px-3">Claim</th>
                           <th className="py-3 px-3">Type</th>
@@ -1402,7 +1416,7 @@ function CrosscheckAppContent() {
                           <th className="py-3 px-3 text-right">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-100/70 dark:divide-white/5">
+                      <tbody className="divide-y divide-[#181818]/5 dark:divide-[#2D2B27]/50">
                         {reports.slice(0, 8).map((r) => {
                           const isManip = (r.verdict || "").toLowerCase().includes("manipulated");
                           const isNoSigns = (r.verdict || "").toLowerCase().includes("no signs");
@@ -1410,39 +1424,39 @@ function CrosscheckAppContent() {
                             <tr
                               key={r.reportId}
                               onClick={() => router.push(`/report/${encodeURIComponent(r.reportId)}`)}
-                              className="hover:bg-white/60 dark:hover:bg-white/[0.04] transition-colors cursor-pointer group"
+                              className="hover:bg-[#FAF7F0] dark:hover:bg-[#1F1E1B] transition-colors cursor-pointer group"
                             >
                               <td className="py-3 px-3">
                                 <span
-                                  className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold backdrop-blur-xs ${
+                                  className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono uppercase tracking-wider ${
                                     isManip
-                                      ? "bg-red-500/10 text-red-700 border border-red-500/30 dark:bg-red-950/40 dark:text-red-300 dark:border-red-900/50"
+                                      ? "bg-[#FDF1EE] text-[#A83220] border border-[#F2C0B7] dark:bg-[#2A1412] dark:text-[#E06D53] dark:border-[#4E221D]"
                                       : isNoSigns
-                                      ? "bg-emerald-500/10 text-emerald-700 border border-emerald-500/30 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/50"
-                                      : "bg-amber-500/10 text-amber-700 border border-amber-500/30 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50"
+                                      ? "bg-[#EDF7F1] text-[#1E4D38] border border-[#BCE3CE] dark:bg-[#11241A] dark:text-[#52B788] dark:border-[#1E4631]"
+                                      : "bg-[#FFF9EC] text-[#8C6418] border border-[#F4E0A5] dark:bg-[#261E0E] dark:text-[#E0B853] dark:border-[#4B3B1B]"
                                   }`}
                                 >
                                   {r.verdict || "Inconclusive"}
                                 </span>
                               </td>
-                              <td className="py-3 px-3 font-semibold text-gray-900 dark:text-gray-100 max-w-xs truncate">
+                              <td className="py-3 px-3 font-semibold text-[#181818] dark:text-[#F4EFEB] max-w-xs truncate">
                                 {r.claimText || r.inputText}
                               </td>
                               <td className="py-3 px-3">
                                 {getInputTypeIcon(r)}
                               </td>
-                              <td className="py-3 px-3 font-mono font-bold text-gray-900 dark:text-white">
+                              <td className="py-3 px-3 font-mono font-bold text-[#181818] dark:text-[#F4EFEB]">
                                 {r.score ?? 50}
                                 {r.confidence?.margin ? (
-                                  <span className="text-[10px] text-gray-400 font-normal ml-1">
+                                  <span className="text-[10px] text-[#747068] font-normal ml-1">
                                     ±{r.confidence.margin}
                                   </span>
                                 ) : null}
                               </td>
-                              <td className="py-3 px-3 text-gray-400 whitespace-nowrap font-mono text-[11px]">
+                              <td className="py-3 px-3 text-[#747068] dark:text-[#9E998F] whitespace-nowrap font-mono text-[11px]">
                                 {r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "Today"}
                               </td>
-                              <td className="py-3 px-3 font-mono text-[10px] text-gray-400">
+                              <td className="py-3 px-3 font-mono text-[10px] text-[#747068] dark:text-[#9E998F]">
                                 {r.reportId}
                               </td>
                               <td className="py-3 px-3 text-right" onClick={(e) => e.stopPropagation()}>
@@ -1452,20 +1466,20 @@ function CrosscheckAppContent() {
                                     onClick={() =>
                                       setActiveMenuReportId(activeMenuReportId === r.reportId ? null : r.reportId)
                                     }
-                                    className="p-1.5 rounded-xl text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-white/10 transition-colors"
+                                    className="p-1.5 rounded-lg text-[#747068] hover:text-[#181818] dark:hover:text-[#F4EFEB] hover:bg-[#EFECE4] dark:hover:bg-[#262420] transition-colors"
                                   >
                                     <MoreVertical className="w-4 h-4" />
                                   </button>
 
                                   {activeMenuReportId === r.reportId && (
-                                    <div className="absolute right-0 mt-1 w-44 backdrop-blur-2xl bg-white/90 dark:bg-[#151922]/90 border border-white/80 dark:border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] z-30 py-1.5 text-xs overflow-hidden">
+                                    <div className="absolute right-0 mt-1 w-44 bg-[#FAF7F0] dark:bg-[#1C1A17] border border-[#181818]/20 dark:border-[#3A3630] rounded-xl shadow-xl z-30 py-1.5 text-xs overflow-hidden">
                                       <button
                                         type="button"
                                         onClick={() => router.push(`/report/${encodeURIComponent(r.reportId)}`)}
-                                        className="w-full text-left px-3.5 py-2 hover:bg-white/80 dark:hover:bg-white/10 font-semibold text-gray-900 dark:text-white flex items-center justify-between transition-colors"
+                                        className="w-full text-left px-3.5 py-2 hover:bg-[#EFECE4] dark:hover:bg-[#262420] font-semibold text-[#181818] dark:text-[#F4EFEB] flex items-center justify-between transition-colors"
                                       >
                                         <span>Open report</span>
-                                        <ArrowUpRight className="w-3.5 h-3.5 text-gray-400" />
+                                        <ArrowUpRight className="w-3.5 h-3.5 text-[#747068]" />
                                       </button>
                                       <button
                                         type="button"
@@ -1478,23 +1492,23 @@ function CrosscheckAppContent() {
                                           }
                                           setActiveMenuReportId(null);
                                         }}
-                                        className="w-full text-left px-3.5 py-2 hover:bg-white/80 dark:hover:bg-white/10 font-medium text-gray-700 dark:text-gray-300 flex items-center justify-between transition-colors"
+                                        className="w-full text-left px-3.5 py-2 hover:bg-[#EFECE4] dark:hover:bg-[#262420] font-medium text-[#181818] dark:text-[#F4EFEB] flex items-center justify-between transition-colors"
                                       >
                                         <span>Copy link</span>
-                                        <LinkIcon className="w-3.5 h-3.5 text-gray-400" />
+                                        <LinkIcon className="w-3.5 h-3.5 text-[#747068]" />
                                       </button>
                                       <button
                                         type="button"
                                         onClick={(e) => handleBookmarkToggle(r.reportId, e)}
-                                        className="w-full text-left px-3.5 py-2 hover:bg-white/80 dark:hover:bg-white/10 font-medium text-gray-700 dark:text-gray-300 flex items-center justify-between transition-colors"
+                                        className="w-full text-left px-3.5 py-2 hover:bg-[#EFECE4] dark:hover:bg-[#262420] font-medium text-[#181818] dark:text-[#F4EFEB] flex items-center justify-between transition-colors"
                                       >
                                         <span>{r.isSaved ? "Unsave" : "Save"}</span>
-                                        <Bookmark className="w-3.5 h-3.5 text-gray-400" />
+                                        <Bookmark className="w-3.5 h-3.5 text-[#747068]" />
                                       </button>
                                       <button
                                         type="button"
                                         onClick={(e) => handleDeleteReport(r.reportId, e)}
-                                        className="w-full text-left px-3.5 py-2 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 font-medium flex items-center justify-between transition-colors"
+                                        className="w-full text-left px-3.5 py-2 hover:bg-[#FDF1EE] dark:hover:bg-[#2A1412] text-[#A83220] dark:text-[#E06D53] font-medium flex items-center justify-between transition-colors"
                                       >
                                         <span>Delete</span>
                                         <Trash2 className="w-3.5 h-3.5" />
@@ -1515,22 +1529,22 @@ function CrosscheckAppContent() {
           )}
 
           {/* ========================================================
-              HISTORY VIEW (FROSTED LIQUID GLASS)
+              HISTORY VIEW (BROADSHEET ARCHIVE)
               ======================================================== */}
           {activeNav === "history" && (
             <div className="space-y-6 animate-in fade-in-0 duration-200">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between pb-3 border-b border-[#181818]/10 dark:border-[#2D2B27]">
                 <div>
-                  <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">History</h2>
-                  <p className="text-xs text-gray-400">All local verification records on this device</p>
+                  <h2 className="text-2xl font-editorial font-bold text-[#181818] dark:text-[#F4EFEB] tracking-tight">History</h2>
+                  <p className="text-xs font-mono text-[#747068] dark:text-[#9E998F] mt-0.5">All local verification records on this device</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setHistoryFilterSaved(!historyFilterSaved)}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-full border transition-all ${
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl border transition-all ${
                     historyFilterSaved
-                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-blue-400/30 shadow-[0_2px_12px_rgba(37,99,235,0.3)]"
-                      : "backdrop-blur-md bg-white/70 dark:bg-white/10 text-gray-700 dark:text-gray-300 border-white/80 dark:border-white/10 hover:bg-white/90 shadow-2xs"
+                      ? "bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] border-[#181818] shadow-xs"
+                      : "bg-[#FCFAF6] dark:bg-[#181715] text-[#181818] dark:text-[#F4EFEB] border-[#181818]/15 dark:border-[#2D2B27] hover:bg-[#FAF7F0] shadow-2xs"
                   }`}
                 >
                   <Bookmark className="w-3.5 h-3.5" />
@@ -1538,9 +1552,9 @@ function CrosscheckAppContent() {
                 </button>
               </div>
 
-              <div className="p-6 backdrop-blur-xl bg-white/70 dark:bg-[#131620]/65 border border-white/80 dark:border-white/10 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]">
+              <div className="p-6 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/12 dark:border-[#2D2B27] rounded-2xl shadow-xs newspaper-card">
                 {filteredReports.length === 0 ? (
-                  <p className="text-xs text-gray-400 py-12 text-center">
+                  <p className="text-xs font-mono text-[#747068] dark:text-[#9E998F] py-12 text-center">
                     {historyFilterSaved ? "No saved reports found." : "No verification history found on this device."}
                   </p>
                 ) : (
@@ -1549,13 +1563,13 @@ function CrosscheckAppContent() {
                       <div
                         key={r.reportId}
                         onClick={() => router.push(`/report/${encodeURIComponent(r.reportId)}`)}
-                        className="p-4 backdrop-blur-md bg-white/50 dark:bg-[#181C26]/60 hover:bg-white/80 dark:hover:bg-[#202534]/80 border border-white/70 dark:border-white/10 rounded-xl flex items-center justify-between gap-4 transition-all cursor-pointer shadow-2xs group hover:border-blue-400/30"
+                        className="p-4 bg-[#FAF7F0] dark:bg-[#1E1C19] hover:bg-[#F2EEE4] dark:hover:bg-[#25221E] border border-[#181818]/10 dark:border-[#2D2B27] rounded-xl flex items-center justify-between gap-4 transition-all cursor-pointer shadow-2xs group newspaper-card"
                       >
                         <div className="space-y-1 overflow-hidden">
-                          <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                          <p className="text-xs font-bold text-[#181818] dark:text-[#F4EFEB] truncate font-sans">
                             {r.claimText || r.inputText}
                           </p>
-                          <p className="text-[11px] text-gray-400 font-mono">
+                          <p className="text-[11px] text-[#747068] dark:text-[#9E998F] font-mono">
                             {r.reportId} • Score: {r.score} • {r.verdict}
                           </p>
                         </div>
@@ -1563,8 +1577,10 @@ function CrosscheckAppContent() {
                           <button
                             type="button"
                             onClick={(e) => handleBookmarkToggle(r.reportId, e)}
-                            className={`p-1.5 rounded-full border transition-all ${
-                              r.isSaved ? "bg-amber-100 text-amber-700 border-amber-300" : "backdrop-blur-md bg-white/80 dark:bg-white/10 text-gray-400 border-white/80 dark:border-white/10"
+                            className={`p-1.5 rounded-lg border transition-all ${
+                              r.isSaved
+                                ? "bg-[#FFF9EC] text-[#8C6418] border-[#F4E0A5]"
+                                : "bg-[#FCFAF6] dark:bg-[#181715] text-[#747068] border-[#181818]/15 dark:border-[#2D2B27]"
                             }`}
                           >
                             <Bookmark className="w-3.5 h-3.5" />
@@ -1572,7 +1588,7 @@ function CrosscheckAppContent() {
                           <button
                             type="button"
                             onClick={() => router.push(`/report/${encodeURIComponent(r.reportId)}`)}
-                            className="px-3.5 py-1 text-xs font-bold text-gray-800 dark:text-gray-200 hover:text-white hover:bg-gradient-to-r hover:from-blue-600 hover:to-indigo-600 hover:border-blue-500/30 rounded-full border border-white/80 dark:border-white/15 backdrop-blur-md shadow-xs transition-all"
+                            className="px-3.5 py-1 text-xs font-bold text-[#F6F3EB] bg-[#181818] dark:bg-[#F4EFEB] dark:text-[#181818] hover:bg-black dark:hover:bg-white rounded-lg border border-[#181818]/20 shadow-xs transition-all active:scale-[0.98]"
                           >
                             Inspect
                           </button>
@@ -1586,17 +1602,17 @@ function CrosscheckAppContent() {
           )}
 
           {/* ========================================================
-              EVIDENCE VAULT VIEW (FROSTED LIQUID GLASS)
+              EVIDENCE VAULT VIEW (BROADSHEET LEGAL DOCKET)
               ======================================================== */}
           {activeNav === "vault" && (
             <div className="space-y-6 animate-in fade-in-0 duration-200">
               {/* Top Controls Bar */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200/60 dark:border-white/10">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#181818]/10 dark:border-[#2D2B27]">
                 <div>
-                  <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                  <h2 className="text-2xl font-editorial font-bold text-[#181818] dark:text-[#F4EFEB] tracking-tight">
                     Evidence Vault & Incident Reporting
                   </h2>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs font-mono text-[#747068] dark:text-[#9E998F] mt-1">
                     Document cyber crimes (scams, bullying, harassment). Reports are sealed in the vault and queued for Cyber Cell review.
                   </p>
                 </div>
@@ -1608,10 +1624,10 @@ function CrosscheckAppContent() {
                       setIsFilingIncident(!isFilingIncident);
                       setSubmittedIncidentResult(null);
                     }}
-                    className={`flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl shadow-xs transition-all ${
+                    className={`flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl shadow-xs transition-all active:scale-[0.98] ${
                       isFilingIncident
-                        ? "backdrop-blur-md bg-white/80 dark:bg-white/10 text-gray-800 dark:text-gray-200 border border-white/80 dark:border-white/10"
-                        : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 shadow-[0_4px_20px_rgba(37,99,235,0.3)] border border-blue-400/30"
+                        ? "bg-[#FAF7F0] dark:bg-[#22201D] text-[#181818] dark:text-[#F4EFEB] border border-[#181818]/20 dark:border-[#33302B]"
+                        : "bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] hover:bg-black dark:hover:bg-white border border-[#181818]/20"
                     }`}
                   >
                     {isFilingIncident ? <X className="w-3.5 h-3.5" /> : <FilePlus className="w-3.5 h-3.5" />}
@@ -1628,25 +1644,25 @@ function CrosscheckAppContent() {
                         showToast(`Ledger alert: ${res.errorReason}`, "error");
                       }
                     }}
-                    className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 backdrop-blur-md bg-white/70 dark:bg-white/10 border border-white/80 dark:border-white/10 hover:bg-white/90 dark:hover:bg-white/15 rounded-xl shadow-2xs transition-all"
+                    className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#181818] dark:text-[#F4EFEB] bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/15 dark:border-[#2D2B27] hover:bg-[#FAF7F0] rounded-xl shadow-2xs transition-all active:scale-[0.98]"
                   >
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#2D6A4F] dark:text-[#52B788]" />
                     <span>Verify Chain</span>
                   </button>
                 </div>
               </div>
 
-              {/* Official Cyber Cell Emergency Hotline Banner (TRANSLUCENT AMBER GLASS) */}
-              <div className="p-4 rounded-2xl backdrop-blur-xl bg-amber-500/10 dark:bg-amber-400/5 border border-amber-400/30 dark:border-amber-400/20 shadow-[0_4px_20px_rgba(245,158,11,0.05)] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              {/* Official Cyber Cell Emergency Hotline Banner (NEWSPAPER BULLETIN STYLE) */}
+              <div className="p-4 rounded-2xl bg-[#FFF9EC] dark:bg-[#231A0F] border border-[#F4E0A5] dark:border-[#4B3B1B] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                 <div className="flex items-start sm:items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-amber-500/20 dark:bg-amber-400/10 text-amber-900 dark:text-amber-300 border border-amber-400/30 flex-shrink-0">
+                  <div className="p-2 rounded-xl bg-[#C58F2C]/15 text-[#8C6418] dark:text-[#E0B853] border border-[#F4E0A5] dark:border-[#4B3B1B] flex-shrink-0">
                     <Phone className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="font-bold text-amber-950 dark:text-amber-200 block sm:inline mr-1">
+                    <span className="font-bold text-[#6A4706] dark:text-[#F4E0A5] block sm:inline mr-1 font-editorial text-sm">
                       National Cyber Crime Helpline: Dial 1930 (Toll-Free 24x7)
                     </span>
-                    <span className="text-amber-800/90 dark:text-amber-300/80 text-[11px]">
+                    <span className="text-[#8C6418] dark:text-[#C58F2C] text-[11px] font-mono">
                       • For active UPI or banking fraud, call within the golden hour to freeze transactions.
                     </span>
                   </div>
@@ -1655,26 +1671,26 @@ function CrosscheckAppContent() {
                   href="https://cybercrime.gov.in"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-bold text-blue-700 dark:text-blue-400 hover:underline flex items-center gap-1 flex-shrink-0 text-[11px]"
+                  className="font-bold text-[#181818] dark:text-[#F4EFEB] hover:underline flex items-center gap-1 flex-shrink-0 text-[11px] font-mono"
                 >
                   <span>cybercrime.gov.in</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
 
-              {/* Confirmation Card (When Report is Queued & Dispatched - FROSTED EMERALD GLASS) */}
+              {/* Confirmation Card (When Report is Queued & Dispatched) */}
               {submittedIncidentResult && (
-                <div className="p-6 backdrop-blur-xl bg-emerald-500/10 dark:bg-emerald-400/10 border border-emerald-400/30 dark:border-emerald-500/30 rounded-3xl shadow-[0_8px_32px_0_rgba(16,185,129,0.08)] space-y-4 animate-in fade-in-0 duration-300">
+                <div className="p-6 bg-[#EDF7F1] dark:bg-[#11241A] border border-[#BCE3CE] dark:border-[#1E4631] rounded-2xl shadow-xs space-y-4 animate-in fade-in-0 duration-300">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-emerald-600/30">
+                      <div className="w-10 h-10 rounded-xl bg-[#2D6A4F] text-[#F6F3EB] flex items-center justify-center flex-shrink-0 shadow-xs">
                         <Check className="w-5 h-5 stroke-[2.5]" />
                       </div>
                       <div>
-                        <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-800 dark:text-emerald-400 font-bold block">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-[#2D6A4F] dark:text-[#52B788] font-bold block">
                           Case Registered & Dispatched
                         </span>
-                        <h3 className="text-base font-extrabold text-emerald-950 dark:text-emerald-200">
+                        <h3 className="text-base font-editorial font-bold text-[#1E4D38] dark:text-[#E2F5EA]">
                           Your Report Has Been Queued for Cyber Cell Authorities
                         </h3>
                       </div>
@@ -1683,19 +1699,19 @@ function CrosscheckAppContent() {
                     <button
                       type="button"
                       onClick={() => setSubmittedIncidentResult(null)}
-                      className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-full"
+                      className="p-1.5 text-[#747068] hover:text-[#181818] dark:hover:text-[#F4EFEB] rounded-full"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
 
-                  <div className="p-4 backdrop-blur-md bg-white/70 dark:bg-black/30 rounded-2xl border border-emerald-400/30 space-y-2 text-xs">
+                  <div className="p-4 bg-[#FCFAF6] dark:bg-[#181715] rounded-xl border border-[#BCE3CE] dark:border-[#1E4631] space-y-2 text-xs">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="font-semibold text-gray-700 dark:text-gray-300">
+                      <span className="font-semibold text-[#181818] dark:text-[#F4EFEB]">
                         Case Reference Number:
                       </span>
                       <div className="flex items-center gap-2">
-                        <code className="px-2.5 py-1 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-900 dark:text-emerald-200 rounded-lg font-mono font-bold text-xs border border-emerald-300/40">
+                        <code className="px-2.5 py-1 bg-[#EDF7F1] dark:bg-[#11241A] text-[#1E4D38] dark:text-[#52B788] rounded-lg font-mono font-bold text-xs border border-[#BCE3CE] dark:border-[#1E4631]">
                           {submittedIncidentResult.caseId}
                         </code>
                         <button
@@ -1706,15 +1722,15 @@ function CrosscheckAppContent() {
                             setTimeout(() => setCopiedCaseId(false), 2000);
                             showToast("Case Reference copied!", "success");
                           }}
-                          className="p-1 text-gray-500 hover:text-gray-900 dark:hover:text-white rounded"
+                          className="p-1 text-[#747068] hover:text-[#181818] dark:hover:text-[#F4EFEB] rounded"
                           title="Copy Case Reference ID"
                         >
-                          {copiedCaseId ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                          {copiedCaseId ? <Check className="w-3.5 h-3.5 text-[#2D6A4F]" /> : <Copy className="w-3.5 h-3.5" />}
                         </button>
                       </div>
                     </div>
 
-                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed pt-1">
+                    <p className="text-[#55524B] dark:text-[#C5BFB5] leading-relaxed pt-1">
                       <strong>Next Steps:</strong> Your incident dossier has been sealed in the local tamper-evident vault with a SHA-256 cryptographic digest. It has been queued for investigation by the Cyber Crime Response Division. An authorized officer will review your statement and contact you on your provided contact details within <strong>24 to 48 hours</strong>.
                     </p>
                   </div>
@@ -1723,7 +1739,7 @@ function CrosscheckAppContent() {
                     <button
                       type="button"
                       onClick={() => handleDownloadDossier(submittedIncidentResult)}
-                      className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-gray-900 to-gray-800 hover:from-black hover:to-gray-900 rounded-xl shadow-xs transition-all border border-white/10"
+                      className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#F6F3EB] bg-[#181818] hover:bg-black rounded-xl shadow-xs transition-all border border-[#181818]/20 active:scale-[0.98]"
                     >
                       <FileDown className="w-3.5 h-3.5" />
                       <span>Download Official Complaint Dossier</span>
@@ -1735,7 +1751,7 @@ function CrosscheckAppContent() {
                         setSelectedDossierEntry(submittedIncidentResult);
                         setIsDossierModalOpen(true);
                       }}
-                      className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 backdrop-blur-md bg-white/70 dark:bg-white/10 border border-white/80 dark:border-white/15 hover:bg-white/90 rounded-xl transition-all"
+                      className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-[#181818] dark:text-[#F4EFEB] bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/15 dark:border-[#2D2B27] hover:bg-[#FAF7F0] rounded-xl transition-all"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>View Full Dossier</span>
@@ -1744,7 +1760,7 @@ function CrosscheckAppContent() {
                     <button
                       type="button"
                       onClick={() => setSubmittedIncidentResult(null)}
-                      className="text-xs font-semibold text-emerald-800 dark:text-emerald-400 hover:underline px-2"
+                      className="text-xs font-semibold text-[#2D6A4F] dark:text-[#52B788] hover:underline px-2 font-mono"
                     >
                       Dismiss
                     </button>
@@ -1752,22 +1768,22 @@ function CrosscheckAppContent() {
                 </div>
               )}
 
-              {/* The Incident Report Filing Form (FROSTED LIQUID GLASS FORM) */}
+              {/* The Incident Report Filing Form */}
               {isFilingIncident && (
-                <div className="p-6 sm:p-8 backdrop-blur-xl bg-white/75 dark:bg-[#131620]/75 border border-white/80 dark:border-white/10 rounded-3xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.35)] space-y-6 animate-in fade-in-0 duration-200">
-                  <div className="flex items-start justify-between border-b border-gray-100 dark:border-white/10 pb-4">
+                <div className="p-6 sm:p-8 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/15 dark:border-[#2D2B27] rounded-2xl shadow-xs space-y-6 animate-in fade-in-0 duration-200 newspaper-card">
+                  <div className="flex items-start justify-between border-b border-[#181818]/10 dark:border-[#2D2B27] pb-4">
                     <div>
-                      <h3 className="text-lg font-extrabold text-gray-900 dark:text-white tracking-tight">
+                      <h3 className="text-xl font-editorial font-bold text-[#181818] dark:text-[#F4EFEB] tracking-tight">
                         File a New Incident Report
                       </h3>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      <p className="text-xs font-mono text-[#747068] dark:text-[#9E998F] mt-0.5">
                         Select what happened, describe the incident, attach any proof, and submit for cyber cell review.
                       </p>
                     </div>
                     <button
                       type="button"
                       onClick={() => setIsFilingIncident(false)}
-                      className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-full"
+                      className="p-1.5 text-[#747068] hover:text-[#181818] dark:hover:text-[#F4EFEB] rounded-full"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -1776,7 +1792,7 @@ function CrosscheckAppContent() {
                   <form onSubmit={handleSubmitIncident} className="space-y-6">
                     {/* Step 1: Category Selection */}
                     <div>
-                      <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-2.5">
+                      <label className="block text-xs font-bold text-[#181818] dark:text-[#F4EFEB] uppercase tracking-wider mb-2.5 font-mono">
                         1. Select Incident Type
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -1813,21 +1829,21 @@ function CrosscheckAppContent() {
                               key={cat.id}
                               type="button"
                               onClick={() => setIncidentCategory(cat.id)}
-                              className={`p-4 rounded-2xl text-left border transition-all flex flex-col justify-between backdrop-blur-md ${
+                              className={`p-4 rounded-xl text-left border transition-all flex flex-col justify-between ${
                                 isSelected
-                                  ? "bg-blue-600/10 dark:bg-blue-500/15 border-blue-500 text-blue-950 dark:text-blue-200 shadow-sm"
-                                  : "bg-white/50 dark:bg-white/[0.03] border-white/80 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-white/[0.08]"
+                                  ? "bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] border-[#181818] shadow-xs"
+                                  : "bg-[#FAF7F0] dark:bg-[#1E1C19] border-[#181818]/12 dark:border-[#2D2B27] text-[#181818] dark:text-[#F4EFEB] hover:bg-[#F2EEE4] dark:hover:bg-[#25221E]"
                               }`}
                             >
                               <div className="flex items-center justify-between gap-2 mb-1.5">
                                 <span className="font-bold text-xs">{cat.label}</span>
                                 {isSelected && (
-                                  <div className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                                  <div className="w-4 h-4 rounded-full bg-[#F6F3EB] text-[#181818] dark:bg-[#181818] dark:text-[#F4EFEB] flex items-center justify-center flex-shrink-0 shadow-xs">
                                     <Check className="w-2.5 h-2.5 stroke-[3]" />
                                   </div>
                                 )}
                               </div>
-                              <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+                              <p className={`text-[11px] leading-relaxed ${isSelected ? "text-[#DCD6CD] dark:text-[#55524B]" : "text-[#747068] dark:text-[#9E998F]"}`}>
                                 {cat.desc}
                               </p>
                             </button>
@@ -1838,7 +1854,7 @@ function CrosscheckAppContent() {
 
                     {/* Step 2: What happened details */}
                     <div className="space-y-4">
-                      <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">
+                      <label className="block text-xs font-bold text-[#181818] dark:text-[#F4EFEB] uppercase tracking-wider font-mono">
                         2. Incident Details
                       </label>
 
@@ -1848,20 +1864,20 @@ function CrosscheckAppContent() {
                           value={incidentDetails}
                           onChange={(e) => setIncidentDetails(e.target.value)}
                           placeholder="Please explain what happened in detail... (e.g. what the person said, message timeline, fraudulent amount or payment requests, threats made, etc.)"
-                          className="w-full px-4 py-3 text-sm text-gray-900 dark:text-white backdrop-blur-md bg-white/60 dark:bg-black/20 border border-white/70 dark:border-white/10 rounded-2xl placeholder:text-gray-400 focus:outline-none focus:bg-white dark:focus:bg-[#11141D] focus:border-blue-500/60 transition-all resize-none shadow-xs"
+                          className="w-full px-4 py-3 text-sm text-[#181818] dark:text-[#F4EFEB] bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/15 dark:border-[#2D2B27] rounded-xl placeholder:text-[#747068] focus:outline-none focus:border-[#181818] dark:focus:border-[#F4EFEB] transition-all resize-none shadow-xs font-sans"
                           required
                         />
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                          <label className="block text-xs font-semibold text-[#181818] dark:text-[#F4EFEB] mb-1 font-mono">
                             Platform / Channel Where It Occurred
                           </label>
                           <select
                             value={incidentPlatform}
                             onChange={(e) => setIncidentPlatform(e.target.value)}
-                            className="w-full px-3.5 py-2.5 text-xs font-medium backdrop-blur-md bg-white/60 dark:bg-[#151922] border border-white/70 dark:border-white/10 rounded-xl focus:outline-none focus:border-blue-500 text-gray-900 dark:text-white shadow-xs"
+                            className="w-full px-3.5 py-2.5 text-xs font-medium bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/15 dark:border-[#2D2B27] rounded-xl focus:outline-none focus:border-[#181818] text-[#181818] dark:text-[#F4EFEB] shadow-xs"
                           >
                             <option value="WhatsApp">WhatsApp</option>
                             <option value="Telegram">Telegram</option>
@@ -1876,7 +1892,7 @@ function CrosscheckAppContent() {
                         </div>
 
                         <div>
-                          <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                          <label className="block text-xs font-semibold text-[#181818] dark:text-[#F4EFEB] mb-1 font-mono">
                             Suspect Phone / Username / UPI ID (Optional)
                           </label>
                           <input
@@ -1884,7 +1900,7 @@ function CrosscheckAppContent() {
                             value={incidentSuspectInfo}
                             onChange={(e) => setIncidentSuspectInfo(e.target.value)}
                             placeholder="e.g. +91 98765 43210 or user@okhdfc"
-                            className="w-full px-3.5 py-2.5 text-xs text-gray-900 dark:text-white backdrop-blur-md bg-white/60 dark:bg-black/20 border border-white/70 dark:border-white/10 rounded-xl focus:outline-none focus:border-blue-500 placeholder:text-gray-400 shadow-xs"
+                            className="w-full px-3.5 py-2.5 text-xs text-[#181818] dark:text-[#F4EFEB] bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/15 dark:border-[#2D2B27] rounded-xl focus:outline-none focus:border-[#181818] placeholder:text-[#747068] shadow-xs font-mono"
                           />
                         </div>
                       </div>
@@ -1892,7 +1908,7 @@ function CrosscheckAppContent() {
 
                     {/* Step 3: Screenshot or Evidence Upload */}
                     <div>
-                      <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-2">
+                      <label className="block text-xs font-bold text-[#181818] dark:text-[#F4EFEB] uppercase tracking-wider mb-2 font-mono">
                         3. Attach Screenshot or Supporting Proof (Optional)
                       </label>
 
@@ -1911,21 +1927,21 @@ function CrosscheckAppContent() {
                       {!incidentScreenshot ? (
                         <div
                           onClick={() => screenshotFileRef.current?.click()}
-                          className="p-6 border-2 border-dashed border-blue-400/40 dark:border-blue-500/30 hover:border-blue-500 dark:hover:border-blue-400 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all backdrop-blur-md bg-white/40 dark:bg-white/[0.02] hover:bg-white/70 shadow-xs"
+                          className="p-6 border-2 border-dashed border-[#181818]/20 dark:border-[#2D2B27] hover:border-[#181818]/50 dark:hover:border-[#504C44] rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all bg-[#FAF7F0] dark:bg-[#1E1C19] hover:bg-[#F2EEE4] shadow-xs"
                         >
-                          <Upload className="w-5 h-5 text-blue-600 dark:text-blue-400 mb-2" />
-                          <p className="text-xs font-bold text-gray-800 dark:text-gray-200 text-center">
+                          <Upload className="w-5 h-5 text-[#181818] dark:text-[#F4EFEB] mb-2" />
+                          <p className="text-xs font-bold text-[#181818] dark:text-[#F4EFEB] text-center font-sans">
                             Click to upload screenshot of messages, payment receipts, or threatening posts
                           </p>
-                          <p className="text-[11px] text-gray-400 mt-0.5 text-center">
+                          <p className="text-[11px] text-[#747068] dark:text-[#9E998F] mt-0.5 text-center font-mono">
                             Supports JPG, PNG, WEBP, or PDF up to 15MB
                           </p>
                         </div>
                       ) : (
-                        <div className="p-3.5 backdrop-blur-md bg-white/60 dark:bg-[#181C26]/60 border border-white/70 dark:border-white/10 rounded-2xl flex items-center justify-between gap-4 shadow-xs">
+                        <div className="p-3.5 bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/15 dark:border-[#2D2B27] rounded-xl flex items-center justify-between gap-4 shadow-xs">
                           <div className="flex items-center gap-3 overflow-hidden">
                             {incidentScreenshot.previewUrl ? (
-                              <div className="w-12 h-12 rounded-xl overflow-hidden bg-white dark:bg-gray-800 flex-shrink-0 border border-white/80 dark:border-white/10 shadow-xs">
+                              <div className="w-12 h-12 rounded-lg overflow-hidden bg-white dark:bg-gray-800 flex-shrink-0 border border-[#181818]/15 shadow-xs">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={incidentScreenshot.previewUrl}
@@ -1934,15 +1950,15 @@ function CrosscheckAppContent() {
                                 />
                               </div>
                             ) : (
-                              <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-white/10 flex items-center justify-center text-blue-600 dark:text-blue-400 flex-shrink-0">
+                              <div className="w-12 h-12 rounded-lg bg-[#EFECE4] dark:bg-[#282622] flex items-center justify-center text-[#181818] dark:text-[#F4EFEB] flex-shrink-0">
                                 <FileText className="w-5 h-5" />
                               </div>
                             )}
                             <div className="overflow-hidden">
-                              <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                              <p className="text-xs font-bold text-[#181818] dark:text-[#F4EFEB] truncate font-sans">
                                 {incidentScreenshot.name}
                               </p>
-                              <p className="text-[11px] text-gray-400">
+                              <p className="text-[11px] text-[#747068] dark:text-[#9E998F] font-mono">
                                 {(incidentScreenshot.size / 1024).toFixed(1)} KB • Evidence Attached
                               </p>
                             </div>
@@ -1954,7 +1970,7 @@ function CrosscheckAppContent() {
                               setIncidentScreenshot(null);
                               if (screenshotFileRef.current) screenshotFileRef.current.value = "";
                             }}
-                            className="p-1.5 text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 rounded-full"
+                            className="p-1.5 text-[#747068] hover:text-[#181818] dark:hover:text-[#F4EFEB] rounded-full"
                             title="Remove screenshot"
                           >
                             <X className="w-4 h-4" />
@@ -1964,17 +1980,17 @@ function CrosscheckAppContent() {
                     </div>
 
                     {/* Step 4: Contact details */}
-                    <div className="space-y-3 pt-2 border-t border-gray-100 dark:border-white/10">
+                    <div className="space-y-3 pt-2 border-t border-[#181818]/10 dark:border-[#2D2B27]">
                       <div className="flex items-center justify-between">
-                        <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">
+                        <label className="block text-xs font-bold text-[#181818] dark:text-[#F4EFEB] uppercase tracking-wider font-mono">
                           4. Your Contact Details (So Cyber Cell Authorities Can Reach You)
                         </label>
-                        <span className="text-[11px] text-gray-400">Review within 24-48 hrs</span>
+                        <span className="text-[11px] font-mono text-[#747068] dark:text-[#9E998F]">Review within 24-48 hrs</span>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
-                          <label className="block text-[11px] font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                          <label className="block text-[11px] font-semibold text-[#747068] dark:text-[#9E998F] mb-1 font-mono">
                             Your Full Name
                           </label>
                           <input
@@ -1982,12 +1998,12 @@ function CrosscheckAppContent() {
                             value={incidentContactName}
                             onChange={(e) => setIncidentContactName(e.target.value)}
                             placeholder={userProfile.displayName || "Complainant Name"}
-                            className="w-full px-3.5 py-2.5 text-xs text-gray-900 dark:text-white backdrop-blur-md bg-white/60 dark:bg-black/20 border border-white/70 dark:border-white/10 rounded-xl focus:outline-none focus:border-blue-500 shadow-xs"
+                            className="w-full px-3.5 py-2.5 text-xs text-[#181818] dark:text-[#F4EFEB] bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/15 dark:border-[#2D2B27] rounded-xl focus:outline-none focus:border-[#181818] shadow-xs"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-[11px] font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                          <label className="block text-[11px] font-semibold text-[#747068] dark:text-[#9E998F] mb-1 font-mono">
                             Contact Phone / WhatsApp *
                           </label>
                           <input
@@ -1995,13 +2011,13 @@ function CrosscheckAppContent() {
                             value={incidentContactPhone}
                             onChange={(e) => setIncidentContactPhone(e.target.value)}
                             placeholder="+91 98765 43210"
-                            className="w-full px-3.5 py-2.5 text-xs text-gray-900 dark:text-white backdrop-blur-md bg-white/60 dark:bg-black/20 border border-white/70 dark:border-white/10 rounded-xl focus:outline-none focus:border-blue-500 font-mono shadow-xs"
+                            className="w-full px-3.5 py-2.5 text-xs text-[#181818] dark:text-[#F4EFEB] bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/15 dark:border-[#2D2B27] rounded-xl focus:outline-none focus:border-[#181818] font-mono shadow-xs"
                             required
                           />
                         </div>
 
                         <div>
-                          <label className="block text-[11px] font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                          <label className="block text-[11px] font-semibold text-[#747068] dark:text-[#9E998F] mb-1 font-mono">
                             Email Address (Optional)
                           </label>
                           <input
@@ -2009,16 +2025,16 @@ function CrosscheckAppContent() {
                             value={incidentContactEmail}
                             onChange={(e) => setIncidentContactEmail(e.target.value)}
                             placeholder="user@example.com"
-                            className="w-full px-3.5 py-2.5 text-xs text-gray-900 dark:text-white backdrop-blur-md bg-white/60 dark:bg-black/20 border border-white/70 dark:border-white/10 rounded-xl focus:outline-none focus:border-blue-500 shadow-xs"
+                            className="w-full px-3.5 py-2.5 text-xs text-[#181818] dark:text-[#F4EFEB] bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/15 dark:border-[#2D2B27] rounded-xl focus:outline-none focus:border-[#181818] shadow-xs"
                           />
                         </div>
                       </div>
                     </div>
 
                     {/* Submit and Action Buttons */}
-                    <div className="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-gray-100 dark:border-white/10">
-                      <p className="text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                    <div className="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-[#181818]/10 dark:border-[#2D2B27]">
+                      <p className="text-[11px] font-mono text-[#747068] dark:text-[#9E998F] flex items-center gap-1.5">
+                        <ShieldCheck className="w-3.5 h-3.5 text-[#2D6A4F] flex-shrink-0" />
                         <span>Sealed with tamper-evident SHA-256 hash. Queued for official review.</span>
                       </p>
 
@@ -2026,7 +2042,7 @@ function CrosscheckAppContent() {
                         <button
                           type="button"
                           onClick={() => setIsFilingIncident(false)}
-                          className="px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-white/80 dark:hover:bg-white/10 rounded-xl transition-all"
+                          className="px-4 py-2 text-xs font-semibold text-[#181818] dark:text-[#F4EFEB] hover:bg-[#EFECE4] dark:hover:bg-[#262420] rounded-xl transition-all"
                         >
                           Cancel
                         </button>
@@ -2034,7 +2050,7 @@ function CrosscheckAppContent() {
                         <button
                           type="submit"
                           disabled={isSubmittingIncident}
-                          className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-75 rounded-xl shadow-[0_4px_20px_rgba(37,99,235,0.3)] border border-blue-400/30 transition-all cursor-pointer"
+                          className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-[#F6F3EB] bg-[#181818] hover:bg-black dark:bg-[#F4EFEB] dark:text-[#181818] dark:hover:bg-white disabled:opacity-75 rounded-xl shadow-xs border border-[#181818]/20 transition-all cursor-pointer active:scale-[0.98]"
                         >
                           {isSubmittingIncident ? (
                             <>
@@ -2056,28 +2072,28 @@ function CrosscheckAppContent() {
 
               {/* Records & Ledger Section */}
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                <div className="flex items-center justify-between pb-2 border-b border-[#181818]/10 dark:border-[#2D2B27]">
+                  <h3 className="text-base font-editorial font-bold text-[#181818] dark:text-[#F4EFEB]">
                     Evidence Ledger & Filed Cases ({vaultEntries.length})
                   </h3>
-                  <span className="text-xs text-gray-400">Cryptographically Chained</span>
+                  <span className="text-xs font-mono text-[#747068] dark:text-[#9E998F]">Cryptographically Chained</span>
                 </div>
 
                 {vaultEntries.length === 0 ? (
-                  <div className="p-10 backdrop-blur-xl bg-white/70 dark:bg-[#131620]/65 border border-white/80 dark:border-white/10 rounded-3xl text-center space-y-3 shadow-sm">
-                    <div className="w-12 h-12 rounded-2xl bg-blue-600/10 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center justify-center mx-auto shadow-xs">
+                  <div className="p-10 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/12 dark:border-[#2D2B27] rounded-2xl text-center space-y-3 shadow-xs newspaper-card">
+                    <div className="w-12 h-12 rounded-xl bg-[#181818] dark:bg-[#F4EFEB] text-[#F6F3EB] dark:text-[#181818] flex items-center justify-center mx-auto shadow-xs">
                       <Archive className="w-6 h-6" />
                     </div>
-                    <p className="text-sm font-bold text-gray-800 dark:text-gray-200">
+                    <p className="text-sm font-bold text-[#181818] dark:text-[#F4EFEB] font-editorial text-base">
                       No Records in Evidence Vault Yet
                     </p>
-                    <p className="text-xs text-gray-400 max-w-md mx-auto">
+                    <p className="text-xs font-mono text-[#747068] dark:text-[#9E998F] max-w-md mx-auto">
                       File an incident report above if you encountered scams, bullying, or harassment, or save analyzed claims from verification reports.
                     </p>
                     <button
                       type="button"
                       onClick={() => setIsFilingIncident(true)}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-xl shadow-xs border border-blue-400/30 transition-all"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#F6F3EB] bg-[#181818] hover:bg-black dark:bg-[#F4EFEB] dark:text-[#181818] rounded-xl shadow-xs border border-[#181818]/20 transition-all active:scale-[0.98]"
                     >
                       <FilePlus className="w-3.5 h-3.5" />
                       <span>File an Incident Report</span>
@@ -2088,39 +2104,39 @@ function CrosscheckAppContent() {
                     {vaultEntries.map((e, idx) => {
                       const isIncident = e.isIncidentReport;
                       const categoryBadgeColor = {
-                        scam: "bg-red-500/10 text-red-700 border-red-500/30 dark:bg-red-950/40 dark:text-red-300 dark:border-red-900/60",
-                        bullying: "bg-purple-500/10 text-purple-700 border-purple-500/30 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-900/60",
-                        harassment: "bg-rose-500/10 text-rose-700 border-rose-500/30 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/60",
-                        impersonation: "bg-blue-500/10 text-blue-700 border-blue-500/30 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900/60",
-                        other: "bg-gray-500/10 text-gray-700 border-gray-400/30 dark:bg-gray-800/40 dark:text-gray-300 dark:border-gray-700"
-                      }[e.incidentCategory || "other"] || "bg-gray-500/10 text-gray-700 border-gray-400/30";
+                        scam: "bg-[#FDF1EE] text-[#A83220] border-[#F2C0B7] dark:bg-[#2A1412] dark:text-[#E06D53] dark:border-[#4E221D]",
+                        bullying: "bg-[#FFF9EC] text-[#8C6418] border-[#F4E0A5] dark:bg-[#261E0E] dark:text-[#E0B853] dark:border-[#4B3B1B]",
+                        harassment: "bg-[#FDF1EE] text-[#A83220] border-[#F2C0B7] dark:bg-[#2A1412] dark:text-[#E06D53] dark:border-[#4E221D]",
+                        impersonation: "bg-[#FAF7F0] text-[#181818] border-[#181818]/20 dark:bg-[#22201D] dark:text-[#F4EFEB]",
+                        other: "bg-[#FAF7F0] text-[#747068] border-[#181818]/15 dark:bg-[#22201D] dark:text-[#9E998F]"
+                      }[e.incidentCategory || "other"] || "bg-[#FAF7F0] text-[#747068] border-[#181818]/15";
 
                       return (
                         <div
                           key={idx}
-                          className="p-5 backdrop-blur-xl bg-white/70 dark:bg-[#131620]/65 border border-white/80 dark:border-white/10 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:border-blue-400/30 transition-all space-y-3"
+                          className="p-5 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/12 dark:border-[#2D2B27] rounded-2xl shadow-xs hover:border-[#181818]/30 transition-all space-y-3 newspaper-card"
                         >
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-gray-100 dark:border-white/10">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-[#181818]/10 dark:border-[#2D2B27]">
                             <div className="flex items-center gap-2.5 flex-wrap">
-                              <span className="font-mono font-bold text-xs text-gray-900 dark:text-white">
+                              <span className="font-mono font-bold text-xs text-[#181818] dark:text-[#F4EFEB]">
                                 #{e.caseId || e.reportId}
                               </span>
-                              <span className={`px-2.5 py-0.5 text-[10px] font-mono font-bold rounded-full border uppercase backdrop-blur-xs ${categoryBadgeColor}`}>
+                              <span className={`px-2.5 py-0.5 text-[10px] font-mono font-bold rounded-full border uppercase ${categoryBadgeColor}`}>
                                 {e.incidentCategory || "Digital Harm"}
                               </span>
                               {isIncident ? (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-semibold bg-emerald-500/10 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 rounded-full border border-emerald-500/30">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-mono font-semibold bg-[#EDF7F1] text-[#1E4D38] dark:bg-[#11241A] dark:text-[#52B788] rounded-full border border-[#BCE3CE] dark:border-[#1E4631]">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[#2D6A4F] animate-pulse" />
                                   <span>Queued for Cyber Cell Review</span>
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold bg-white/60 text-gray-700 dark:bg-white/10 dark:text-gray-300 rounded-full border border-white/70 dark:border-white/10">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-semibold bg-[#FAF7F0] text-[#181818] dark:bg-[#22201D] dark:text-[#F4EFEB] rounded-full border border-[#181818]/15 dark:border-[#33302B]">
                                   <span>Ledger Verified</span>
                                 </span>
                               )}
                             </div>
 
-                            <div className="text-[11px] font-mono text-gray-400">
+                            <div className="text-[11px] font-mono text-[#747068] dark:text-[#9E998F]">
                               {new Date(e.timestamp).toLocaleDateString("en-IN", {
                                 day: "numeric",
                                 month: "short",
@@ -2138,7 +2154,7 @@ function CrosscheckAppContent() {
                                   setSelectedDossierEntry(e);
                                   setIsDossierModalOpen(true);
                                 }}
-                                className="w-24 h-24 rounded-xl overflow-hidden border border-white/80 dark:border-white/15 bg-white/50 dark:bg-black/20 flex-shrink-0 cursor-pointer group relative shadow-xs"
+                                className="w-24 h-24 rounded-xl overflow-hidden border border-[#181818]/15 bg-[#FAF7F0] dark:bg-[#1E1C19] flex-shrink-0 cursor-pointer group relative shadow-xs"
                                 title="Click to view attached evidence"
                               >
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -2147,33 +2163,33 @@ function CrosscheckAppContent() {
                                   alt="Evidence thumbnail"
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                                 />
-                                <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold backdrop-blur-2xs">
+                                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-mono font-bold">
                                   View
                                 </div>
                               </div>
                             )}
 
                             <div className="flex-1 space-y-1.5">
-                              <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 leading-relaxed">
+                              <p className="text-xs font-semibold text-[#181818] dark:text-[#F4EFEB] leading-relaxed font-sans">
                                 {e.details || e.claimText}
                               </p>
 
                               {isIncident && (
-                                <div className="flex items-center gap-4 text-[11px] text-gray-500 pt-1 flex-wrap">
-                                  {e.platform && <span>Channel: <strong>{e.platform}</strong></span>}
-                                  {e.contactPhone && <span>Contact: <strong>{e.contactPhone}</strong></span>}
-                                  {e.suspectInfo && <span>Suspect: <code className="font-mono bg-white/80 dark:bg-white/10 px-1 py-0.5 rounded border border-white/80 dark:border-white/10">{e.suspectInfo}</code></span>}
+                                <div className="flex items-center gap-4 text-[11px] font-mono text-[#747068] dark:text-[#9E998F] pt-1 flex-wrap">
+                                  {e.platform && <span>Channel: <strong className="text-[#181818] dark:text-[#F4EFEB]">{e.platform}</strong></span>}
+                                  {e.contactPhone && <span>Contact: <strong className="text-[#181818] dark:text-[#F4EFEB]">{e.contactPhone}</strong></span>}
+                                  {e.suspectInfo && <span>Suspect: <code className="font-mono bg-[#FAF7F0] dark:bg-[#22201D] px-1 py-0.5 rounded border border-[#181818]/15 dark:border-[#33302B] text-[#181818] dark:text-[#F4EFEB]">{e.suspectInfo}</code></span>}
                                 </div>
                               )}
 
-                              <p className="font-mono text-[10px] text-gray-400 truncate pt-0.5">
+                              <p className="font-mono text-[10px] text-[#747068] dark:text-[#9E998F] truncate pt-0.5">
                                 SHA-256: {e.entryHash}
                               </p>
                             </div>
                           </div>
 
-                          <div className="pt-2 flex items-center justify-between border-t border-gray-100 dark:border-white/10 text-xs">
-                            <span className="text-[11px] text-gray-500">
+                          <div className="pt-2 flex items-center justify-between border-t border-[#181818]/10 dark:border-[#2D2B27] text-xs">
+                            <span className="text-[11px] font-mono text-[#747068] dark:text-[#9E998F]">
                               {isIncident
                                 ? "Queued for Cyber Cell • Review ETA 24-48 hrs"
                                 : `Trust Score: ${e.score}/100 • Verdict: ${e.verdict}`}
@@ -2186,7 +2202,7 @@ function CrosscheckAppContent() {
                                   setSelectedDossierEntry(e);
                                   setIsDossierModalOpen(true);
                                 }}
-                                className="px-3 py-1 text-xs font-semibold text-gray-700 dark:text-gray-300 backdrop-blur-md bg-white/80 dark:bg-white/10 border border-white/80 dark:border-white/15 hover:bg-white rounded-lg transition-all"
+                                className="px-3 py-1 text-xs font-semibold text-[#181818] dark:text-[#F4EFEB] bg-[#FAF7F0] dark:bg-[#22201D] border border-[#181818]/15 dark:border-[#33302B] hover:bg-[#EFECE4] rounded-lg transition-all"
                               >
                                 View Dossier
                               </button>
@@ -2194,7 +2210,7 @@ function CrosscheckAppContent() {
                               <button
                                 type="button"
                                 onClick={() => handleDownloadDossier(e)}
-                                className="px-3 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300 bg-blue-500/10 dark:bg-blue-500/15 border border-blue-400/30 hover:bg-blue-500/20 rounded-lg transition-all"
+                                className="px-3 py-1 text-xs font-semibold text-[#F6F3EB] bg-[#181818] dark:bg-[#F4EFEB] dark:text-[#181818] hover:bg-black dark:hover:bg-white rounded-lg transition-all active:scale-[0.98]"
                                 title="Download formal complaint letter"
                               >
                                 Download Draft
@@ -2203,7 +2219,7 @@ function CrosscheckAppContent() {
                               <button
                                 type="button"
                                 onClick={() => handleDeleteVaultEntry(e.caseId || e.reportId)}
-                                className="p-1.5 text-gray-400 hover:text-red-600 rounded-lg transition-colors"
+                                className="p-1.5 text-[#747068] hover:text-[#A83220] rounded-lg transition-colors"
                                 title="Delete vault entry"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -2220,20 +2236,23 @@ function CrosscheckAppContent() {
           )}
 
           {/* ========================================================
-              THE FAMILY SAFE-WORD VIEW (FROSTED LIQUID GLASS)
+              THE FAMILY SAFE-WORD VIEW (BROADSHEET NEWSPAPER WIRE)
               "Assume the fake is perfect."
               Out-of-band persistent authentication against AI voice cloning.
               ======================================================== */}
           {activeNav === "safecircle" && (
             <div className="space-y-6 animate-in fade-in-0 duration-200">
               {/* Header & Controls Bar */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200/60 dark:border-white/10">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#181818]/15 dark:border-[#2D2B27]">
                 <div>
-                  <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                  <div className="text-[10px] font-mono tracking-widest text-[#747068] uppercase font-bold mb-1">
+                    CONFIDENTIAL WIRE • VOICE CLONE INTERCEPT
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-editorial font-bold text-[#181818] dark:text-[#F6F3EB] tracking-tight">
                     The Family Safe-Word
                   </h2>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Assume the fake is perfect. Persistent out-of-band authentication for families against voice-clone scams.
+                  <p className="text-xs text-[#55524B] dark:text-[#A8A29E] mt-1 font-serif">
+                    Assume the fake is perfect. Persistent out-of-band authentication for families against voice-clone extortion scams.
                   </p>
                 </div>
 
@@ -2241,7 +2260,7 @@ function CrosscheckAppContent() {
                 <div className="flex items-center gap-2 flex-wrap">
                   {/* Language Selector */}
                   <div className="relative flex items-center">
-                    <Languages className="w-3.5 h-3.5 text-gray-400 absolute left-3 pointer-events-none" />
+                    <Languages className="w-3.5 h-3.5 text-[#747068] absolute left-3 pointer-events-none" />
                     <select
                       value={safeWordLang}
                       onChange={(e) => {
@@ -2251,10 +2270,10 @@ function CrosscheckAppContent() {
                         showToast(`Language set to ${SAFE_WORD_LANGUAGES[newLang]?.label}`, "success");
                       }}
                       aria-label="Select family safe-word language"
-                      className="pl-8 pr-7 py-1.5 text-xs font-semibold backdrop-blur-md bg-white/70 dark:bg-white/10 border border-white/80 dark:border-white/10 text-gray-800 dark:text-gray-200 rounded-xl shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-400 transition-all cursor-pointer"
+                      className="pl-8 pr-7 py-1.5 text-xs font-semibold bg-[#FCFAF6] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] text-[#181818] dark:text-[#F6F3EB] rounded-xl shadow-xs focus:outline-none focus:ring-1 focus:ring-[#181818] dark:focus:ring-[#F4EFEB] transition-all cursor-pointer"
                     >
                       {Object.values(SAFE_WORD_LANGUAGES).map((l) => (
-                        <option key={l.id} value={l.id} className="dark:bg-[#15171C]">
+                        <option key={l.id} value={l.id} className="dark:bg-[#1E1C19]">
                           {l.flag} {l.label}
                         </option>
                       ))}
@@ -2265,9 +2284,9 @@ function CrosscheckAppContent() {
                   <button
                     type="button"
                     onClick={handleOpenEditWordModal}
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 backdrop-blur-md bg-white/70 dark:bg-white/10 border border-white/80 dark:border-white/10 hover:bg-white/90 dark:hover:bg-white/15 rounded-xl shadow-xs transition-all"
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#181818] dark:text-[#F6F3EB] bg-[#FCFAF6] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] hover:bg-[#EFECE4] dark:hover:bg-[#252320] rounded-xl shadow-xs transition-all active:scale-[0.98]"
                   >
-                    <Edit3 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                    <Edit3 className="w-3.5 h-3.5 text-[#181818] dark:text-[#F6F3EB]" />
                     <span>Edit Word</span>
                   </button>
 
@@ -2275,7 +2294,7 @@ function CrosscheckAppContent() {
                   <button
                     type="button"
                     onClick={handleShareToWhatsApp}
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 backdrop-blur-md bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/20 rounded-xl shadow-xs transition-all"
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#2D6A4F] dark:text-[#74C69D] bg-[#EDF7F1] dark:bg-[#1B2820] border border-[#2D6A4F]/30 hover:bg-[#D8EEDF] rounded-xl shadow-xs transition-all active:scale-[0.98]"
                     title="Share safe-word via WhatsApp"
                   >
                     <Share2 className="w-3.5 h-3.5" />
@@ -2285,12 +2304,12 @@ function CrosscheckAppContent() {
               </div>
 
               {/* Editorial Statement: The Hook & Counter-Intuitive Twist */}
-              <div className="p-6 backdrop-blur-xl bg-white/70 dark:bg-[#131620]/65 border border-white/80 dark:border-white/10 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] space-y-3">
-                <blockquote className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white leading-relaxed">
+              <div className="p-6 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/15 dark:border-[#2D2B27] rounded-2xl shadow-sm space-y-3">
+                <blockquote className="text-base sm:text-lg font-editorial italic font-semibold text-[#181818] dark:text-[#F6F3EB] leading-relaxed">
                   “Voice-clone scams can't be detected, so stop trying and make them irrelevant.”
                 </blockquote>
-                <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                  <strong className="font-semibold text-gray-900 dark:text-gray-200">The Counter-Intuitive Twist:</strong> Every detector assumes a fake can be spotted. Voice and video clones will soon be indistinguishable, so we break that assumption. Borrowing from banking dual-control and espionage duress codes: authentication happens out of band, through something an imposter cannot know.
+                <p className="text-xs text-[#55524B] dark:text-[#A8A29E] leading-relaxed">
+                  <strong className="font-semibold text-[#181818] dark:text-[#F6F3EB]">The Counter-Intuitive Twist:</strong> Every detector assumes a fake can be spotted. Voice and video clones will soon be indistinguishable, so we break that assumption. Borrowing from banking dual-control and espionage duress codes: authentication happens out of band, through something an imposter cannot know.
                 </p>
               </div>
 
@@ -2299,26 +2318,26 @@ function CrosscheckAppContent() {
                 {/* Left Column: Persistent Safe-Word, Silent Duress Word & Playbook */}
                 <div className="lg:col-span-5 space-y-6">
                   {/* Card 1: Persistent Family Safe-Word */}
-                  <div className="p-6 backdrop-blur-xl bg-white/70 dark:bg-[#131620]/65 border border-white/80 dark:border-white/10 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] space-y-5">
-                    <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-white/10">
-                      <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  <div className="p-6 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/15 dark:border-[#2D2B27] rounded-2xl shadow-sm space-y-5">
+                    <div className="flex items-center justify-between pb-3 border-b border-[#181818]/10 dark:border-[#2D2B27]">
+                      <span className="text-xs font-mono font-bold text-[#181818] dark:text-[#F6F3EB] uppercase tracking-wider">
                         Family Safe-Word
                       </span>
-                      <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold bg-blue-500/10 text-blue-700 dark:text-blue-300 rounded-full border border-blue-400/30">
+                      <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] rounded-full">
                         {safeWordData?.isCustom ? "Custom Word" : "Standard Word"}
                       </span>
                     </div>
 
                     {/* Word Display Box */}
-                    <div className="p-6 backdrop-blur-md bg-gradient-to-br from-blue-500/10 via-white/50 to-indigo-500/5 dark:from-blue-500/15 dark:via-white/[0.02] dark:to-indigo-500/10 border border-blue-400/30 dark:border-blue-500/20 rounded-2xl text-center space-y-3 shadow-xs">
-                      <span className="text-xs text-gray-500 dark:text-gray-400 block">
+                    <div className="p-6 bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] rounded-2xl text-center space-y-3 shadow-xs">
+                      <span className="text-xs text-[#747068] font-serif block">
                         Ask caller for this word when contacted by family
                       </span>
-                      <div className="text-3xl sm:text-4xl font-extrabold tracking-wide bg-gradient-to-r from-gray-900 via-blue-950 to-indigo-900 dark:from-white dark:via-blue-100 dark:to-indigo-200 bg-clip-text text-transparent py-1">
+                      <div className="text-2xl sm:text-3xl font-mono font-extrabold tracking-widest text-[#181818] dark:text-[#F6F3EB] py-1">
                         {safeWordData?.code || "GOLDEN LOTUS"}
                       </div>
-                      <div className="text-xs text-gray-400 font-medium">
-                        {safeWordData?.language?.label || "English"}
+                      <div className="text-xs text-[#747068] font-mono uppercase tracking-wider">
+                        Language: {safeWordData?.language?.label || "English"}
                       </div>
 
                       {/* Action Buttons: Pronounce, Copy, Edit */}
@@ -2326,26 +2345,26 @@ function CrosscheckAppContent() {
                         <button
                           type="button"
                           onClick={() => handleSpeakSafeWord(safeWordData?.code, safeWordLang)}
-                          className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 backdrop-blur-md bg-white/80 dark:bg-white/10 border border-white/80 dark:border-white/15 hover:bg-white rounded-xl transition-all active:scale-95 shadow-xs"
+                          className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#181818] dark:text-[#F6F3EB] bg-[#FCFAF6] dark:bg-[#252320] border border-[#181818]/20 dark:border-[#2D2B27] hover:bg-[#EFECE4] rounded-xl transition-all active:scale-[0.98] shadow-xs"
                           title="Listen to pronunciation"
                         >
-                          <Volume2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                          <Volume2 className="w-3.5 h-3.5 text-[#181818] dark:text-[#F6F3EB]" />
                           <span>Pronounce</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => handleCopySafeWord(safeWordData?.code, "safe")}
-                          className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 backdrop-blur-md bg-white/80 dark:bg-white/10 border border-white/80 dark:border-white/15 hover:bg-white rounded-xl transition-all active:scale-95 shadow-xs"
+                          className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#181818] dark:text-[#F6F3EB] bg-[#FCFAF6] dark:bg-[#252320] border border-[#181818]/20 dark:border-[#2D2B27] hover:bg-[#EFECE4] rounded-xl transition-all active:scale-[0.98] shadow-xs"
                         >
                           {copiedSafeWord ? (
                             <>
-                              <Check className="w-3.5 h-3.5 text-emerald-600" />
-                              <span className="text-emerald-600">Copied</span>
+                              <Check className="w-3.5 h-3.5 text-[#2D6A4F]" />
+                              <span className="text-[#2D6A4F] font-bold">Copied</span>
                             </>
                           ) : (
                             <>
-                              <Copy className="w-3.5 h-3.5" />
+                              <Copy className="w-3.5 h-3.5 text-[#181818] dark:text-[#F6F3EB]" />
                               <span>Copy Word</span>
                             </>
                           )}
@@ -2354,7 +2373,7 @@ function CrosscheckAppContent() {
                         <button
                           type="button"
                           onClick={handleOpenEditWordModal}
-                          className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-blue-700 dark:text-blue-300 bg-blue-500/10 dark:bg-blue-500/15 border border-blue-400/30 hover:bg-blue-500/20 rounded-xl transition-all active:scale-95 shadow-xs"
+                          className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#F6F3EB] bg-[#181818] dark:bg-[#F4EFEB] dark:text-[#181818] hover:bg-black rounded-xl transition-all active:scale-[0.98] shadow-xs"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                           <span>Edit</span>
@@ -2362,41 +2381,41 @@ function CrosscheckAppContent() {
                       </div>
                     </div>
 
-                    <div className="text-[11px] text-gray-400 text-center font-medium">
+                    <div className="text-[11px] text-[#747068] text-center font-mono">
                       Stays set permanently for your family until you choose to edit it.
                     </div>
                   </div>
 
-                  {/* Card 2: The Silent Duress Word (TRANSLUCENT AMBER GLASS) */}
-                  <div className="p-6 backdrop-blur-xl bg-gradient-to-br from-amber-500/10 via-white/50 to-amber-500/5 dark:from-amber-400/10 dark:via-[#131620]/60 dark:to-transparent border border-amber-400/30 dark:border-amber-400/20 rounded-2xl shadow-[0_8px_30px_rgba(245,158,11,0.05)] space-y-4">
-                    <div className="flex items-center justify-between pb-3 border-b border-amber-400/20">
+                  {/* Card 2: The Silent Duress Word (VINTAGE AMBER / TERRACOTTA BROADSHEET) */}
+                  <div className="p-6 bg-[#FFF9EC] dark:bg-[#252018] border border-[#C58F2C]/30 dark:border-[#C58F2C]/40 rounded-2xl shadow-sm space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-[#C58F2C]/20">
                       <div className="flex items-center gap-2">
-                        <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                        <span className="text-xs font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                        <ShieldAlert className="w-4 h-4 text-[#C58F2C]" />
+                        <span className="text-xs font-mono font-bold text-[#181818] dark:text-[#F6F3EB] uppercase tracking-wider">
                           Silent Duress Word
                         </span>
                       </div>
                       <button
                         type="button"
                         onClick={handleOpenEditWordModal}
-                        className="text-xs text-amber-700 dark:text-amber-400 font-semibold hover:underline flex items-center gap-1"
+                        className="text-xs text-[#C58F2C] font-semibold hover:underline flex items-center gap-1 font-mono"
                       >
                         <Edit3 className="w-3 h-3" />
                         <span>Edit</span>
                       </button>
                     </div>
 
-                    <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                    <p className="text-xs text-[#55524B] dark:text-[#D4C3A3] leading-relaxed">
                       If you or your family member is coerced to give the safe-word under physical threat, recite this word instead. It sounds normal to the scammer, but discreetly triggers an emergency alarm to refuse transfers and notify authorities.
                     </p>
 
                     {/* Masked Duress Word */}
-                    <div className="p-4 backdrop-blur-md bg-amber-500/10 dark:bg-amber-400/5 border border-amber-400/30 dark:border-amber-400/20 rounded-xl flex items-center justify-between gap-3 shadow-xs">
+                    <div className="p-4 bg-[#FAF3E0] dark:bg-[#1D1913] border border-[#C58F2C]/30 rounded-xl flex items-center justify-between gap-3 shadow-xs">
                       <div>
-                        <div className="text-[11px] font-medium text-amber-800 dark:text-amber-400">
+                        <div className="text-[11px] font-mono font-bold text-[#C58F2C] uppercase">
                           Coercion signal word
                         </div>
-                        <div className="text-xl font-mono font-bold text-gray-900 dark:text-white mt-0.5">
+                        <div className="text-xl font-mono font-bold text-[#181818] dark:text-[#F6F3EB] mt-0.5 tracking-wider">
                           {isDuressRevealed ? (safeWordData?.duressCode || "SILVER FALCON") : "••••••••••••••"}
                         </div>
                       </div>
@@ -2405,7 +2424,7 @@ function CrosscheckAppContent() {
                         <button
                           type="button"
                           onClick={() => setIsDuressRevealed(!isDuressRevealed)}
-                          className="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 backdrop-blur-md bg-white/80 dark:bg-white/10 border border-white/80 dark:border-white/15 hover:bg-white rounded-lg transition-all"
+                          className="px-3 py-1.5 text-xs font-semibold text-[#181818] dark:text-[#F6F3EB] bg-[#FCFAF6] dark:bg-[#252320] border border-[#181818]/20 dark:border-[#2D2B27] hover:bg-[#EFECE4] rounded-lg transition-all active:scale-[0.98]"
                         >
                           {isDuressRevealed ? "Hide" : "Reveal"}
                         </button>
@@ -2414,10 +2433,10 @@ function CrosscheckAppContent() {
                           <button
                             type="button"
                             onClick={() => handleCopySafeWord(safeWordData?.duressCode, "duress")}
-                            className="p-1.5 text-xs text-gray-700 dark:text-gray-300 backdrop-blur-md bg-white/80 dark:bg-white/10 border border-white/80 dark:border-white/15 hover:bg-white rounded-lg transition-all"
+                            className="p-1.5 text-xs text-[#181818] dark:text-[#F6F3EB] bg-[#FCFAF6] dark:bg-[#252320] border border-[#181818]/20 dark:border-[#2D2B27] hover:bg-[#EFECE4] rounded-lg transition-all"
                             title="Copy duress code"
                           >
-                            {copiedDuressWord ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                            {copiedDuressWord ? <Check className="w-4 h-4 text-[#2D6A4F]" /> : <Copy className="w-4 h-4" />}
                           </button>
                         )}
                       </div>
@@ -2425,23 +2444,23 @@ function CrosscheckAppContent() {
                   </div>
 
                   {/* Indian Family Protection Playbook */}
-                  <div className="p-6 backdrop-blur-xl bg-white/70 dark:bg-[#131620]/65 border border-white/80 dark:border-white/10 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] space-y-3">
-                    <h4 className="text-xs font-semibold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                      <Users className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  <div className="p-6 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/15 dark:border-[#2D2B27] rounded-2xl shadow-sm space-y-3">
+                    <h4 className="text-xs font-mono font-bold text-[#181818] dark:text-[#F6F3EB] uppercase tracking-wider flex items-center gap-2">
+                      <Users className="w-3.5 h-3.5 text-[#181818] dark:text-[#F6F3EB]" />
                       <span>Family Protocol</span>
                     </h4>
-                    <div className="space-y-2 text-xs text-gray-600 dark:text-gray-400">
-                      <div className="p-3 backdrop-blur-md bg-white/50 dark:bg-white/[0.03] rounded-xl border border-white/70 dark:border-white/10 flex gap-2.5">
-                        <span className="font-semibold text-blue-600 dark:text-blue-400 font-mono">1.</span>
-                        <span><strong>The Shared Rule:</strong> Agree that no urgent money will ever be sent from an unknown caller without reciting the safe-word.</span>
+                    <div className="space-y-2 text-xs text-[#55524B] dark:text-[#A8A29E]">
+                      <div className="p-3 bg-[#FAF7F0] dark:bg-[#1E1C19] rounded-xl border border-[#181818]/10 dark:border-[#2D2B27] flex gap-2.5">
+                        <span className="font-bold text-[#181818] dark:text-[#F6F3EB] font-mono">1.</span>
+                        <span><strong className="text-[#181818] dark:text-[#F6F3EB]">The Shared Rule:</strong> Agree that no urgent money will ever be sent from an unknown caller without reciting the safe-word.</span>
                       </div>
-                      <div className="p-3 backdrop-blur-md bg-white/50 dark:bg-white/[0.03] rounded-xl border border-white/70 dark:border-white/10 flex gap-2.5">
-                        <span className="font-semibold text-blue-600 dark:text-blue-400 font-mono">2.</span>
-                        <span><strong>The Question:</strong> When a crying voice says <em>"Papa, accident ho gaya hai, turant paise bhejo"</em>, calmly ask: <strong>"Beta, safe-word kya hai?"</strong></span>
+                      <div className="p-3 bg-[#FAF7F0] dark:bg-[#1E1C19] rounded-xl border border-[#181818]/10 dark:border-[#2D2B27] flex gap-2.5">
+                        <span className="font-bold text-[#181818] dark:text-[#F6F3EB] font-mono">2.</span>
+                        <span><strong className="text-[#181818] dark:text-[#F6F3EB]">The Question:</strong> When a crying voice says <em>"Papa, accident ho gaya hai, turant paise bhejo"</em>, calmly ask: <strong>"Beta, safe-word kya hai?"</strong></span>
                       </div>
-                      <div className="p-3 backdrop-blur-md bg-white/50 dark:bg-white/[0.03] rounded-xl border border-white/70 dark:border-white/10 flex gap-2.5">
-                        <span className="font-semibold text-blue-600 dark:text-blue-400 font-mono">3.</span>
-                        <span><strong>Zero AI Trust:</strong> Voice and face can be synthesized by deepfakes in seconds, but an offline secret cannot be guessed.</span>
+                      <div className="p-3 bg-[#FAF7F0] dark:bg-[#1E1C19] rounded-xl border border-[#181818]/10 dark:border-[#2D2B27] flex gap-2.5">
+                        <span className="font-bold text-[#181818] dark:text-[#F6F3EB] font-mono">3.</span>
+                        <span><strong className="text-[#181818] dark:text-[#F6F3EB]">Zero AI Trust:</strong> Voice and face can be synthesized by deepfakes in seconds, but an offline secret cannot be guessed.</span>
                       </div>
                     </div>
                   </div>
@@ -2449,15 +2468,15 @@ function CrosscheckAppContent() {
 
                 {/* Right Column: Microphone Listening & Live Phone Call Verifier */}
                 <div className="lg:col-span-7 space-y-6">
-                  <div className="p-6 backdrop-blur-xl bg-white/70 dark:bg-[#131620]/65 border border-white/80 dark:border-white/10 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] space-y-5">
+                  <div className="p-6 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/15 dark:border-[#2D2B27] rounded-2xl shadow-sm space-y-5">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <PhoneCall className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                        <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                        <PhoneCall className="w-4 h-4 text-[#181818] dark:text-[#F6F3EB]" />
+                        <h3 className="text-base font-editorial font-bold text-[#181818] dark:text-[#F6F3EB]">
                           Verify Incoming Call
                         </h3>
                       </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                      <p className="text-xs text-[#55524B] dark:text-[#A8A29E] leading-relaxed font-serif">
                         Put the caller on speaker. Press the microphone button to listen to the call audio. The AI model inspects the words, checks against your family safe-word, and identifies voice-clone extortion tactics.
                       </p>
                     </div>
@@ -2468,16 +2487,16 @@ function CrosscheckAppContent() {
                         <button
                           type="button"
                           onClick={startListening}
-                          className="w-full p-6 rounded-2xl bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-[0_8px_30px_rgba(37,99,235,0.35)] border border-blue-400/30 transition-all flex flex-col items-center justify-center gap-2.5 group cursor-pointer active:scale-98"
+                          className="w-full p-6 rounded-2xl bg-[#181818] dark:bg-[#F4EFEB] hover:bg-black text-[#F6F3EB] dark:text-[#181818] shadow-lg border border-[#181818]/30 transition-all flex flex-col items-center justify-center gap-2.5 group cursor-pointer active:scale-[0.98]"
                         >
-                          <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
-                            <Mic className="w-7 h-7 text-white" />
+                          <div className="w-14 h-14 rounded-full bg-white/10 dark:bg-black/10 border border-white/20 dark:border-black/20 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
+                            <Mic className="w-7 h-7 text-[#F6F3EB] dark:text-[#181818]" />
                           </div>
                           <div className="text-center">
                             <div className="text-sm font-bold tracking-tight">
                               Tap to Listen to Caller Speech
                             </div>
-                            <div className="text-xs text-blue-100 opacity-90 mt-0.5">
+                            <div className="text-xs text-[#DCD6CD] dark:text-[#55524B] opacity-90 mt-0.5">
                               Hold phone near speaker or speak caller words into microphone
                             </div>
                           </div>
@@ -2485,26 +2504,26 @@ function CrosscheckAppContent() {
                       )}
 
                       {isListening && (
-                        <div className="w-full p-6 rounded-2xl backdrop-blur-xl bg-red-500/10 dark:bg-red-500/15 border-2 border-red-500/70 shadow-[0_8px_30px_rgba(239,68,68,0.2)] flex flex-col items-center justify-center gap-3">
+                        <div className="w-full p-6 rounded-2xl bg-[#FDF1EE] dark:bg-[#2B1B19] border-2 border-[#C84630] shadow-sm flex flex-col items-center justify-center gap-3">
                           <div className="relative">
-                            <div className="absolute inset-0 rounded-full bg-red-400 animate-ping opacity-40" />
-                            <div className="w-14 h-14 rounded-full bg-red-600 flex items-center justify-center relative z-10 shadow-lg shadow-red-600/40">
+                            <div className="absolute inset-0 rounded-full bg-[#C84630] animate-ping opacity-30" />
+                            <div className="w-14 h-14 rounded-full bg-[#C84630] flex items-center justify-center relative z-10 shadow-lg">
                               <Mic className="w-7 h-7 text-white animate-pulse" />
                             </div>
                           </div>
                           <div className="text-center space-y-1">
-                            <div className="flex items-center justify-center gap-2 text-sm font-bold text-red-700 dark:text-red-400">
-                              <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping" />
+                            <div className="flex items-center justify-center gap-2 text-sm font-bold text-[#C84630]">
+                              <span className="w-2.5 h-2.5 rounded-full bg-[#C84630] animate-ping" />
                               <span>Listening to Incoming Call Audio...</span>
                             </div>
-                            <p className="text-xs text-red-600 dark:text-red-300">
+                            <p className="text-xs text-[#78281F] dark:text-[#FCDFD7]">
                               Caller speech is being captured in real-time
                             </p>
                           </div>
                           <button
                             type="button"
                             onClick={() => stopListening(true)}
-                            className="mt-2 px-6 py-2.5 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-full shadow-md shadow-red-600/30 transition-all cursor-pointer flex items-center gap-2 active:scale-95"
+                            className="mt-2 px-6 py-2.5 text-xs font-bold text-white bg-[#C84630] hover:bg-[#A8321E] rounded-full shadow-md transition-all cursor-pointer flex items-center gap-2 active:scale-95"
                           >
                             <MicOff className="w-3.5 h-3.5" />
                             <span>Stop & Analyze Call</span>
@@ -2513,13 +2532,13 @@ function CrosscheckAppContent() {
                       )}
 
                       {isAnalyzingCall && (
-                        <div className="w-full p-7 rounded-2xl backdrop-blur-xl bg-blue-500/10 dark:bg-blue-500/15 border border-blue-400/40 shadow-[0_8px_30px_rgba(37,99,235,0.15)] flex flex-col items-center justify-center gap-3">
-                          <RefreshCw className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
+                        <div className="w-full p-7 rounded-2xl bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] shadow-sm flex flex-col items-center justify-center gap-3">
+                          <RefreshCw className="w-8 h-8 text-[#181818] dark:text-[#F6F3EB] animate-spin" />
                           <div className="text-center space-y-1">
-                            <div className="text-sm font-bold text-blue-950 dark:text-blue-200">
+                            <div className="text-sm font-bold text-[#181818] dark:text-[#F6F3EB]">
                               Forensic AI Analyzing Call Audio...
                             </div>
-                            <div className="text-xs text-blue-600 dark:text-blue-400">
+                            <div className="text-xs text-[#747068]">
                               Comparing against family safe-word & identifying voice-clone extortion patterns
                             </div>
                           </div>
@@ -2528,25 +2547,25 @@ function CrosscheckAppContent() {
 
                       {/* Live Audio Transcript Box */}
                       {liveTranscript && (
-                        <div className="p-3.5 backdrop-blur-md bg-white/60 dark:bg-black/25 border border-white/80 dark:border-white/10 rounded-xl space-y-1.5 animate-in fade-in-0 shadow-xs">
-                          <div className="text-[10px] font-mono font-semibold uppercase text-gray-500 flex items-center justify-between">
+                        <div className="p-3.5 bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/15 dark:border-[#2D2B27] rounded-xl space-y-1.5 animate-in fade-in-0 shadow-xs">
+                          <div className="text-[10px] font-mono font-semibold uppercase text-[#747068] flex items-center justify-between">
                             <span>Transcribed Audio Stream</span>
                             {isListening ? (
-                              <span className="text-red-600 font-bold flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping" />
+                              <span className="text-[#C84630] font-bold flex items-center gap-1 font-mono">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#C84630] animate-ping" />
                                 LIVE RECORDING
                               </span>
                             ) : (
                               <button
                                 type="button"
                                 onClick={() => handleAnalyzeCallerSpeech(liveTranscript)}
-                                className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                                className="text-[#181818] dark:text-[#F6F3EB] font-bold hover:underline font-mono"
                               >
                                 Re-analyze
                               </button>
                             )}
                           </div>
-                          <p className="text-xs text-gray-900 dark:text-white font-medium italic leading-relaxed">
+                          <p className="text-xs text-[#181818] dark:text-[#F6F3EB] font-medium italic leading-relaxed">
                             "{liveTranscript}"
                           </p>
                         </div>
@@ -2555,7 +2574,7 @@ function CrosscheckAppContent() {
 
                     {/* Quick Simulation Chips */}
                     <div className="space-y-1.5 pt-1">
-                      <span className="text-[11px] font-medium text-gray-400 block">
+                      <span className="text-[11px] font-mono font-medium text-[#747068] block uppercase">
                         Quick Call Simulation:
                       </span>
                       <div className="flex flex-wrap gap-2">
@@ -2567,7 +2586,7 @@ function CrosscheckAppContent() {
                             setLiveTranscript(text);
                             handleAnalyzeCallerSpeech(text);
                           }}
-                          className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 backdrop-blur-xs transition-colors flex items-center gap-1.5 shadow-2xs"
+                          className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-[#EDF7F1] hover:bg-[#D8EEDF] text-[#2D6A4F] dark:bg-[#1B2820] dark:text-[#74C69D] border border-[#2D6A4F]/30 transition-colors flex items-center gap-1.5 shadow-2xs active:scale-[0.98]"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           <span>Simulate: Safe-word Match</span>
@@ -2581,7 +2600,7 @@ function CrosscheckAppContent() {
                             setLiveTranscript(text);
                             handleAnalyzeCallerSpeech(text);
                           }}
-                          className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30 backdrop-blur-xs transition-colors flex items-center gap-1.5 shadow-2xs"
+                          className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-[#FDF1EE] hover:bg-[#F9DDD8] text-[#C84630] dark:bg-[#2B1B19] dark:text-[#FCDFD7] border border-[#C84630]/30 transition-colors flex items-center gap-1.5 shadow-2xs active:scale-[0.98]"
                         >
                           <AlertTriangle className="w-3.5 h-3.5" />
                           <span>Simulate: Voice-Clone Scam</span>
@@ -2595,7 +2614,7 @@ function CrosscheckAppContent() {
                             setLiveTranscript(text);
                             handleAnalyzeCallerSpeech(text);
                           }}
-                          className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 backdrop-blur-xs transition-colors flex items-center gap-1.5 shadow-2xs"
+                          className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-[#FFF9EC] hover:bg-[#FEF1D4] text-[#C58F2C] dark:bg-[#252018] dark:text-[#FBE5AA] border border-[#C58F2C]/30 transition-colors flex items-center gap-1.5 shadow-2xs active:scale-[0.98]"
                         >
                           <ShieldAlert className="w-3.5 h-3.5" />
                           <span>Simulate: Duress Coercion</span>
@@ -2604,11 +2623,11 @@ function CrosscheckAppContent() {
                     </div>
 
                     {/* Manual Input Toggle for Noisy Environments or Accessibility */}
-                    <div className="pt-2 border-t border-gray-100 dark:border-white/10">
+                    <div className="pt-2 border-t border-[#181818]/10 dark:border-[#2D2B27]">
                       <button
                         type="button"
                         onClick={() => setShowManualInput(!showManualInput)}
-                        className="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white font-medium flex items-center gap-1"
+                        className="text-xs text-[#55524B] hover:text-[#181818] dark:hover:text-[#F6F3EB] font-medium flex items-center gap-1 font-mono"
                       >
                         <span>{showManualInput ? "▲ Hide manual typing" : "▼ Or type caller text manually"}</span>
                       </button>
@@ -2626,12 +2645,12 @@ function CrosscheckAppContent() {
                               }
                             }}
                             placeholder="Type what caller spoke on the phone..."
-                            className="w-full px-4 py-2.5 text-xs backdrop-blur-md bg-white/60 dark:bg-black/25 border border-white/70 dark:border-white/10 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium shadow-xs"
+                            className="w-full px-4 py-2.5 text-xs bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] rounded-xl text-[#181818] dark:text-[#F6F3EB] placeholder-[#747068] focus:outline-none focus:ring-1 focus:ring-[#181818] dark:focus:ring-[#F4EFEB] font-medium shadow-xs"
                           />
                           <button
                             type="button"
                             onClick={() => handleAnalyzeCallerSpeech(manualInputText)}
-                            className="w-full py-2.5 text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-xl transition-all shadow-xs"
+                            className="w-full py-2.5 text-xs font-bold text-[#F6F3EB] bg-[#181818] dark:bg-[#F4EFEB] dark:text-[#181818] hover:bg-black rounded-xl transition-all shadow-xs active:scale-[0.98]"
                           >
                             Authenticate Typed Speech
                           </button>
@@ -2639,30 +2658,30 @@ function CrosscheckAppContent() {
                       )}
                     </div>
 
-                    {/* Forensic Call Analysis Verdict Card (FROSTED GLASS VERDICT) */}
+                    {/* Forensic Call Analysis Verdict Card (VINTAGE STAMP VERDICT) */}
                     {callAnalysisResult && (
                       <div
-                        className={`p-5 rounded-2xl border backdrop-blur-xl transition-all animate-in fade-in-0 duration-200 space-y-3.5 ${
+                        className={`p-5 rounded-2xl border transition-all animate-in fade-in-0 duration-200 space-y-3.5 ${
                           callAnalysisResult.verdict === "VERIFIED_FAMILY"
-                            ? "bg-emerald-500/15 dark:bg-emerald-400/10 border-emerald-400/40 text-emerald-950 dark:text-emerald-100 shadow-[0_8px_30px_rgba(16,185,129,0.1)]"
+                            ? "bg-[#EDF7F1] dark:bg-[#1B2820] border-[#2D6A4F]/40 text-[#1B4332] dark:text-[#D8F3DC] shadow-sm"
                             : callAnalysisResult.verdict === "DURESS_ALERT"
-                            ? "bg-red-500/15 dark:bg-red-400/15 border-red-500/50 text-red-950 dark:text-red-100 shadow-[0_8px_30px_rgba(239,68,68,0.15)]"
-                            : "bg-red-500/15 dark:bg-red-400/10 border-red-400/40 text-red-950 dark:text-red-100 shadow-[0_8px_30px_rgba(239,68,68,0.1)]"
+                            ? "bg-[#FFF9EC] dark:bg-[#252018] border-[#C58F2C]/50 text-[#6B4B10] dark:text-[#FBE5AA] shadow-sm"
+                            : "bg-[#FDF1EE] dark:bg-[#2B1B19] border-[#C84630]/40 text-[#78281F] dark:text-[#FCDFD7] shadow-sm"
                         }`}
                       >
                         {/* Verdict Header Badge */}
                         <div className="flex items-center justify-between flex-wrap gap-2">
                           <div className="flex items-center gap-2.5">
                             {callAnalysisResult.verdict === "VERIFIED_FAMILY" ? (
-                              <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                              <div className="w-8 h-8 rounded-xl bg-[#2D6A4F] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
                                 <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
                               </div>
                             ) : callAnalysisResult.verdict === "DURESS_ALERT" ? (
-                              <div className="w-8 h-8 rounded-xl bg-red-600 text-white flex items-center justify-center flex-shrink-0 animate-pulse shadow-xs">
+                              <div className="w-8 h-8 rounded-xl bg-[#C58F2C] text-white flex items-center justify-center flex-shrink-0 animate-pulse shadow-xs">
                                 <ShieldAlert className="w-4 h-4 stroke-[2.5]" />
                               </div>
                             ) : (
-                              <div className="w-8 h-8 rounded-xl bg-red-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                              <div className="w-8 h-8 rounded-xl bg-[#C84630] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
                                 <AlertTriangle className="w-4 h-4 stroke-[2.5]" />
                               </div>
                             )}
@@ -2674,13 +2693,13 @@ function CrosscheckAppContent() {
                                   ? "Duress Emergency Alert"
                                   : "Imposter Scam Alert"}
                               </div>
-                              <h4 className="text-sm font-extrabold tracking-tight">
+                              <h4 className="text-sm font-editorial font-bold tracking-tight">
                                 {callAnalysisResult.headline}
                               </h4>
                             </div>
                           </div>
 
-                          <div className="px-3 py-1 rounded-full text-xs font-mono font-bold backdrop-blur-md bg-white/70 dark:bg-black/30 border border-current/20 shadow-xs">
+                          <div className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#FAF7F0] dark:bg-[#1E1C19] border border-current/20 shadow-xs text-[#181818] dark:text-[#F6F3EB]">
                             {callAnalysisResult.confidence}% {callAnalysisResult.verdict === "VERIFIED_FAMILY" ? "Confidence" : "Scam Risk"}
                           </div>
                         </div>
@@ -2692,8 +2711,8 @@ function CrosscheckAppContent() {
 
                         {/* Red Flags / Threat Signals */}
                         {callAnalysisResult.threatSignals?.length > 0 && (
-                          <div className="p-3.5 backdrop-blur-md bg-white/60 dark:bg-black/30 rounded-xl space-y-1.5 text-xs border border-current/10">
-                            <span className="font-bold text-[11px] uppercase tracking-wider block">
+                          <div className="p-3.5 bg-[#FAF7F0]/80 dark:bg-black/30 rounded-xl space-y-1.5 text-xs border border-current/10">
+                            <span className="font-bold text-[11px] font-mono uppercase tracking-wider block">
                               Detected Threat Signals:
                             </span>
                             <ul className="space-y-1 list-disc list-inside">
@@ -2709,7 +2728,7 @@ function CrosscheckAppContent() {
                         {/* Recommended Actions */}
                         {callAnalysisResult.recommendedActions?.length > 0 && (
                           <div className="space-y-1 text-xs pt-1">
-                            <span className="font-bold text-[11px] uppercase tracking-wider block">
+                            <span className="font-bold text-[11px] font-mono uppercase tracking-wider block">
                               Recommended Immediate Action:
                             </span>
                             <div className="space-y-1">
@@ -2725,14 +2744,14 @@ function CrosscheckAppContent() {
 
                         {/* Add to Evidence Vault Action Button for Scams */}
                         {callAnalysisResult.verdict !== "VERIFIED_FAMILY" && (
-                          <div className="pt-2 border-t border-red-300/40 dark:border-red-800/40 flex items-center justify-between flex-wrap gap-2">
-                            <span className="text-[11px] opacity-85">
+                          <div className="pt-2 border-t border-current/20 flex items-center justify-between flex-wrap gap-2">
+                            <span className="text-[11px] font-mono opacity-85">
                               Helpline: <strong>1930</strong> (National Cybercrime Reporting)
                             </span>
                             <button
                               type="button"
                               onClick={handleAddCallToEvidenceVault}
-                              className="px-3.5 py-1.5 text-xs font-bold text-white bg-red-700 hover:bg-red-800 rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+                              className="px-3.5 py-1.5 text-xs font-bold text-white bg-[#C84630] hover:bg-[#A8321E] rounded-xl shadow-xs transition-all flex items-center gap-1.5 active:scale-[0.98]"
                             >
                               <FilePlus className="w-3.5 h-3.5" />
                               <span>Log to Evidence Vault</span>
@@ -2745,33 +2764,33 @@ function CrosscheckAppContent() {
                 </div>
               </div>
 
-              {/* Edit Safe-Word & Duress Word Modal (FROSTED GLASS DIALOG) */}
+              {/* Edit Safe-Word & Duress Word Modal (BROADSHEET DIALOG) */}
               {isEditWordModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-md animate-in fade-in-0 duration-200">
-                  <div className="backdrop-blur-2xl bg-white/90 dark:bg-[#11141D]/90 border border-white/80 dark:border-white/10 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-[0_25px_60px_rgba(0,0,0,0.35)] space-y-4">
-                    <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-white/10">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in-0 duration-200">
+                  <div className="bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/20 dark:border-[#2D2B27] rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-[0_25px_60px_rgba(0,0,0,0.35)] space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-[#181818]/15 dark:border-[#2D2B27]">
                       <div className="flex items-center gap-2">
-                        <Edit3 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                        <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                        <Edit3 className="w-4 h-4 text-[#181818] dark:text-[#F6F3EB]" />
+                        <h3 className="text-base font-editorial font-bold text-[#181818] dark:text-[#F6F3EB]">
                           Edit Family Safe-Word
                         </h3>
                       </div>
                       <button
                         type="button"
                         onClick={() => setIsEditWordModalOpen(false)}
-                        className="p-1.5 rounded-full text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                        className="p-1.5 rounded-full text-[#747068] hover:text-[#181818] dark:hover:text-[#F6F3EB]"
                       >
                         <X className="w-4 h-4" />
                       </button>
                     </div>
 
-                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                    <p className="text-xs text-[#55524B] dark:text-[#A8A29E] leading-relaxed font-serif">
                       Set a permanent safe-word known only to your family. It stays set until you edit it again.
                     </p>
 
                     <div className="space-y-3.5">
                       <div className="space-y-1">
-                        <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300 uppercase font-mono">
+                        <label className="text-[11px] font-bold text-[#181818] dark:text-[#F6F3EB] uppercase font-mono">
                           Family Safe-Word (Confirmation)
                         </label>
                         <input
@@ -2779,15 +2798,15 @@ function CrosscheckAppContent() {
                           value={editSafeInput}
                           onChange={(e) => setEditSafeInput(e.target.value.toUpperCase())}
                           placeholder="e.g. GOLDEN LOTUS or NEELAM PARVAT"
-                          className="w-full px-4 py-2.5 font-mono text-xs uppercase backdrop-blur-md bg-white/60 dark:bg-black/25 border border-white/70 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-xs"
+                          className="w-full px-4 py-2.5 font-mono text-xs uppercase bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] rounded-xl text-[#181818] dark:text-[#F6F3EB] focus:outline-none focus:ring-1 focus:ring-[#181818] dark:focus:ring-[#F4EFEB] shadow-xs"
                         />
-                        <span className="text-[10px] text-gray-400">
+                        <span className="text-[10px] text-[#747068] font-mono">
                           Recited when family calls asking for urgent funds.
                         </span>
                       </div>
 
                       <div className="space-y-1">
-                        <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300 uppercase font-mono">
+                        <label className="text-[11px] font-bold text-[#181818] dark:text-[#F6F3EB] uppercase font-mono">
                           Silent Duress Word (Coercion Alarm)
                         </label>
                         <input
@@ -2795,9 +2814,9 @@ function CrosscheckAppContent() {
                           value={editDuressInput}
                           onChange={(e) => setEditDuressInput(e.target.value.toUpperCase())}
                           placeholder="e.g. SILVER FALCON"
-                          className="w-full px-4 py-2.5 font-mono text-xs uppercase backdrop-blur-md bg-white/60 dark:bg-black/25 border border-white/70 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-600 shadow-xs"
+                          className="w-full px-4 py-2.5 font-mono text-xs uppercase bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] rounded-xl text-[#181818] dark:text-[#F6F3EB] focus:outline-none focus:ring-1 focus:ring-[#C58F2C] shadow-xs"
                         />
-                        <span className="text-[10px] text-gray-400">
+                        <span className="text-[10px] text-[#747068] font-mono">
                           Recited covertly if family is coerced under threat.
                         </span>
                       </div>
@@ -2807,25 +2826,25 @@ function CrosscheckAppContent() {
                       <button
                         type="button"
                         onClick={handleResetToDefaultWords}
-                        className="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white font-medium flex items-center gap-1"
+                        className="text-xs text-[#55524B] hover:text-[#181818] dark:hover:text-[#F6F3EB] font-medium flex items-center gap-1 font-mono"
                       >
                         <RotateCcw className="w-3 h-3" />
                         <span>Reset to Defaults</span>
                       </button>
                     </div>
 
-                    <div className="pt-3 border-t border-gray-100 dark:border-white/10 flex gap-2.5">
+                    <div className="pt-3 border-t border-[#181818]/15 dark:border-[#2D2B27] flex gap-2.5">
                       <button
                         type="button"
                         onClick={() => setIsEditWordModalOpen(false)}
-                        className="flex-1 py-2.5 text-xs font-bold text-gray-700 dark:text-gray-300 backdrop-blur-md bg-white/60 dark:bg-white/10 border border-white/80 dark:border-white/15 hover:bg-white rounded-full transition-all"
+                        className="flex-1 py-2.5 text-xs font-bold text-[#55524B] dark:text-[#A8A29E] bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] hover:bg-[#EFECE4] rounded-full transition-all"
                       >
                         Cancel
                       </button>
                       <button
                         type="button"
                         onClick={handleSaveEditedWords}
-                        className="flex-1 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-full shadow-[0_4px_15px_rgba(37,99,235,0.3)] border border-blue-400/30 transition-all"
+                        className="flex-1 py-2.5 text-xs font-bold text-[#F6F3EB] bg-[#181818] dark:bg-[#F4EFEB] dark:text-[#181818] hover:bg-black rounded-full shadow-md border border-[#181818]/30 transition-all active:scale-[0.98]"
                       >
                         Save Safe-Word
                       </button>
@@ -2840,51 +2859,62 @@ function CrosscheckAppContent() {
               SETTINGS VIEW (LIGHT/DARK + ENGLISH/HINDI TOGGLE)
               ======================================================== */}
           {activeNav === "settings" && (
-            <div className="p-6 sm:p-8 backdrop-blur-xl bg-white/70 dark:bg-[#131620]/65 border border-white/80 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] space-y-6 animate-in fade-in-0 duration-200">
-              <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">{t.settings}</h2>
+            <div className="p-6 sm:p-8 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/15 dark:border-[#2D2B27] rounded-3xl shadow-sm space-y-6 animate-in fade-in-0 duration-200">
+              <div>
+                <div className="text-[10px] font-mono tracking-widest text-[#747068] uppercase font-bold mb-1">
+                  PREFERENCES • LOCAL TERMINAL CONFIG
+                </div>
+                <h2 className="text-xl sm:text-2xl font-editorial font-bold text-[#181818] dark:text-[#F6F3EB] tracking-tight">
+                  {t.settings}
+                </h2>
+              </div>
 
               {/* Theme Toggle */}
               <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">Theme Preference</label>
+                <label className="block text-xs font-mono font-bold text-[#181818] dark:text-[#F6F3EB] uppercase mb-2">
+                  Theme Preference
+                </label>
                 <div className="flex gap-2.5">
                   <button
                     type="button"
                     onClick={() => handleThemeToggle("light")}
-                    className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-full transition-all ${
+                    className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-full transition-all active:scale-[0.98] ${
                       settings.theme === "light"
-                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border border-blue-400/40 shadow-[0_4px_15px_rgba(37,99,235,0.25)]"
-                        : "backdrop-blur-md bg-white/60 dark:bg-white/5 text-gray-700 dark:text-gray-300 border border-white/80 dark:border-white/10 hover:bg-white/80 dark:hover:bg-white/10"
+                        ? "bg-[#181818] text-[#F6F3EB] shadow-md border border-[#181818]/30"
+                        : "bg-[#FAF7F0] dark:bg-[#1E1C19] text-[#55524B] dark:text-[#A8A29E] border border-[#181818]/15 dark:border-[#2D2B27] hover:bg-[#EFECE4]"
                     }`}
                   >
                     <Sun className="w-3.5 h-3.5" />
-                    <span>Light Mode</span>
+                    <span>Parchment Light</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleThemeToggle("dark")}
-                    className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-full transition-all ${
+                    className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-full transition-all active:scale-[0.98] ${
                       settings.theme === "dark"
-                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border border-blue-400/40 shadow-[0_4px_15px_rgba(37,99,235,0.25)]"
-                        : "backdrop-blur-md bg-white/60 dark:bg-white/5 text-gray-700 dark:text-gray-300 border border-white/80 dark:border-white/10 hover:bg-white/80 dark:hover:bg-white/10"
+                        ? "bg-[#F4EFEB] text-[#181818] shadow-md border border-[#F4EFEB]/30"
+                        : "bg-[#FAF7F0] dark:bg-[#1E1C19] text-[#55524B] dark:text-[#A8A29E] border border-[#181818]/15 dark:border-[#2D2B27] hover:bg-[#EFECE4]"
                     }`}
                   >
                     <Moon className="w-3.5 h-3.5" />
-                    <span>Dark Mode</span>
+                    <span>Newsprint Dark</span>
                   </button>
                 </div>
               </div>
 
               {/* Language Toggle (English / Hindi) */}
-              <div className="pt-4 border-t border-gray-100 dark:border-white/10">
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">Language (भाषा)</label>
+              <div className="pt-4 border-t border-[#181818]/10 dark:border-[#2D2B27]">
+                <label className="block text-xs font-mono font-bold text-[#181818] dark:text-[#F6F3EB] uppercase mb-2">
+                  Language (भाषा)
+                </label>
                 <div className="flex gap-2.5">
                   <button
                     type="button"
                     onClick={() => handleLanguageToggle("en")}
-                    className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-full transition-all ${
+                    className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-full transition-all active:scale-[0.98] ${
                       settings.language === "en"
-                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border border-blue-400/40 shadow-[0_4px_15px_rgba(37,99,235,0.25)]"
-                        : "backdrop-blur-md bg-white/60 dark:bg-white/5 text-gray-700 dark:text-gray-300 border border-white/80 dark:border-white/10 hover:bg-white/80 dark:hover:bg-white/10"
+                        ? "bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] shadow-md"
+                        : "bg-[#FAF7F0] dark:bg-[#1E1C19] text-[#55524B] dark:text-[#A8A29E] border border-[#181818]/15 dark:border-[#2D2B27] hover:bg-[#EFECE4]"
                     }`}
                   >
                     <Languages className="w-3.5 h-3.5" />
@@ -2893,10 +2923,10 @@ function CrosscheckAppContent() {
                   <button
                     type="button"
                     onClick={() => handleLanguageToggle("hi")}
-                    className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-full transition-all ${
+                    className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-full transition-all active:scale-[0.98] ${
                       settings.language === "hi"
-                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border border-blue-400/40 shadow-[0_4px_15px_rgba(37,99,235,0.25)]"
-                        : "backdrop-blur-md bg-white/60 dark:bg-white/5 text-gray-700 dark:text-gray-300 border border-white/80 dark:border-white/10 hover:bg-white/80 dark:hover:bg-white/10"
+                        ? "bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] shadow-md"
+                        : "bg-[#FAF7F0] dark:bg-[#1E1C19] text-[#55524B] dark:text-[#A8A29E] border border-[#181818]/15 dark:border-[#2D2B27] hover:bg-[#EFECE4]"
                     }`}
                   >
                     <Languages className="w-3.5 h-3.5" />
@@ -2906,18 +2936,20 @@ function CrosscheckAppContent() {
               </div>
 
               {/* Analyst Display Name */}
-              <div className="pt-4 border-t border-gray-100 dark:border-white/10">
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Analyst Display Name</label>
+              <div className="pt-4 border-t border-[#181818]/10 dark:border-[#2D2B27]">
+                <label className="block text-xs font-mono font-bold text-[#181818] dark:text-[#F6F3EB] uppercase mb-1">
+                  Analyst Display Name
+                </label>
                 <div className="flex gap-2 max-w-sm">
                   <input
                     type="text"
                     value={tempName}
                     onChange={(e) => setTempName(e.target.value)}
-                    className="flex-1 px-4 py-2 text-xs backdrop-blur-md bg-white/60 dark:bg-black/25 border border-white/70 dark:border-white/10 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium text-gray-900 dark:text-white"
+                    className="flex-1 px-4 py-2 text-xs bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] rounded-full focus:outline-none focus:ring-1 focus:ring-[#181818] dark:focus:ring-[#F4EFEB] font-medium text-[#181818] dark:text-[#F6F3EB]"
                   />
                   <button
                     onClick={handleSaveName}
-                    className="px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-full shadow-[0_4px_15px_rgba(37,99,235,0.3)] border border-blue-400/30 transition-all"
+                    className="px-5 py-2 text-xs font-bold text-[#F6F3EB] bg-[#181818] dark:bg-[#F4EFEB] dark:text-[#181818] hover:bg-black rounded-full shadow-md border border-[#181818]/30 transition-all active:scale-[0.98]"
                   >
                     Save
                   </button>
@@ -2925,7 +2957,7 @@ function CrosscheckAppContent() {
               </div>
 
               {/* Clear storage */}
-              <div className="pt-4 border-t border-gray-100 dark:border-white/10">
+              <div className="pt-4 border-t border-[#181818]/10 dark:border-[#2D2B27]">
                 <button
                   type="button"
                   onClick={() => {
@@ -2935,7 +2967,7 @@ function CrosscheckAppContent() {
                       showToast("Local storage cleared", "info");
                     }
                   }}
-                  className="px-4 py-2 text-xs font-bold text-red-600 dark:text-red-400 backdrop-blur-md bg-red-500/10 dark:bg-red-400/10 border border-red-500/20 rounded-full hover:bg-red-500/20 transition-all"
+                  className="px-4 py-2 text-xs font-mono font-bold text-[#C84630] bg-[#FDF1EE] dark:bg-[#2B1B19] border border-[#C84630]/30 rounded-full hover:bg-[#F9DDD8] transition-all active:scale-[0.98]"
                 >
                   Clear Local Storage
                 </button>
@@ -2947,16 +2979,25 @@ function CrosscheckAppContent() {
               HELP CENTER VIEW
               ======================================================== */}
           {activeNav === "help" && (
-            <div className="p-6 sm:p-8 backdrop-blur-xl bg-white/70 dark:bg-[#131620]/65 border border-white/80 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] space-y-4 animate-in fade-in-0 duration-200">
-              <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">{t.helpCenter}</h2>
-              <div className="p-5 backdrop-blur-xl bg-red-500/10 dark:bg-red-500/10 border border-red-400/30 rounded-2xl text-xs space-y-2 shadow-sm">
-                <p className="font-bold text-red-900 dark:text-red-300">National Cybercrime Helpline: Dial 1930</p>
-                <p className="text-red-700 dark:text-red-400">Immediate reporting for financial UPI/bank fraud within the golden hour to freeze fraudulent recipient accounts.</p>
+            <div className="p-6 sm:p-8 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/15 dark:border-[#2D2B27] rounded-3xl shadow-sm space-y-4 animate-in fade-in-0 duration-200">
+              <div>
+                <div className="text-[10px] font-mono tracking-widest text-[#747068] uppercase font-bold mb-1">
+                  EMERGENCY WIRE • NATIONAL REPORTING
+                </div>
+                <h2 className="text-xl sm:text-2xl font-editorial font-bold text-[#181818] dark:text-[#F6F3EB] tracking-tight">
+                  {t.helpCenter}
+                </h2>
+              </div>
+              <div className="p-5 bg-[#FDF1EE] dark:bg-[#2B1B19] border border-[#C84630]/30 rounded-2xl text-xs space-y-2 shadow-sm">
+                <p className="font-bold text-[#C84630] font-mono text-sm">National Cybercrime Helpline: Dial 1930</p>
+                <p className="text-[#78281F] dark:text-[#FCDFD7] font-serif leading-relaxed">
+                  Immediate reporting for financial UPI/bank fraud within the golden hour to freeze fraudulent recipient accounts.
+                </p>
                 <a
                   href="https://cybercrime.gov.in"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block mt-1 font-bold text-red-900 dark:text-red-300 underline"
+                  className="inline-block mt-1 font-mono font-bold text-[#C84630] underline underline-offset-4"
                 >
                   cybercrime.gov.in
                 </a>
@@ -2993,24 +3034,24 @@ function CrosscheckAppContent() {
           EVIDENCE VAULT CASE DOSSIER MODAL
           ======================================================== */}
       {isDossierModalOpen && selectedDossierEntry && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-md animate-in fade-in-0 duration-200 overflow-y-auto">
-          <div className="backdrop-blur-2xl bg-white/90 dark:bg-[#0E121A]/90 border border-white/80 dark:border-white/10 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.35)] space-y-6 my-8 max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in-0 duration-200 overflow-y-auto">
+          <div className="bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/20 dark:border-[#2D2B27] rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.35)] space-y-6 my-8 max-h-[90vh] flex flex-col">
             {/* Modal Header */}
-            <div className="flex items-start justify-between pb-4 border-b border-white/40 dark:border-white/10 flex-shrink-0">
+            <div className="flex items-start justify-between pb-4 border-b border-[#181818]/15 dark:border-[#2D2B27] flex-shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-blue-500/10 dark:bg-blue-400/10 border border-blue-400/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-xs">
+                <div className="w-10 h-10 rounded-2xl bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] border border-[#181818]/20 flex items-center justify-center shadow-xs">
                   <ShieldCheck className="w-5 h-5 stroke-[2.2]" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-gray-900 dark:text-white">
+                    <span className="font-mono text-xs font-bold text-[#181818] dark:text-[#F6F3EB]">
                       #{selectedDossierEntry.caseId || selectedDossierEntry.reportId}
                     </span>
-                    <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-full bg-blue-500/10 text-blue-700 dark:bg-blue-400/10 dark:text-blue-300 border border-blue-400/30 uppercase">
+                    <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-full bg-[#181818]/10 text-[#181818] dark:bg-[#F4EFEB]/10 dark:text-[#F6F3EB] border border-[#181818]/20 uppercase">
                       {selectedDossierEntry.incidentCategory || "Digital Harm"}
                     </span>
                   </div>
-                  <h3 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight mt-0.5">
+                  <h3 className="text-base font-editorial font-bold text-[#181818] dark:text-[#F6F3EB] tracking-tight mt-0.5">
                     Official Incident Dossier & Evidence Log
                   </h3>
                 </div>
@@ -3019,7 +3060,7 @@ function CrosscheckAppContent() {
               <button
                 type="button"
                 onClick={() => setIsDossierModalOpen(false)}
-                className="p-1.5 rounded-full text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/40 dark:hover:bg-white/10 transition-colors"
+                className="p-1.5 rounded-full text-[#747068] hover:text-[#181818] dark:hover:text-[#F6F3EB] hover:bg-[#FAF7F0] dark:hover:bg-[#1E1C19] transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -3028,51 +3069,51 @@ function CrosscheckAppContent() {
             {/* Modal Body (Scrollable) */}
             <div className="space-y-5 overflow-y-auto pr-1 flex-1 text-xs">
               {/* Authority Status Banner */}
-              <div className="p-4 backdrop-blur-md bg-emerald-500/15 dark:bg-emerald-400/10 border border-emerald-400/30 rounded-2xl space-y-1.5 shadow-xs">
+              <div className="p-4 bg-[#EDF7F1] dark:bg-[#1B2820] border border-[#2D6A4F]/30 rounded-2xl space-y-1.5 shadow-xs">
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="font-bold text-xs text-emerald-950 dark:text-emerald-200">
+                  <span className="w-2 h-2 rounded-full bg-[#2D6A4F] animate-pulse" />
+                  <span className="font-bold font-mono text-xs text-[#2D6A4F] dark:text-[#74C69D]">
                     {selectedDossierEntry.status === "QUEUED_FOR_REVIEW"
                       ? "Dispatched & Queued for Cyber Cell Review"
                       : "Cryptographically Verified Ledger Record"}
                   </span>
                 </div>
-                <p className="text-[11px] text-emerald-800 dark:text-emerald-300 leading-relaxed">
+                <p className="text-[11px] text-[#1B4332] dark:text-[#D8F3DC] leading-relaxed font-serif">
                   {selectedDossierEntry.statusMessage ||
                     "This case has been logged with cryptographic immutability. An investigating officer has been notified for triage."}
                 </p>
               </div>
 
               {/* Complainant & Incident Meta Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 backdrop-blur-md bg-white/60 dark:bg-[#131620]/50 rounded-2xl border border-white/70 dark:border-white/10 shadow-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-[#FAF7F0] dark:bg-[#1E1C19] rounded-2xl border border-[#181818]/15 dark:border-[#2D2B27] shadow-xs">
                 <div>
-                  <span className="text-[10px] uppercase font-mono font-bold text-gray-400 block mb-0.5">
+                  <span className="text-[10px] uppercase font-mono font-bold text-[#747068] block mb-0.5">
                     Complainant
                   </span>
-                  <p className="font-semibold text-gray-900 dark:text-white">
+                  <p className="font-semibold text-[#181818] dark:text-[#F6F3EB]">
                     {selectedDossierEntry.contactName || "Citizen Complainant"}
                   </p>
                   {selectedDossierEntry.contactPhone && (
-                    <p className="text-gray-500 font-mono text-[11px]">{selectedDossierEntry.contactPhone}</p>
+                    <p className="text-[#55524B] dark:text-[#A8A29E] font-mono text-[11px]">{selectedDossierEntry.contactPhone}</p>
                   )}
                   {selectedDossierEntry.contactEmail && (
-                    <p className="text-gray-500 text-[11px]">{selectedDossierEntry.contactEmail}</p>
+                    <p className="text-[#55524B] dark:text-[#A8A29E] text-[11px]">{selectedDossierEntry.contactEmail}</p>
                   )}
                 </div>
 
                 <div>
-                  <span className="text-[10px] uppercase font-mono font-bold text-gray-400 block mb-0.5">
+                  <span className="text-[10px] uppercase font-mono font-bold text-[#747068] block mb-0.5">
                     Channel & Suspect
                   </span>
-                  <p className="text-gray-700 dark:text-gray-300">
-                    Platform: <strong className="text-gray-900 dark:text-white">{selectedDossierEntry.platform || "Online"}</strong>
+                  <p className="text-[#55524B] dark:text-[#A8A29E]">
+                    Platform: <strong className="text-[#181818] dark:text-[#F6F3EB]">{selectedDossierEntry.platform || "Online"}</strong>
                   </p>
                   {selectedDossierEntry.suspectInfo && (
-                    <p className="text-gray-700 dark:text-gray-300">
-                      Suspect: <code className="font-mono bg-white/60 dark:bg-black/30 border border-white/60 dark:border-white/10 px-1 py-0.5 rounded text-[11px]">{selectedDossierEntry.suspectInfo}</code>
+                    <p className="text-[#55524B] dark:text-[#A8A29E]">
+                      Suspect: <code className="font-mono bg-[#FCFAF6] dark:bg-[#141312] border border-[#181818]/15 px-1 py-0.5 rounded text-[11px]">{selectedDossierEntry.suspectInfo}</code>
                     </p>
                   )}
-                  <p className="text-gray-400 text-[10px] font-mono mt-0.5">
+                  <p className="text-[#747068] text-[10px] font-mono mt-0.5">
                     {new Date(selectedDossierEntry.timestamp).toLocaleString("en-IN")}
                   </p>
                 </div>
@@ -3080,10 +3121,10 @@ function CrosscheckAppContent() {
 
               {/* Statement of Facts */}
               <div className="space-y-1.5">
-                <span className="text-[10px] uppercase font-mono font-bold text-gray-400 block">
+                <span className="text-[10px] uppercase font-mono font-bold text-[#747068] block">
                   Incident Statement
                 </span>
-                <div className="p-4 backdrop-blur-md bg-white/60 dark:bg-[#131620]/50 border border-white/70 dark:border-white/10 rounded-2xl text-gray-800 dark:text-gray-200 leading-relaxed font-sans shadow-xs">
+                <div className="p-4 bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/15 dark:border-[#2D2B27] rounded-2xl text-[#181818] dark:text-[#F6F3EB] leading-relaxed font-serif shadow-xs">
                   {selectedDossierEntry.details || selectedDossierEntry.claimText || "No statement provided."}
                 </div>
               </div>
@@ -3091,29 +3132,29 @@ function CrosscheckAppContent() {
               {/* Attached Screenshot Evidence */}
               {selectedDossierEntry.screenshot?.previewUrl && (
                 <div className="space-y-1.5">
-                  <span className="text-[10px] uppercase font-mono font-bold text-gray-400 block">
+                  <span className="text-[10px] uppercase font-mono font-bold text-[#747068] block">
                     Attached Evidence Screenshot ({selectedDossierEntry.screenshot.name})
                   </span>
-                  <div className="p-3 backdrop-blur-md bg-white/60 dark:bg-[#131620]/50 border border-white/70 dark:border-white/10 rounded-2xl shadow-xs">
+                  <div className="p-3 bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/15 dark:border-[#2D2B27] rounded-2xl shadow-xs">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={selectedDossierEntry.screenshot.previewUrl}
                       alt="Evidence Screenshot"
-                      className="max-h-72 rounded-xl object-contain mx-auto border border-gray-200 dark:border-gray-700 bg-white"
+                      className="max-h-72 rounded-xl object-contain mx-auto border border-[#181818]/15 bg-white"
                     />
                   </div>
                 </div>
               )}
 
               {/* Cryptographic Ledger Verification */}
-              <div className="p-3.5 backdrop-blur-md bg-white/60 dark:bg-[#131620]/50 border border-white/70 dark:border-white/10 rounded-2xl space-y-1 font-mono text-[10px] shadow-xs">
-                <div className="flex items-center justify-between text-gray-500">
+              <div className="p-3.5 bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/15 dark:border-[#2D2B27] rounded-2xl space-y-1 font-mono text-[10px] shadow-xs">
+                <div className="flex items-center justify-between text-[#747068]">
                   <span>SHA-256 Digest:</span>
-                  <span className="text-gray-800 dark:text-gray-200 font-bold truncate max-w-[280px]">
+                  <span className="text-[#181818] dark:text-[#F6F3EB] font-bold truncate max-w-[280px]">
                     {selectedDossierEntry.entryHash}
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-gray-500">
+                <div className="flex items-center justify-between text-[#747068]">
                   <span>Ledger Anchor:</span>
                   <span className="truncate max-w-[280px]">
                     {selectedDossierEntry.previousHash}
@@ -3124,7 +3165,7 @@ function CrosscheckAppContent() {
               {/* Formal Legal Complaint Letter */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] uppercase font-mono font-bold text-gray-400">
+                  <span className="text-[10px] uppercase font-mono font-bold text-[#747068]">
                     Formal Legal Complaint Draft (Ready for 1930 / cybercrime.gov.in)
                   </span>
                   <button
@@ -3136,24 +3177,24 @@ function CrosscheckAppContent() {
                       setTimeout(() => setCopiedDraft(false), 2000);
                       showToast("Complaint draft copied to clipboard!", "success");
                     }}
-                    className="flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700"
+                    className="flex items-center gap-1 text-[11px] font-bold text-[#181818] dark:text-[#F6F3EB] hover:underline font-mono"
                   >
-                    {copiedDraft ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                    {copiedDraft ? <Check className="w-3 h-3 text-[#2D6A4F]" /> : <Copy className="w-3 h-3" />}
                     <span>{copiedDraft ? "Copied" : "Copy Draft"}</span>
                   </button>
                 </div>
-                <pre className="p-4 backdrop-blur-md bg-white/60 dark:bg-[#131620]/50 border border-white/70 dark:border-white/10 rounded-2xl font-mono text-[11px] leading-relaxed text-gray-700 dark:text-gray-300 max-h-48 overflow-y-auto whitespace-pre-wrap shadow-xs">
+                <pre className="p-4 bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/15 dark:border-[#2D2B27] rounded-2xl font-mono text-[11px] leading-relaxed text-[#181818] dark:text-[#F6F3EB] max-h-48 overflow-y-auto whitespace-pre-wrap shadow-xs">
                   {generateComplaintDraft(selectedDossierEntry)}
                 </pre>
               </div>
             </div>
 
             {/* Modal Footer Controls */}
-            <div className="pt-4 border-t border-white/40 dark:border-white/10 flex items-center justify-between gap-3 flex-shrink-0">
+            <div className="pt-4 border-t border-[#181818]/15 dark:border-[#2D2B27] flex items-center justify-between gap-3 flex-shrink-0">
               <button
                 type="button"
                 onClick={() => setIsDossierModalOpen(false)}
-                className="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-full transition-colors"
+                className="px-4 py-2 text-xs font-semibold text-[#55524B] dark:text-[#A8A29E] hover:text-[#181818] dark:hover:text-[#F6F3EB] rounded-full transition-colors font-mono"
               >
                 Close
               </button>
@@ -3168,7 +3209,7 @@ function CrosscheckAppContent() {
                     setTimeout(() => setCopiedDraft(false), 2000);
                     showToast("Complaint draft copied to clipboard!", "success");
                   }}
-                  className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 backdrop-blur-md bg-white/60 dark:bg-white/10 border border-white/80 dark:border-white/10 hover:bg-white dark:hover:bg-white/15 rounded-full transition-all shadow-xs"
+                  className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#181818] dark:text-[#F6F3EB] bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] hover:bg-[#EFECE4] rounded-full transition-all shadow-xs active:scale-[0.98]"
                 >
                   <Copy className="w-3.5 h-3.5" />
                   <span>Copy Statement</span>
@@ -3177,7 +3218,7 @@ function CrosscheckAppContent() {
                 <button
                   type="button"
                   onClick={() => handleDownloadDossier(selectedDossierEntry)}
-                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-full shadow-[0_4px_15px_rgba(37,99,235,0.3)] border border-blue-400/30 transition-all"
+                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#F6F3EB] bg-[#181818] dark:bg-[#F4EFEB] dark:text-[#181818] hover:bg-black rounded-full shadow-md border border-[#181818]/30 transition-all active:scale-[0.98]"
                 >
                   <FileDown className="w-3.5 h-3.5" />
                   <span>Download Formal Letter</span>
@@ -3200,11 +3241,11 @@ export default function CrosscheckApp() {
 
   if (!isMounted) {
     return (
-      <div className="h-[100dvh] w-full bg-[#F9FAFB] dark:bg-[#0B0C0E] flex items-center justify-center">
+      <div className="h-[100dvh] w-full bg-[#F6F3EB] dark:bg-[#141312] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-7 h-7 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          <span className="text-xs font-mono text-gray-400 dark:text-gray-500 tracking-wide">
-            Loading Crosscheck Workspace...
+          <div className="w-7 h-7 border-2 border-[#181818] dark:border-[#F4EFEB] border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-mono text-[#747068] tracking-widest uppercase">
+            Loading Crosscheck Broadsheet...
           </span>
         </div>
       </div>
