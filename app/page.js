@@ -18,6 +18,9 @@ import {
   Loader2,
   AlertCircle,
   LayoutDashboard,
+  BookOpen,
+  Sparkles,
+  Check,
 } from "lucide-react";
 import { saveStoredReport } from "../lib/storage.js";
 
@@ -36,6 +39,41 @@ export default function LandingPage() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [progressMsg, setProgressMsg] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+
+  // Interactive Archival Collage & Newspaper States
+  const [isPaperOpen, setIsPaperOpen] = useState(false);
+  const [photoSplit, setPhotoSplit] = useState(52); // Percentage 10 to 90
+  const [mouseTilt, setMouseTilt] = useState({ x: 0, y: 0 });
+  const [stampPulsed, setStampPulsed] = useState(false);
+  const collageRef = useRef(null);
+  const photoContainerRef = useRef(null);
+
+  const handleCollageMouseMove = (e) => {
+    if (isPaperOpen) return;
+    const rect = collageRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    setMouseTilt({ x, y });
+  };
+
+  const handleCollageMouseLeave = () => {
+    setMouseTilt({ x: 0, y: 0 });
+  };
+
+  const handlePhotoMouseMove = (e) => {
+    const rect = photoContainerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const offsetX = e.clientX - rect.left;
+    const pct = Math.max(10, Math.min(90, (offsetX / rect.width) * 100));
+    setPhotoSplit(Math.round(pct));
+  };
+
+  const handleVerifyPresetStory = (storyText) => {
+    setClaimInput(storyText);
+    setIsPaperOpen(false);
+    textInputRef.current?.focus();
+  };
 
   const formatFileSize = (bytes) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -547,8 +585,13 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* RIGHT COLUMN: ARCHIVAL FORENSIC COLLAGE */}
-        <div className="lg:col-span-6 xl:col-span-6 relative flex justify-center items-center py-2 select-none">
+        {/* RIGHT COLUMN: ARCHIVAL FORENSIC COLLAGE (INTERACTIVE & ALIVE) */}
+        <div
+          ref={collageRef}
+          onMouseMove={handleCollageMouseMove}
+          onMouseLeave={handleCollageMouseLeave}
+          className="lg:col-span-6 xl:col-span-6 relative flex justify-center items-center py-2 select-none perspective-1000"
+        >
           {/* Subtle Technical / Compass Background Graphics */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <svg
@@ -566,119 +609,339 @@ export default function LandingPage() {
           </div>
 
           {/* Plus Registration Marks */}
-          <div className="absolute top-1 right-2 text-xs font-mono text-[#181818]/60">+</div>
-          <div className="absolute bottom-6 right-2 text-xs font-mono text-[#181818]/60">+</div>
-          <div className="absolute bottom-4 left-16 text-sm font-mono text-[#181818]/80 font-bold">+</div>
+          <div className="absolute top-1 right-2 text-xs font-mono text-[#181818]/60 pointer-events-none">+</div>
+          <div className="absolute bottom-6 right-2 text-xs font-mono text-[#181818]/60 pointer-events-none">+</div>
+          <div className="absolute bottom-4 left-16 text-sm font-mono text-[#181818]/80 font-bold pointer-events-none">+</div>
 
           {/* Top Right Annotation */}
-          <div className="absolute top-0 right-2 sm:right-6 text-right font-mono uppercase text-[#44423D] z-30">
+          <div className="absolute top-0 right-2 sm:right-6 text-right font-mono uppercase text-[#44423D] z-30 pointer-events-none">
             <div className="text-[10px] tracking-[0.22em] font-semibold">SAME IMAGE.</div>
             <div className="text-[10px] tracking-[0.22em] font-semibold">DIFFERENT REALITIES.</div>
             <div className="w-8 h-[1px] bg-[#181818]/40 ml-auto mt-1" />
           </div>
 
-          {/* Composite Collage Canvas */}
-          <div className="relative w-full max-w-[480px] h-[350px] sm:h-[380px] lg:h-[400px]">
-            {/* Extended Vertical Technical Ruler Line */}
-            <div className="absolute top-[-16px] bottom-[-16px] left-[55%] w-[1px] bg-[#181818]/70 z-20 pointer-events-none" />
-
-            {/* LAYER 1: Tilted Vintage Newspaper Fragment (Top Left) */}
-            <div
-              className="absolute top-1 left-2 w-44 sm:w-48 bg-[#ECE7DC] border border-[#181818]/20 p-3 shadow-sm transform -rotate-3 z-0"
-              style={{
-                clipPath: "polygon(0% 0%, 98% 2%, 100% 96%, 95% 100%, 3% 98%, 0% 95%)",
-              }}
-            >
-              <div className="border-b border-[#181818]/25 pb-1 mb-1.5 flex items-center justify-between">
-                <span className="font-editorial text-xs font-bold tracking-tight text-[#181818]">
-                  The Daily Wire
-                </span>
-                <span className="text-[8px] font-mono text-[#666]">OCT 1928</span>
-              </div>
-              <div className="text-[8px] font-mono leading-tight text-[#333] space-y-1">
-                <div className="font-bold uppercase tracking-wider text-[#181818]">
-                  MASS ASSEMBLY HELD AT CAPITOL GROUNDS
+          {/* ============================================================
+              STATE A: UNFOLDED ARCHIVAL NEWSPAPER BROADSHEET (CLICKED)
+              ============================================================ */}
+          {isPaperOpen ? (
+            <div className="relative w-full max-w-[500px] h-[360px] sm:h-[390px] bg-[#FAF6EE] border-2 border-[#181818] shadow-[0_16px_40px_rgba(0,0,0,0.12)] p-3 sm:p-4 rounded-xs flex flex-col justify-between font-serif z-40 transition-all duration-300">
+              {/* Archival Newspaper Masthead */}
+              <div className="border-b-2 border-[#181818] pb-1.5 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="font-editorial text-sm sm:text-base font-bold text-[#181818] tracking-tight whitespace-nowrap">
+                    THE DAILY WIRE
+                  </span>
+                  <span className="text-[8px] sm:text-[9px] font-mono uppercase bg-[#181818] text-[#FAF6EE] px-1.5 py-0.5 font-bold rounded-xs shrink-0">
+                    #1928-C
+                  </span>
                 </div>
-                <p className="line-clamp-2 text-[#555]">
-                  Thousands gather on the grand plaza to hear constitutional declaration...
-                </p>
+                <div className="flex items-center gap-2.5 shrink-0">
+                  <span className="text-[8px] sm:text-[9px] font-mono text-[#555] uppercase hidden sm:inline">
+                    OCTOBER 14, 1928 • WASHINGTON
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsPaperOpen(false)}
+                    className="flex items-center gap-1 text-[9px] font-mono font-bold uppercase bg-[#ECE6D8] hover:bg-[#181818] hover:text-[#FAF6EE] text-[#181818] px-2 py-0.5 rounded border border-[#181818]/40 transition-all cursor-pointer shadow-xs"
+                    title="Fold newspaper back to collage"
+                  >
+                    <X className="w-3 h-3" />
+                    <span>Fold Paper</span>
+                  </button>
+                </div>
               </div>
-              {/* Fact Check Stamp */}
-              <div className="mt-2 inline-block px-1.5 py-0.5 bg-[#FAF8F3] border border-[#181818] text-[8px] font-mono font-bold tracking-wider uppercase text-[#181818]">
-                FACT CHECK
-              </div>
-            </div>
 
-            {/* LAYER 2: Main Archival Photograph of Capitol Building */}
-            <div
-              className="absolute top-6 left-12 sm:left-14 right-8 sm:right-12 bg-[#FDFBF7] p-2 shadow-lg border border-[#181818]/25 z-10"
-              style={{
-                clipPath: "polygon(0% 1%, 99% 0%, 100% 98%, 98% 100%, 1% 99%, 0% 97%)",
-              }}
-            >
-              <div className="relative overflow-hidden bg-black/5 aspect-[4/3]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/images/vintage_capitol.jpg"
-                  alt="Archival Capitol verification forensic plate"
-                  className="w-full h-full object-cover filter contrast-110 grayscale"
-                />
+              {/* Spine Crease Center Shadow Effect */}
+              <div className="absolute inset-y-0 left-1/2 w-6 -translate-x-1/2 pointer-events-none bg-gradient-to-r from-black/5 via-black/10 to-transparent z-10" />
 
-                {/* Target Reticle Centered Over Dome */}
-                <div className="absolute top-[22%] left-[44%] -translate-x-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center z-20">
-                  <div className="w-9 h-9 rounded-full border border-[#181818] flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 bg-[#C8372D] rounded-xs shadow-xs" />
+              {/* Two-Column Broadsheet Spread */}
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 flex-1 py-2 overflow-hidden text-left">
+                {/* Left Page: 1928 Fabricated Wire Dispatch */}
+                <div className="space-y-1.5 pr-2 border-r border-[#181818]/25 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className="w-10 h-10 border border-[#181818]/40 overflow-hidden shrink-0 bg-black/10">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src="/images/vintage_capitol.jpg"
+                          alt="Wire plate"
+                          className="w-full h-full object-cover filter contrast-125 grayscale"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[7.5px] font-mono uppercase text-[#666] tracking-wider mb-0.5">
+                          PAGE 1 • WIRE DISPATCH
+                        </div>
+                        <h3 className="font-editorial text-[11px] sm:text-xs font-bold text-[#181818] leading-tight truncate">
+                          MASS ASSEMBLY AT CAPITOL
+                        </h3>
+                      </div>
+                    </div>
+
+                    <p className="text-[8.5px] sm:text-[9.5px] font-serif leading-snug text-[#333] line-clamp-2">
+                      Telegraph dispatches circulating this morning report vast multitudes assembling before the Capitol portico...
+                    </p>
+
+                    {/* Circled Fabricated Paragraph */}
+                    <div className="mt-1.5 p-1.5 bg-[#EFE9DC] border border-dashed border-[#C8372D] rounded-xs relative">
+                      <span className="absolute -top-1.5 right-1 px-1 bg-[#C8372D] text-white text-[6.5px] font-mono font-bold uppercase rounded-2xs">
+                        Circled By Forensics
+                      </span>
+                      <p className="text-[8px] sm:text-[9px] font-serif italic text-[#181818] leading-tight pt-0.5">
+                        &ldquo;Visual plate received shows plaza packed to east marble steps...&rdquo;
+                      </p>
+                    </div>
                   </div>
-                  <div className="absolute w-12 h-[1px] bg-[#181818]" />
-                  <div className="absolute h-12 w-[1px] bg-[#181818]" />
+
+                  <div className="pt-1 flex items-center justify-between text-[7.5px] font-mono text-[#666]">
+                    <span>STATUS: UNCONFIRMED</span>
+                    <span className="text-[#C8372D] font-bold">CIRCULATION HALTED</span>
+                  </div>
+                </div>
+
+                {/* Right Page: Crosscheck Digital Forensic Dossier */}
+                <div className="pl-1 sm:pl-2 flex flex-col justify-between relative">
+                  <div>
+                    {/* Header with neat rubber stamp in margin */}
+                    <div className="flex items-center justify-between border-b border-[#181818]/15 pb-1 mb-1.5">
+                      <span className="text-[7.5px] font-mono uppercase text-[#555] tracking-wider font-semibold">
+                        FORENSIC EVIDENCE BREAKDOWN
+                      </span>
+                      <div className="px-1.5 py-0.5 border border-[#C8372D] text-[#C8372D] font-mono text-[7.5px] font-bold uppercase tracking-widest -rotate-2 bg-[#FAF6EE] shadow-xs shrink-0">
+                        FABRICATED
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 text-[8.5px] sm:text-[9px] font-sans">
+                      <div className="flex items-start gap-1 text-[#181818]">
+                        <span className="font-mono text-[#C8372D] font-bold">01.</span>
+                        <span><strong>Crowd Cloning:</strong> 14 repetitive head clusters identified via perceptual hash.</span>
+                      </div>
+                      <div className="flex items-start gap-1 text-[#181818]">
+                        <span className="font-mono text-[#C8372D] font-bold">02.</span>
+                        <span><strong>Shadow Vector:</strong> Dome shadows fall at 88° while crowd shadows fall at 34°.</span>
+                      </div>
+                      <div className="flex items-start gap-1 text-[#181818]">
+                        <span className="font-mono text-[#C8372D] font-bold">03.</span>
+                        <span><strong>Archival Record:</strong> Library negative confirms empty plaza on Oct 14.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Link: Verify in Search */}
+                  <div className="pt-1.5 border-t border-[#181818]/15 flex items-center justify-between gap-1">
+                    <span className="text-[7.5px] font-mono text-[#666]">CONFIDENCE: 98.4%</span>
+                    <button
+                      type="button"
+                      onClick={() => handleVerifyPresetStory("Mass assembly at Capitol grounds 1928 crowd photo claim")}
+                      className="flex items-center gap-1 text-[8.5px] font-mono font-bold uppercase bg-[#181818] hover:bg-black text-[#FAF6EE] px-2 py-0.5 rounded transition-colors cursor-pointer"
+                    >
+                      <span>Verify in Search</span>
+                      <ArrowRight className="w-2.5 h-2.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Newspaper Footer Bar */}
+              <div className="border-t border-[#181818]/20 pt-1 flex items-center justify-between text-[7.5px] font-mono text-[#666]">
+                <span>CROSSCHECK FORENSIC ARCHIVE • EXHIBIT 01</span>
+                <span className="text-[#181818]">CLICK &ldquo;FOLD PAPER&rdquo; TO RETURN</span>
+              </div>
+            </div>
+          ) : (
+            /* ============================================================
+               STATE B: LIVING COLLAGE (3D PARALLAX + INTERACTIVE SPLIT)
+               ============================================================ */
+            <div
+              className="relative w-full max-w-[480px] h-[350px] sm:h-[380px] lg:h-[400px] preserve-3d"
+              style={{
+                transform: `rotateX(${-mouseTilt.y * 6}deg) rotateY(${mouseTilt.x * 6}deg)`,
+                transition: mouseTilt.x === 0 && mouseTilt.y === 0 ? "transform 0.4s ease-out" : "none",
+              }}
+            >
+              {/* LAYER 1: Tilted Vintage Newspaper Fragment (Click to Unfold) */}
+              <div
+                onClick={() => setIsPaperOpen(true)}
+                className="absolute top-1 left-2 w-48 sm:w-52 bg-[#ECE7DC] border border-[#181818]/30 hover:border-[#181818] p-3 shadow-md hover:shadow-xl transform -rotate-3 hover:-rotate-1 transition-all duration-200 cursor-pointer group z-20"
+                style={{
+                  clipPath: "polygon(0% 0%, 98% 2%, 100% 96%, 95% 100%, 3% 98%, 0% 95%)",
+                  transform: "translateZ(26px) rotate(-3deg)",
+                }}
+                title="Click to unfold archival newspaper"
+              >
+                <div className="border-b border-[#181818]/25 pb-1 mb-1.5 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-editorial text-xs font-bold tracking-tight text-[#181818]">
+                      The Daily Wire
+                    </span>
+                    {/* Pulsing Corner Indicator */}
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#C8372D] animate-ping" />
+                  </div>
+                  <span className="text-[8px] font-mono text-[#666]">OCT 1928</span>
+                </div>
+                <div className="text-[8px] font-mono leading-tight text-[#333] space-y-1">
+                  <div className="font-bold uppercase tracking-wider text-[#181818]">
+                    MASS ASSEMBLY HELD AT CAPITOL GROUNDS
+                  </div>
+                  <p className="line-clamp-2 text-[#555]">
+                    Thousands gather on the grand plaza to hear constitutional declaration...
+                  </p>
+                </div>
+
+                {/* Interactive Unfold Callout Button */}
+                <div className="mt-2.5 pt-1.5 border-t border-[#181818]/15 flex items-center justify-between">
+                  <div className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-[#181818] group-hover:bg-[#C8372D] text-[#FAF8F3] text-[8px] font-mono font-bold tracking-wider uppercase rounded-xs transition-colors shadow-xs">
+                    <BookOpen className="w-2.5 h-2.5" />
+                    <span>Click to Unfold</span>
+                  </div>
+                  <span className="text-[7.5px] font-mono text-[#777] uppercase group-hover:text-[#181818] transition-colors">
+                    📖 Read Story ↗
+                  </span>
+                </div>
+              </div>
+
+              {/* LAYER 2: Main Archival Photograph with Interactive Split Slider */}
+              <div
+                ref={photoContainerRef}
+                onMouseMove={handlePhotoMouseMove}
+                className="absolute top-6 left-12 sm:left-14 right-8 sm:right-12 bg-[#FDFBF7] p-2 shadow-lg border border-[#181818]/25 z-10 select-none group"
+                style={{
+                  clipPath: "polygon(0% 1%, 99% 0%, 100% 98%, 98% 100%, 1% 99%, 0% 97%)",
+                  transform: "translateZ(14px)",
+                }}
+              >
+                <div className="relative overflow-hidden bg-black/5 aspect-[4/3] cursor-ew-resize">
+                  {/* Under Layer: Digital Tampering Forensic Heatmap */}
+                  <div className="absolute inset-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/images/vintage_capitol.jpg"
+                      alt="Archival Capitol verification forensic plate"
+                      className="w-full h-full object-cover filter contrast-125 saturate-150"
+                    />
+                    {/* False-color Infrared Hue Overlay */}
+                    <div className="absolute inset-0 bg-red-950/25 mix-blend-color-burn pointer-events-none" />
+
+                    {/* Bounding Box: Cloned Crowd Clusters */}
+                    <div className="absolute bottom-[16%] left-[24%] w-[48%] h-[34%] border-2 border-[#C8372D] bg-[#C8372D]/15 rounded-xs pointer-events-none flex items-start p-1">
+                      <span className="bg-[#C8372D] text-white text-[7px] font-mono font-bold uppercase px-1 py-0.2 shadow-xs">
+                        CLONED CROWD REGION (96.8%)
+                      </span>
+                    </div>
+
+                    {/* Forensic Tag Badge */}
+                    <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-[#C8372D] text-white text-[7.5px] font-mono font-bold uppercase tracking-wider rounded-xs pointer-events-none shadow-xs">
+                      FORENSIC REVEAL
+                    </div>
+                  </div>
+
+                  {/* Over Layer: Original Monochrome Archival Photograph (Clipped by photoSplit %) */}
+                  <div
+                    className="absolute inset-0 overflow-hidden"
+                    style={{
+                      clipPath: `inset(0 calc(100% - ${photoSplit}%) 0 0)`,
+                    }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/images/vintage_capitol.jpg"
+                      alt="Archival Capitol verification forensic plate"
+                      className="w-full h-full object-cover filter contrast-110 grayscale"
+                    />
+                    {/* Archival Tag Badge */}
+                    <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-[#181818] text-[#F6F3EB] text-[7.5px] font-mono font-bold uppercase tracking-wider rounded-xs pointer-events-none shadow-xs">
+                      AUTHENTIC WIRE (1928)
+                    </div>
+                  </div>
+
+                  {/* Vertical Dividing Line & Interactive Handle */}
+                  <div
+                    className="absolute top-0 bottom-0 w-[1.5px] bg-[#181818] z-20 pointer-events-none shadow-sm flex items-center justify-center"
+                    style={{ left: `${photoSplit}%` }}
+                  >
+                    <div className="w-5 h-7 rounded bg-[#181818] text-[#FAF8F3] border border-white/40 flex items-center justify-center text-[7.5px] font-mono font-bold shadow-md">
+                      <span>◂▸</span>
+                    </div>
+                  </div>
+
+                  {/* Target Reticle Centered Over Dome */}
+                  <div className="absolute top-[22%] left-[44%] -translate-x-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center z-20">
+                    <div className="w-9 h-9 rounded-full border border-[#181818] flex items-center justify-center animate-pulse-reticle">
+                      <div className="w-1.5 h-1.5 bg-[#C8372D] rounded-xs shadow-xs" />
+                    </div>
+                    <div className="absolute w-12 h-[1px] bg-[#181818]" />
+                    <div className="absolute h-12 w-[1px] bg-[#181818]" />
+                  </div>
+
+                  {/* Hover Instruction Banner */}
+                  <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-[#181818]/85 text-[#FAF8F3] text-[7.5px] font-mono font-bold uppercase tracking-wider rounded backdrop-blur-xs pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+                    SLIDE CURSOR ACROSS PHOTO TO REVEAL FORENSICS
+                  </div>
+                </div>
+              </div>
+
+              {/* LAYER 3: Red Stamp Badge: MANIPULATED? */}
+              <div
+                onClick={() => setStampPulsed(!stampPulsed)}
+                className="absolute top-14 right-0 sm:right-1 z-20 cursor-pointer group"
+                style={{ transform: "translateZ(34px)" }}
+                title="Click stamp for tactile verification mark"
+              >
+                <div
+                  className={`px-2.5 py-0.5 sm:py-1 bg-[#FDF2F1] border border-[#C8372D] shadow-xs flex items-center gap-1.5 transition-transform ${
+                    stampPulsed ? "scale-110 -rotate-3" : "group-hover:scale-105"
+                  }`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#C8372D] animate-ping" />
+                  <span className="text-[10px] font-mono font-bold tracking-[0.2em] text-[#C8372D] uppercase">
+                    MANIPULATED?
+                  </span>
+                </div>
+              </div>
+
+              {/* LAYER 4: Inset Glitched Forensic Crop with Animated Scanline */}
+              <div
+                className="absolute bottom-4 right-1 sm:right-3 w-18 sm:w-22 h-24 sm:h-28 bg-[#FDFBF7] p-1 border border-[#181818]/30 shadow-md z-20 group hover:scale-105 transition-transform"
+                style={{
+                  clipPath: "polygon(1% 0%, 100% 2%, 98% 100%, 0% 98%)",
+                  transform: "translateZ(30px)",
+                }}
+                title="Pixelation inspection inset"
+              >
+                <div className="relative w-full h-full overflow-hidden bg-gray-200">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/images/vintage_capitol.jpg"
+                    alt="Forensic crop pixelation inset"
+                    className="w-full h-full object-cover filter contrast-125 grayscale scale-150"
+                    style={{ imageRendering: "pixelated" }}
+                  />
+                  {/* Animated CRT Scanline Beam */}
+                  <div className="absolute inset-x-0 h-4 bg-gradient-to-b from-transparent via-[#C8372D]/40 to-transparent pointer-events-none animate-scanline" />
+                  {/* Pixel scanline grid overlay */}
+                  <div className="absolute inset-0 bg-[radial-gradient(#181818_1px,transparent_1px)] [background-size:4px_4px] opacity-45 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* LAYER 5: Tilted "AI GENERATED?" Paper Scrap (Bottom Center) */}
+              <div
+                className="absolute bottom-6 left-20 sm:left-28 z-20 transform -rotate-1 hover:rotate-0 transition-transform cursor-pointer"
+                style={{ transform: "translateZ(24px) rotate(-1deg)" }}
+              >
+                <div className="px-3 py-1 bg-[#FAF8F3] border border-[#181818]/25 shadow-xs">
+                  <span className="text-[11px] font-mono font-bold tracking-[0.18em] text-[#181818] uppercase">
+                    AI GENERATED?
+                  </span>
+                  {/* Hand-drawn red underline */}
+                  <div className="h-[2px] bg-[#C8372D] w-full mt-0.5 rounded-full" />
                 </div>
               </div>
             </div>
-
-            {/* LAYER 3: Red Stamp Badge: MANIPULATED? (Overlapping Top Right) */}
-            <div className="absolute top-14 right-0 sm:right-1 z-20">
-              <div className="px-2.5 py-0.5 sm:py-1 bg-[#FDF2F1] border border-[#C8372D] shadow-xs flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#C8372D]" />
-                <span className="text-[10px] font-mono font-bold tracking-[0.2em] text-[#C8372D] uppercase">
-                  MANIPULATED?
-                </span>
-              </div>
-            </div>
-
-            {/* LAYER 4: Inset Glitched Forensic Crop (Bottom Right) */}
-            <div
-              className="absolute bottom-4 right-1 sm:right-3 w-18 sm:w-22 h-24 sm:h-28 bg-[#FDFBF7] p-1 border border-[#181818]/30 shadow-md z-20"
-              style={{
-                clipPath: "polygon(1% 0%, 100% 2%, 98% 100%, 0% 98%)",
-              }}
-            >
-              <div className="relative w-full h-full overflow-hidden bg-gray-200">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/images/vintage_capitol.jpg"
-                  alt="Forensic crop pixelation inset"
-                  className="w-full h-full object-cover filter contrast-125 grayscale scale-150"
-                  style={{ imageRendering: "pixelated" }}
-                />
-                {/* Pixel scanline grid overlay */}
-                <div className="absolute inset-0 bg-[radial-gradient(#181818_1px,transparent_1px)] [background-size:4px_4px] opacity-45 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* LAYER 5: Tilted "AI GENERATED?" Paper Scrap (Bottom Center) */}
-            <div className="absolute bottom-6 left-20 sm:left-28 z-20 transform -rotate-1">
-              <div className="px-3 py-1 bg-[#FAF8F3] border border-[#181818]/25 shadow-xs">
-                <span className="text-[11px] font-mono font-bold tracking-[0.18em] text-[#181818] uppercase">
-                  AI GENERATED?
-                </span>
-                {/* Hand-drawn red underline */}
-                <div className="h-[2px] bg-[#C8372D] w-full mt-0.5 rounded-full" />
-              </div>
-            </div>
-          </div>
+          )}
 
           {/* Far Right Vertical Stack of Keywords */}
-          <div className="hidden sm:flex flex-col gap-2 text-right font-mono text-[8.5px] tracking-[0.22em] text-[#66625B] uppercase font-semibold absolute right-0 bottom-4 z-20">
+          <div className="hidden sm:flex flex-col gap-2 text-right font-mono text-[8.5px] tracking-[0.22em] text-[#66625B] uppercase font-semibold absolute right-0 bottom-4 z-20 pointer-events-none">
             <span>ANALYSE</span>
             <span>QUESTION</span>
             <span>UNDERSTAND</span>
