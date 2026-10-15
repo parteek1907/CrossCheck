@@ -72,6 +72,9 @@ export default function DraftReviewClient({ initialDraft, token }) {
   const [timelineSummary, setTimelineSummary] = useState(
     inc.timeline_summary || draft?.transcript || ""
   );
+  const [complainantName, setComplainantName] = useState(
+    inc.complainant_name || inc.victim_name || draft?.userName || ""
+  );
 
   // Live Re-extraction & Studio State
   const [liveNarrative, setLiveNarrative] = useState("");
@@ -140,6 +143,9 @@ export default function DraftReviewClient({ initialDraft, token }) {
     if (newInc.scammer_identifiers?.platform) {
       setScammerPlatform(newInc.scammer_identifiers.platform);
     }
+    if (newInc.complainant_name) {
+      setComplainantName(newInc.complainant_name);
+    }
     if (newInc.timeline_summary || transcriptText) {
       setTimelineSummary(newInc.timeline_summary || transcriptText);
     }
@@ -149,7 +155,11 @@ export default function DraftReviewClient({ initialDraft, token }) {
       await fetch(`/api/incident/draft/${token}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ incident: newInc, transcript: transcriptText }),
+        body: JSON.stringify({
+          incident: newInc,
+          complainantName: newInc.complainant_name || complainantName,
+          transcript: transcriptText,
+        }),
       });
     } catch {}
   };
@@ -287,9 +297,39 @@ export default function DraftReviewClient({ initialDraft, token }) {
       platform: scammerPlatform || "WhatsApp",
     },
     timeline_summary: timelineSummary,
+    complainant_name: complainantName || "",
     money_lost_recently: true,
     urgency: incidentType === "financial_fraud" && amountInr ? "high" : "medium",
   };
+
+  // Debounced auto-save so user edits are persisted to disk automatically
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetch(`/api/incident/draft/${token}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          incident: activeIncident,
+          complainantName,
+          transcript: timelineSummary,
+        }),
+      }).catch(() => {});
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [
+    incidentType,
+    amountInr,
+    dateTime,
+    paymentMethod,
+    transactionIds,
+    bankName,
+    scammerPhone,
+    scammerUpi,
+    scammerPlatform,
+    timelineSummary,
+    complainantName,
+    token,
+  ]);
 
   const handleDownloadPDF = async () => {
     setIsGeneratingPdf(true);
@@ -297,7 +337,7 @@ export default function DraftReviewClient({ initialDraft, token }) {
 
     try {
       const doc = generateComplaintPackPDF(activeIncident, {
-        userName: "Victim / Complainant",
+        userName: complainantName || draft?.userName || "Victim / Complainant",
         userPhone: draft?.phoneNumber || "Not provided",
         userEmail: "",
         selectedBankCode,
@@ -317,7 +357,10 @@ export default function DraftReviewClient({ initialDraft, token }) {
 
   const script1930 = generate1930Script(activeIncident);
   const portalMappings = generatePortalMappings(activeIncident);
-  const bankDispute = generateBankDisputeEmail(activeIncident, selectedBankCode, customNodalEmail);
+  const bankDispute = generateBankDisputeEmail(activeIncident, selectedBankCode, customNodalEmail, {
+    complainantName,
+    userPhone: draft?.phoneNumber,
+  });
   const platformGuides = generatePlatformReportingGuide(activeIncident);
 
   return (
@@ -539,6 +582,46 @@ export default function DraftReviewClient({ initialDraft, token }) {
                 }}
                 placeholder="e.g. State Bank of India, HDFC, ICICI"
                 className="w-full px-3.5 py-2.5 rounded-xl border border-black/15 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-black"
+              />
+            </div>
+
+            {/* Complainant Name */}
+            <div>
+              <label className="block text-xs font-bold text-gray-800 mb-1.5 flex items-center justify-between">
+                <span>Complainant / Account Holder Name</span>
+                <span className="text-[10px] text-gray-400 font-normal">Populates Bank Dispute Signature</span>
+              </label>
+              <input
+                type="text"
+                id="input-complainant-name"
+                value={complainantName}
+                onChange={(e) => setComplainantName(e.target.value)}
+                placeholder="e.g. Rahul Sharma"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-black/15 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-black font-medium"
+              />
+            </div>
+
+            {/* WhatsApp Mobile Number (Verified Intake) */}
+            <div>
+              <label className="block text-xs font-bold text-gray-800 mb-1.5 flex items-center justify-between">
+                <span>Registered WhatsApp Number</span>
+                <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Auto-linked from WhatsApp
+                </span>
+              </label>
+              <input
+                type="text"
+                readOnly
+                value={
+                  draft?.phoneNumber
+                    ? draft.phoneNumber.startsWith("91") && draft.phoneNumber.length === 12
+                      ? `+91 ${draft.phoneNumber.slice(2, 7)} ${draft.phoneNumber.slice(7)}`
+                      : draft.phoneNumber.length === 10
+                      ? `+91 ${draft.phoneNumber.slice(0, 5)} ${draft.phoneNumber.slice(5)}`
+                      : draft.phoneNumber
+                    : "Not available"
+                }
+                className="w-full px-3.5 py-2.5 rounded-xl border border-black/10 bg-gray-50/80 text-xs text-gray-700 font-mono font-bold cursor-default"
               />
             </div>
 

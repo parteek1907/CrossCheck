@@ -79,6 +79,12 @@ export async function PUT(request, { params }) {
     if (body.transcript) {
       draft.transcript = body.transcript;
     }
+    if (body.userName || body.complainantName) {
+      draft.userName = body.userName || body.complainantName;
+    }
+    if (draft.incident?.complainant_name && !draft.userName) {
+      draft.userName = draft.incident.complainant_name;
+    }
 
     const { persistStore } = await import("../../../../../lib/dummyStore.js");
     persistStore();
