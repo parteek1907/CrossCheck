@@ -52,12 +52,12 @@ export default function LandingPage() {
       {/* ========================================================
           ARCHIVAL MASTHEAD (EXACT REPLICA OF USER IMAGE)
           ======================================================== */}
-      <header className="w-full relative pt-4 pb-0 flex-shrink-0">
+      <header className="w-full relative pt-3 pb-0 flex-shrink-0">
         <div className="max-w-[1360px] mx-auto px-6 sm:px-10 lg:px-16">
           {/* Main Masthead Banner */}
-          <div className="relative flex items-center justify-between pb-3">
+          <div className="relative flex items-end justify-between pb-0.5">
             {/* Left Column: Stacked Mono Quote */}
-            <div className="w-40 hidden sm:block text-left text-[9px] lg:text-[10px] font-mono tracking-[0.25em] text-[#55524B] uppercase leading-[1.65] select-none">
+            <div className="w-40 hidden sm:block text-left text-[9px] lg:text-[10px] font-mono tracking-[0.25em] text-[#55524B] uppercase leading-[1.6] select-none pb-1">
               TRUTH<br />
               DESERVES<br />
               A SECOND<br />
@@ -65,18 +65,10 @@ export default function LandingPage() {
               <span className="inline-block mt-0.5 tracking-normal text-[#181818]/50">—</span>
             </div>
 
-            {/* Center: Monumental Crosscheck Wordmark with Globe & Plumb Line */}
-            <div className="relative flex-1 flex flex-col items-center justify-center">
-              {/* Vertical Plumb Axis Line Passing All The Way Through */}
-              <div className="absolute -top-3 bottom-[-32px] left-1/2 -translate-x-1/2 w-[1px] bg-[#181818]/60 z-10 pointer-events-none flex flex-col justify-between items-center">
-                {/* Top axis terminal dot */}
-                <div className="w-1.5 h-1.5 rounded-full bg-[#181818] -mt-0.5" />
-                {/* Bottom axis terminal dot */}
-                <div className="w-1.5 h-1.5 rounded-full bg-[#181818] -mb-0.5" />
-              </div>
-
+            {/* Center: Monumental Crosscheck Wordmark with Globe */}
+            <div className="relative flex-1 flex flex-col items-center justify-end">
               {/* Wireframe Globe Latitude / Longitude Vector (Upper Hemisphere) */}
-              <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-[220px] sm:w-[260px] h-[90px] pointer-events-none z-0 overflow-hidden opacity-35">
+              <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-[220px] sm:w-[260px] h-[95px] pointer-events-none z-0 overflow-hidden opacity-30">
                 <svg viewBox="0 0 260 130" fill="none" stroke="#181818" className="w-full h-full">
                   {/* Outer sphere rim */}
                   <ellipse cx="130" cy="128" rx="110" ry="110" strokeWidth="0.8" />
@@ -97,22 +89,22 @@ export default function LandingPage() {
               </div>
 
               {/* The Wordmark */}
-              <div className="relative z-20 flex items-center justify-center">
-                <span className="font-editorial text-[48px] sm:text-[64px] lg:text-[76px] tracking-[-0.01em] font-bold text-[#181818] select-none inline-flex items-center">
+              <div className="relative z-20 flex items-center justify-center leading-none">
+                <span className="font-editorial text-[48px] sm:text-[66px] lg:text-[80px] tracking-[-0.01em] font-bold text-[#181818] select-none inline-flex items-center leading-none">
                   <span>Cross</span>
                   <span className="bg-gradient-to-r from-[#181818] via-[#66635C] to-[#2B2925] bg-clip-text text-transparent">
                     check
                   </span>
                 </span>
                 {/* 4-Pointed Sparkle Star */}
-                <span className="text-[#181818] text-[26px] sm:text-[34px] lg:text-[40px] ml-1 sm:ml-2 -mt-1 font-serif select-none inline-block">
+                <span className="text-[#181818] text-[26px] sm:text-[34px] lg:text-[42px] ml-1 sm:ml-2 -mt-1 font-serif select-none inline-block leading-none">
                   ✦
                 </span>
               </div>
             </div>
 
             {/* Right Column: Stacked Mono Guidelines */}
-            <div className="w-40 hidden sm:block text-right text-[9px] lg:text-[10px] font-mono tracking-[0.25em] text-[#55524B] uppercase leading-[1.65] select-none">
+            <div className="w-40 hidden sm:block text-right text-[9px] lg:text-[10px] font-mono tracking-[0.25em] text-[#55524B] uppercase leading-[1.6] select-none pb-1">
               VERIFY<br />
               UNDERSTAND<br />
               QUESTION<br />
