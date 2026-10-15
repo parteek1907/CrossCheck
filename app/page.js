@@ -200,9 +200,7 @@ export default function LandingPage() {
     let mediaPayload = null;
 
     if (selectedFile) {
-      payload = trimmedText
-        ? `Claim regarding media [${selectedFile.name}]: ${trimmedText}`
-        : `Verification of circulated media file: ${selectedFile.name} (${formatFileSize(selectedFile.size)})`;
+      payload = trimmedText || `Verification of circulated media file: ${selectedFile.name}`;
       try {
         mediaPayload = await readFileAsBase64(selectedFile);
       } catch (err) {

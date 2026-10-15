@@ -29,6 +29,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
   const [linkUrl, setLinkUrl] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreviewUrl, setFilePreviewUrl] = useState(null);
+  const [fileContext, setFileContext] = useState("");
   
   // Validation / errors
   const [errorMessage, setErrorMessage] = useState("");
@@ -165,6 +166,9 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
           const file = items[i].getAsFile();
           if (file) {
             e.preventDefault();
+            if (textContent.trim()) {
+              setFileContext(textContent.trim());
+            }
             setActiveTab("file");
             validateAndSetFile(file);
             break;
@@ -172,7 +176,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
         }
       }
     },
-    [isOpen, isVerifying]
+    [isOpen, isVerifying, textContent]
   );
 
   useEffect(() => {
@@ -184,6 +188,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
     if (filePreviewUrl) URL.revokeObjectURL(filePreviewUrl);
     setSelectedFile(null);
     setFilePreviewUrl(null);
+    setFileContext("");
     setErrorMessage("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -242,8 +247,9 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
         mediaFile = selectedFile;
         setProgressMessage(`Reading and encoding ${selectedFile.name}...`);
         const mediaData = await readFileAsBase64(selectedFile);
+        const queryText = (fileContext || textContent).trim();
         payload = {
-          content: selectedFile.name,
+          content: queryText || `Visual verification for attached file: ${selectedFile.name}`,
           media: mediaData
         };
       }
@@ -459,6 +465,19 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                           <span>Clear</span>
                         </button>
                       )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (textContent.trim()) setFileContext(textContent.trim());
+                          setActiveTab("file");
+                          setTimeout(() => fileInputRef.current?.click(), 50);
+                        }}
+                        className="text-gray-500 hover:text-gray-900 flex items-center gap-1 text-[11px] font-semibold cursor-pointer ml-2"
+                        title="Attach an image to this claim"
+                      >
+                        <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Attach Image</span>
+                      </button>
                     </div>
                     <span className={textContent.length < 5 ? "text-gray-400" : "text-emerald-600 font-semibold"}>
                       {textContent.length} characters
@@ -579,6 +598,23 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                       </button>
                     </div>
                   )}
+
+                  {/* Context / Question for Media */}
+                  <div className="mt-3.5">
+                    <label className="block mb-1.5 text-xs font-bold text-gray-700 tracking-tight">
+                      Specific Question or Claim (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={fileContext}
+                      onChange={(e) => setFileContext(e.target.value)}
+                      placeholder="e.g. 'is this person dead', 'did this happen?'"
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-sm text-gray-900 bg-white border border-gray-200 rounded-xl placeholder:text-gray-400 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-all"
+                    />
+                    <p className="mt-1 text-[11px] text-gray-500">
+                      If asking about a person, the AI identifies who they are and cross-examines news wires and fact-check records.
+                    </p>
+                  </div>
 
                   {/* Mandatory Note */}
                   <p className="mt-2.5 text-xs text-gray-600 flex items-center gap-1.5 font-medium">

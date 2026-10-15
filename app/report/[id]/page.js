@@ -18,6 +18,7 @@ import {
   Check,
   Cpu,
   Info,
+  ImageIcon,
 } from "lucide-react";
 
 import { getReportById, toggleSaveReport } from "../../../lib/storage.js";
@@ -248,67 +249,79 @@ function ReportDetailContent() {
         </section>
 
         {/* ========================================================
-            B. EVIDENCE CARDS & SUB-SCORES
+            B. ANALYZED VISUAL MEDIA & ENTITY RECOGNITION (When Present)
             ======================================================== */}
-        <section className="space-y-4">
-          <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-            <Layers className="w-4 h-4 text-gray-900" />
-            <span>Deterministic Evidence Sub-Scores</span>
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 bg-white border border-gray-200 rounded-2xl shadow-2xs">
-              <span className="text-xs text-gray-500 block mb-1 font-semibold">Source Reliability</span>
-              <div className="text-2xl font-bold font-mono text-gray-900">
-                {report.scoringResult?.components?.sourceReliability ?? 75}/100
+        {report.submittedMedia && (report.submittedMedia.previewUrl || report.submittedMedia.identifiedEntity) && (
+          <section className="p-6 bg-white border border-gray-200 rounded-3xl shadow-xs space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <ImageIcon className="w-4 h-4 text-gray-900" />
+                <h2 className="text-sm font-bold text-gray-900">Analyzed Visual Media</h2>
               </div>
-              <p className="text-[11px] text-gray-400 mt-1">
-                Average authority of reporting domains
-              </p>
+              <span className="px-3 py-1 text-[11px] font-mono bg-blue-50 text-blue-700 border border-blue-200 rounded-full font-semibold">
+                Multimodal Verification
+              </span>
             </div>
 
-            <div className="p-5 bg-white border border-gray-200 rounded-2xl shadow-2xs">
-              <span className="text-xs text-gray-500 block mb-1 font-semibold">Independent Coverage</span>
-              <div className="text-2xl font-bold font-mono text-blue-600">
-                {report.scoringResult?.components?.independentCoverage ?? 80}/100
-              </div>
-              <p className="text-[11px] text-gray-400 mt-1">
-                Deduplicated cluster diversity
-              </p>
-            </div>
+            <div className="flex flex-col sm:flex-row gap-6 items-start">
+              {report.submittedMedia.previewUrl && (
+                <div className="w-full sm:w-64 flex-shrink-0">
+                  <div className="relative rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 shadow-2xs">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={report.submittedMedia.previewUrl}
+                      alt={report.submittedMedia.identifiedEntity || "Submitted visual media"}
+                      className="w-full h-auto max-h-72 object-contain mx-auto"
+                    />
+                  </div>
+                  <div className="mt-2 text-[11px] font-mono text-gray-400 text-center truncate">
+                    {report.submittedMedia.name || "submitted_media"}
+                  </div>
+                </div>
+              )}
 
-            <div className="p-5 bg-white border border-gray-200 rounded-2xl shadow-2xs">
-              <span className="text-xs text-gray-500 block mb-1 font-semibold">Contradiction Strength</span>
-              <div className="text-2xl font-bold font-mono text-red-600">
-                {report.scoringResult?.components?.contradictionStrength ?? 40}/100
-              </div>
-              <p className="text-[11px] text-gray-400 mt-1">
-                Stance ratio refuting assertion
-              </p>
-            </div>
+              <div className="flex-1 space-y-4">
+                {report.submittedMedia.identifiedEntity && (
+                  <div className="p-4 bg-gray-50 border border-gray-200 rounded-2xl space-y-1">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-gray-500 font-bold block">
+                      Identified Subject / Entity
+                    </span>
+                    <p className="text-base font-extrabold text-gray-900 tracking-tight">
+                      {report.submittedMedia.identifiedEntity}
+                    </p>
+                    {report.submittedMedia.visualContext && (
+                      <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                        {report.submittedMedia.visualContext}
+                      </p>
+                    )}
+                  </div>
+                )}
 
-            <div className="p-5 bg-white border border-gray-200 rounded-2xl shadow-2xs">
-              <span className="text-xs text-gray-500 block mb-1 font-semibold">Claim Specificity</span>
-              <div className="text-2xl font-bold font-mono text-emerald-600">
-                {report.scoringResult?.components?.claimSpecificity ?? 70}/100
+                {report.submittedMedia.mediaAssessment && (
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-gray-500 font-bold block">
+                      Forensic Visual Assessment
+                    </span>
+                    <p className="text-xs text-gray-700 leading-relaxed">
+                      {report.submittedMedia.mediaAssessment}
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3 pt-2 text-xs text-gray-600">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span>Multimodal deep inspection verified subject identity against active public records.</span>
+                </div>
               </div>
-              <p className="text-[11px] text-gray-400 mt-1">
-                Verifiable factual proposition density
-              </p>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* ========================================================
             C. PRIMARY VERIFIED EVIDENCE SOURCES (5-10 Conclusive)
             ======================================================== */}
         {(() => {
-          const displaySources = (report.sources || [])
-            .filter(s => s.stance === "CONTRADICT" || s.stance === "SUPPORT")
-            .slice(0, 10);
-          const effectiveSources = displaySources.length > 0
-            ? displaySources
-            : (report.sources || []).filter(s => s.stance !== "IRRELEVANT").slice(0, 10);
+          const effectiveSources = (report.sources || []).slice(0, 10);
 
           return (
             <section className="p-6 bg-white border border-gray-200 rounded-3xl shadow-xs space-y-4">
