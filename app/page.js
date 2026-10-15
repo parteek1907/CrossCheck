@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -13,42 +13,239 @@ import {
   Scan,
   CheckCircle2,
   ArrowRight,
+  Upload,
+  X,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
-import { VerificationModal } from "../components/VerificationModal";
 import { saveStoredReport } from "../lib/storage.js";
+
+const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024; // 15MB
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
 
 export default function LandingPage() {
   const router = useRouter();
-  const [claimInput, setClaimInput] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalPrefill, setModalPrefill] = useState(null);
+  const fileInputRef = useRef(null);
+  const textInputRef = useRef(null);
 
-  const handleStartVerification = (e) => {
-    e?.preventDefault();
-    if (claimInput.trim()) {
-      if (claimInput.startsWith("http://") || claimInput.startsWith("https://")) {
-        setModalPrefill({ tab: "link", link: claimInput.trim() });
-      } else {
-        setModalPrefill({ tab: "text", text: claimInput.trim() });
-      }
-    } else {
-      setModalPrefill(null);
+  const [claimInput, setClaimInput] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [filePreviewUrl, setFilePreviewUrl] = useState(null);
+
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [progressMsg, setProgressMsg] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const formatFileSize = (bytes) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const validateAndSetFile = (file) => {
+    setErrorMessage("");
+    if (!file) return;
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      setErrorMessage(
+        `Unsupported file type "${file.name.split(".").pop()}". Please select a JPG, PNG, WEBP, or PDF.`
+      );
+      return;
     }
-    setIsModalOpen(true);
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      setErrorMessage(
+        `File is too large (${(file.size / (1024 * 1024)).toFixed(1)}MB). Limit is 15MB.`
+      );
+      return;
+    }
+
+    setSelectedFile(file);
+    if (file.type.startsWith("image/")) {
+      const url = URL.createObjectURL(file);
+      setFilePreviewUrl(url);
+    } else {
+      setFilePreviewUrl(null);
+    }
+  };
+
+  const removeSelectedFile = () => {
+    if (filePreviewUrl) URL.revokeObjectURL(filePreviewUrl);
+    setSelectedFile(null);
+    setFilePreviewUrl(null);
+    setErrorMessage("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) validateAndSetFile(file);
+  };
+
+  // Direct paste handler for images
+  const handlePaste = useCallback((e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith("image/")) {
+        const file = items[i].getAsFile();
+        if (file) {
+          e.preventDefault();
+          validateAndSetFile(file);
+          break;
+        }
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("paste", handlePaste);
+    return () => window.removeEventListener("paste", handlePaste);
+  }, [handlePaste]);
+
+  // Drag and drop handler on search container
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isVerifying) return;
+    const files = e.dataTransfer?.files;
+    if (files && files.length > 0) {
+      validateAndSetFile(files[0]);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleStartVerification = async (e) => {
+    e?.preventDefault();
+    if (isVerifying) return;
+
+    const trimmedText = claimInput.trim();
+    if (!trimmedText && !selectedFile) {
+      setErrorMessage("Please enter a claim statement, web link, or upload an image to verify.");
+      textInputRef.current?.focus();
+      return;
+    }
+
+    setErrorMessage("");
+    setIsVerifying(true);
+    setProgressMsg("Connecting to verification ledger...");
+
+    let payload = "";
+    if (selectedFile) {
+      payload = trimmedText
+        ? `Claim regarding media [${selectedFile.name}]: ${trimmedText}`
+        : `Verification of circulated media file: ${selectedFile.name} (${formatFileSize(selectedFile.size)})`;
+    } else {
+      payload = trimmedText;
+    }
+
+    try {
+      setProgressMsg("Evaluating claim across open wires...");
+      const res = await fetch("/api/verify?stream=true", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "text/event-stream",
+        },
+        body: JSON.stringify({ content: payload }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || errData.details || `Verification failed with HTTP ${res.status}`);
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let buffer = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          const eventMatch = line.match(/^event:\s*(\w+)/m);
+          const dataMatch = line.match(/^data:\s*(.*)$/m);
+
+          if (eventMatch && dataMatch) {
+            const eventType = eventMatch[1];
+            try {
+              const data = JSON.parse(dataMatch[1]);
+              if (eventType === "progress") {
+                setProgressMsg(data.message || "Analysing forensic signals...");
+              } else if (eventType === "complete") {
+                saveStoredReport(data);
+                setIsVerifying(false);
+                router.push(`/report/${encodeURIComponent(data.reportId)}`);
+                return;
+              } else if (eventType === "error") {
+                throw new Error(data.error || "Verification pipeline failed.");
+              }
+            } catch (parseErr) {
+              if (parseErr.message.includes("Verification pipeline")) throw parseErr;
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error("[Verification Error]", err);
+      // Fallback to standard synchronous request if stream encounters an issue
+      try {
+        setProgressMsg("Finalising report synthesis...");
+        const fallbackRes = await fetch("/api/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: payload }),
+        });
+        if (fallbackRes.ok) {
+          const report = await fallbackRes.json();
+          saveStoredReport(report);
+          setIsVerifying(false);
+          router.push(`/report/${encodeURIComponent(report.reportId)}`);
+          return;
+        }
+      } catch {
+        // Ignored fallback error
+      }
+      setIsVerifying(false);
+      setErrorMessage(err.message || "Failed to complete verification. Please check network and try again.");
+    }
   };
 
   const handleTabClick = (tab) => {
-    setModalPrefill({ tab });
-    setIsModalOpen(true);
-  };
-
-  const handleVerificationComplete = (report) => {
-    saveStoredReport(report);
-    router.push(`/report/${encodeURIComponent(report.reportId)}`);
+    setErrorMessage("");
+    if (tab === "file") {
+      fileInputRef.current?.click();
+    } else if (tab === "link") {
+      if (!claimInput.startsWith("http")) {
+        setClaimInput("https://");
+      }
+      textInputRef.current?.focus();
+    } else if (tab === "text") {
+      textInputRef.current?.focus();
+    }
   };
 
   return (
     <div className="h-[100dvh] max-h-[100dvh] w-screen overflow-hidden bg-[#F6F3EB] text-[#181818] font-sans selection:bg-[#181818] selection:text-[#F6F3EB] flex flex-col justify-between">
+      {/* Hidden Native File Input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept="image/jpeg,image/png,image/webp,application/pdf"
+        className="hidden"
+      />
+
       {/* ========================================================
           ARCHIVAL MASTHEAD (EXACT REPLICA OF USER IMAGE)
           ======================================================== */}
@@ -162,41 +359,125 @@ export default function LandingPage() {
           <div className="pt-1 max-w-xl">
             <form
               onSubmit={handleStartVerification}
-              className="rounded-2xl border border-[#181818] bg-[#FCFAF6] p-1.5 pl-3.5 flex items-center justify-between gap-3 shadow-[0_2px_8px_rgba(0,0,0,0.03)] focus-within:ring-2 focus-within:ring-[#181818]/15 transition-all"
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              className={`rounded-2xl border ${
+                selectedFile ? "border-[#181818] bg-[#FAF7F0]" : "border-[#181818] bg-[#FCFAF6]"
+              } p-2 pl-3.5 flex flex-col gap-2 shadow-[0_2px_8px_rgba(0,0,0,0.03)] focus-within:ring-2 focus-within:ring-[#181818]/15 transition-all`}
             >
-              <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                <div className="text-[#666] flex-shrink-0">
-                  <svg
-                    className="w-4 h-4 text-[#444]"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                  >
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <circle cx="10" cy="14" r="2.5" />
-                    <line x1="12" y1="16" x2="14" y2="18" />
-                  </svg>
+              <div className="flex items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                  <div className="text-[#666] flex-shrink-0">
+                    <svg
+                      className="w-4 h-4 text-[#444]"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                    >
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <circle cx="10" cy="14" r="2.5" />
+                      <line x1="12" y1="16" x2="14" y2="18" />
+                    </svg>
+                  </div>
+                  <input
+                    ref={textInputRef}
+                    type="text"
+                    disabled={isVerifying}
+                    value={claimInput}
+                    onChange={(e) => setClaimInput(e.target.value)}
+                    placeholder={
+                      selectedFile
+                        ? `Add context or claim regarding ${selectedFile.name}...`
+                        : "Paste a claim, link, message or drop an image here..."
+                    }
+                    className="w-full text-xs sm:text-[13px] bg-transparent placeholder:text-[#88857E] text-[#181818] focus:outline-none font-sans"
+                  />
                 </div>
-                <input
-                  type="text"
-                  value={claimInput}
-                  onChange={(e) => setClaimInput(e.target.value)}
-                  placeholder="Paste a claim, link, message or drop an image here..."
-                  className="w-full text-xs sm:text-[13px] bg-transparent placeholder:text-[#88857E] text-[#181818] focus:outline-none font-sans"
-                />
+
+                {/* Upload Image Button Right Here in Search Bar */}
+                <button
+                  type="button"
+                  disabled={isVerifying}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#181818]/20 hover:border-[#181818] bg-[#F2EDE2] hover:bg-[#EAE4D7] text-[#181818] text-xs font-semibold transition-all flex-shrink-0"
+                  title="Upload an image or document file"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Upload Image</span>
+                </button>
+
+                {/* Verify Now Action Button */}
+                <button
+                  type="submit"
+                  disabled={isVerifying}
+                  className="px-4 sm:px-5 py-2 rounded-xl bg-[#181818] hover:bg-black text-[#F6F3EB] text-xs font-semibold flex items-center gap-1.5 transition-all flex-shrink-0 disabled:opacity-75 shadow-xs"
+                >
+                  {isVerifying ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Verifying...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Verify Now</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </>
+                  )}
+                </button>
               </div>
-              <button
-                type="submit"
-                className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-[#181818] hover:bg-black text-[#F6F3EB] text-xs font-semibold flex items-center gap-1.5 transition-all flex-shrink-0"
-              >
-                <span>Verify Now</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+
+              {/* Uploaded File Chip (if selected) */}
+              {selectedFile && (
+                <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-[#EFE9DC] border border-[#181818]/15 text-xs">
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    {filePreviewUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={filePreviewUrl}
+                        alt="Upload preview"
+                        className="w-5 h-5 rounded object-cover border border-[#181818]/20 flex-shrink-0"
+                      />
+                    ) : (
+                      <File className="w-4 h-4 text-[#555] flex-shrink-0" />
+                    )}
+                    <span className="font-semibold text-[#181818] truncate max-w-[240px]">
+                      {selectedFile.name}
+                    </span>
+                    <span className="text-[10px] text-[#666] font-mono">
+                      ({formatFileSize(selectedFile.size)})
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={removeSelectedFile}
+                    className="p-1 rounded text-[#777] hover:text-[#181818] transition-colors"
+                    title="Remove file"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
             </form>
 
-            {/* Input Type Selectors */}
+            {/* Error Feedback */}
+            {errorMessage && (
+              <div className="flex items-center gap-1.5 mt-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5">
+                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            {/* Verification Progress Message */}
+            {isVerifying && (
+              <div className="flex items-center gap-2 mt-2 text-xs font-mono text-[#55524B] px-1">
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-[#181818]" />
+                <span>{progressMsg}</span>
+              </div>
+            )}
+
+            {/* Input Type Selectors (Clicking triggers file or input mode directly, NO popup) */}
             <div className="flex items-center gap-4 sm:gap-5 text-xs font-medium text-[#4A4742] pt-2.5 px-2">
               <button
                 type="button"
@@ -448,16 +729,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-
-      {/* ========================================================
-          VERIFICATION MODAL (OPENS DIRECTLY ON LANDING PAGE)
-          ======================================================== */}
-      <VerificationModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onComplete={handleVerificationComplete}
-        initialData={modalPrefill}
-      />
     </div>
   );
 }
