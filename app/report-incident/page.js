@@ -40,6 +40,7 @@ import {
 import { getNextFollowUpQuestion, countMissingFollowUps } from "../../lib/followUpEngine";
 import {
   BANK_DIRECTORY,
+  getBankCodeFromName,
   generate1930Script,
   generatePortalMappings,
   generateBankDisputeEmail,
@@ -121,14 +122,8 @@ export default function ReportIncidentPage() {
   // Update selected bank code automatically if bankName matches directory
   useEffect(() => {
     if (bankName) {
-      const found = BANK_DIRECTORY.find(
-        (b) =>
-          b.name.toLowerCase().includes(bankName.toLowerCase()) ||
-          b.code.toLowerCase() === bankName.toLowerCase()
-      );
-      if (found) {
-        setSelectedBankCode(found.code);
-      }
+      const code = getBankCodeFromName(bankName);
+      setSelectedBankCode(code);
     }
   }, [bankName]);
 

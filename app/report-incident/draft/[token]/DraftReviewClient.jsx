@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import {
   BANK_DIRECTORY,
+  getBankCodeFromName,
   generate1930Script,
   generatePortalMappings,
   generateBankDisputeEmail,
@@ -84,7 +85,10 @@ export default function DraftReviewClient({ initialDraft, token }) {
   // Confirmation & Action Pack State (Default UNLOCKED for zero friction)
   const [isConfirmed, setIsConfirmed] = useState(true);
   const [actionPackTab, setActionPackTab] = useState("1930"); // "1930" | "portal" | "bank" | "platform"
-  const [selectedBankCode, setSelectedBankCode] = useState("SBI");
+  // Initialize selectedBankCode dynamically from extracted incident bankName rather than hardcoding SBI
+  const [selectedBankCode, setSelectedBankCode] = useState(() =>
+    getBankCodeFromName(inc.bank_name || "")
+  );
   const [customNodalEmail, setCustomNodalEmail] = useState("");
   const [copiedKey, setCopiedKey] = useState(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
@@ -94,17 +98,11 @@ export default function DraftReviewClient({ initialDraft, token }) {
     console.log("===> DRAFT REVIEW CLIENT MOUNTED <===");
   }, []);
 
-  // Sync selected bank code
+  // Sync selected bank code whenever bankName changes
   useEffect(() => {
     if (bankName) {
-      const found = BANK_DIRECTORY.find(
-        (b) =>
-          b.name.toLowerCase().includes(bankName.toLowerCase()) ||
-          b.code.toLowerCase() === bankName.toLowerCase()
-      );
-      if (found) {
-        setSelectedBankCode(found.code);
-      }
+      const code = getBankCodeFromName(bankName);
+      setSelectedBankCode(code);
     }
   }, [bankName]);
 
@@ -531,8 +529,14 @@ export default function DraftReviewClient({ initialDraft, token }) {
               <label className="block text-xs font-bold text-gray-800 mb-1.5">Debited Bank Name</label>
               <input
                 type="text"
+                id="input-bank-name"
                 value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setBankName(val);
+                  const code = getBankCodeFromName(val);
+                  if (code) setSelectedBankCode(code);
+                }}
                 placeholder="e.g. State Bank of India, HDFC, ICICI"
                 className="w-full px-3.5 py-2.5 rounded-xl border border-black/15 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-black"
               />
@@ -765,6 +769,54 @@ export default function DraftReviewClient({ initialDraft, token }) {
 
                   window.crosscheckSwitchTab = doSwitch;
 
+                  var bankDirectory = [
+                    { code: "SBI", name: "State Bank of India (SBI)", email: "customercare@sbi.co.in" },
+                    { code: "HDFC", name: "HDFC Bank", email: "grievance.redressal@hdfcbank.com" },
+                    { code: "ICICI", name: "ICICI Bank", email: "headservicequality@icicibank.com" },
+                    { code: "AXIS", name: "Axis Bank", email: "nodalofficer@axisbank.com" },
+                    { code: "PNB", name: "Punjab National Bank (PNB)", email: "nodalofficer@pnb.co.in" },
+                    { code: "BOB", name: "Bank of Baroda (BoB)", email: "nodal.officer@bankofbaroda.com" },
+                    { code: "KOTAK", name: "Kotak Mahindra Bank", email: "nodalofficer@kotak.com" },
+                    { code: "CANARA", name: "Canara Bank", email: "nodalofficer@canarabank.com" },
+                    { code: "INDUSIND", name: "IndusInd Bank", email: "nodal.officer@indusind.com" },
+                    { code: "UNION", name: "Union Bank of India", email: "grievances@unionbankofindia.bank" }
+                  ];
+
+                  function syncBankNotice(bankCode) {
+                    var b = bankDirectory.find(function(item) { return item.code === bankCode; });
+                    if (!b) return;
+                    var emailEl = document.getElementById("bank-nodal-email-text");
+                    var emailBtn = document.getElementById("bank-nodal-email-copy-btn");
+                    var bodyEl = document.getElementById("bank-letter-body-text");
+                    var bodyBtn = document.getElementById("bank-letter-copy-btn");
+                    var openBtn = document.getElementById("bank-open-email-btn");
+                    var subjEl = document.getElementById("bank-subject-text");
+
+                    if (emailEl) emailEl.textContent = b.email;
+                    if (emailBtn) emailBtn.setAttribute("data-copy-text", b.email);
+                    if (bodyEl) {
+                      var oldText = bodyEl.textContent || "";
+                      bodyEl.textContent = oldText.replace(
+                        /To: The Principal Nodal Officer \/ Fraud Dispute Cell\n[^\n]+/,
+                        "To: The Principal Nodal Officer / Fraud Dispute Cell\n" + b.name
+                      );
+                      if (bodyBtn) bodyBtn.setAttribute("data-copy-text", bodyEl.textContent);
+                      if (openBtn && subjEl) {
+                        openBtn.href = "mailto:" + b.email + "?subject=" + encodeURIComponent(subjEl.textContent) + "&body=" + encodeURIComponent(bodyEl.textContent);
+                      }
+                    }
+                  }
+
+                  function bindBankSelect() {
+                    var sel = document.getElementById("bank-select");
+                    if (sel && !sel.__bound) {
+                      sel.__bound = true;
+                      sel.addEventListener("change", function(e) {
+                        syncBankNotice(e.target.value);
+                      });
+                    }
+                  }
+
                   function bind() {
                     tabs.forEach(function(t) {
                       var b = document.getElementById('tab-' + t);
@@ -775,6 +827,7 @@ export default function DraftReviewClient({ initialDraft, token }) {
                         });
                       }
                     });
+                    bindBankSelect();
                   }
 
                   bind();
@@ -995,11 +1048,19 @@ export default function DraftReviewClient({ initialDraft, token }) {
               </div>
 
               <div className="flex items-center gap-2">
-                <label className="text-xs font-medium text-gray-600">Bank:</label>
+                <label htmlFor="bank-select" className="text-xs font-medium text-gray-600">Bank:</label>
                 <select
+                  id="bank-select"
                   value={selectedBankCode}
-                  onChange={(e) => setSelectedBankCode(e.target.value)}
-                  className="px-3 py-1.5 rounded-lg border border-black/15 text-xs font-bold bg-white text-gray-900"
+                  onChange={(e) => {
+                    const newCode = e.target.value;
+                    setSelectedBankCode(newCode);
+                    const bObj = BANK_DIRECTORY.find((b) => b.code === newCode);
+                    if (bObj) {
+                      setBankName(bObj.name);
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-lg border border-black/15 text-xs font-bold bg-white text-gray-900 cursor-pointer"
                 >
                   {BANK_DIRECTORY.map((b) => (
                     <option key={b.code} value={b.code}>
@@ -1014,9 +1075,10 @@ export default function DraftReviewClient({ initialDraft, token }) {
               <div className="flex items-center justify-between border-b border-gray-200 pb-2">
                 <span className="font-bold text-gray-700">Nodal Officer Email:</span>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-gray-900 font-semibold">{bankDispute.toEmail}</span>
+                  <span id="bank-nodal-email-text" className="font-mono text-gray-900 font-semibold">{bankDispute.toEmail}</span>
                   <button
                     type="button"
+                    id="bank-nodal-email-copy-btn"
                     data-copy-text={bankDispute.toEmail}
                     onClick={() => copyToClipboard(bankDispute.toEmail, "nodalEmail")}
                     className="p-1 rounded hover:bg-gray-200 transition cursor-pointer"
@@ -1028,9 +1090,10 @@ export default function DraftReviewClient({ initialDraft, token }) {
               <div className="flex items-center justify-between border-b border-gray-200 pb-2">
                 <span className="font-bold text-gray-700">Subject:</span>
                 <div className="flex items-center gap-2 max-w-md truncate">
-                  <span className="font-semibold text-gray-950 truncate">{bankDispute.subject}</span>
+                  <span id="bank-subject-text" className="font-semibold text-gray-950 truncate">{bankDispute.subject}</span>
                   <button
                     type="button"
+                    id="bank-subject-copy-btn"
                     data-copy-text={bankDispute.subject}
                     onClick={() => copyToClipboard(bankDispute.subject, "bankSubj")}
                     className="p-1 rounded hover:bg-gray-200 transition cursor-pointer shrink-0"
@@ -1039,7 +1102,7 @@ export default function DraftReviewClient({ initialDraft, token }) {
                   </button>
                 </div>
               </div>
-              <div className="pt-2 font-mono text-[11px] leading-relaxed whitespace-pre-wrap text-gray-800 max-h-64 overflow-y-auto bg-white p-3.5 rounded-lg border border-gray-200">
+              <div id="bank-letter-body-text" className="pt-2 font-mono text-[11px] leading-relaxed whitespace-pre-wrap text-gray-800 max-h-64 overflow-y-auto bg-white p-3.5 rounded-lg border border-gray-200">
                 {bankDispute.body}
               </div>
             </div>
@@ -1047,6 +1110,7 @@ export default function DraftReviewClient({ initialDraft, token }) {
             <div className="flex flex-wrap justify-end gap-3">
               <button
                 type="button"
+                id="bank-letter-copy-btn"
                 data-copy-text={bankDispute.body}
                 onClick={() => copyToClipboard(bankDispute.body, "bankEmail")}
                 className="px-4 py-2 rounded-xl border border-black/15 bg-white hover:bg-black/5 text-xs font-semibold flex items-center gap-2 transition cursor-pointer"
@@ -1055,6 +1119,7 @@ export default function DraftReviewClient({ initialDraft, token }) {
                 <span>{copiedKey === "bankEmail" ? "Copied Dispute Letter!" : "Copy Dispute Letter"}</span>
               </button>
               <a
+                id="bank-open-email-btn"
                 href={bankDispute.mailtoUrl || `mailto:${bankDispute.toEmail}?subject=${encodeURIComponent(bankDispute.subject)}&body=${encodeURIComponent(bankDispute.body)}`}
                 className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition flex items-center gap-2 shadow-xs"
               >
