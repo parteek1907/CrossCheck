@@ -45,6 +45,11 @@ import {
   Clock,
   ShieldAlert,
   AlertCircle,
+  Upload,
+  Send,
+  FilePlus,
+  Phone,
+  FileDown,
 } from "lucide-react";
 
 import {
@@ -59,7 +64,13 @@ import {
   getSettings,
   saveSettings,
 } from "../../lib/storage.js";
-import { getVaultEntries, verifyVaultIntegrity } from "../../lib/vault.js";
+import {
+  getVaultEntries,
+  verifyVaultIntegrity,
+  fileIncidentReport,
+  deleteVaultEntry,
+  generateComplaintDraft,
+} from "../../lib/vault.js";
 import {
   generateSafeCircleCode,
   verifySafeCircleSpokenCode,
@@ -158,6 +169,24 @@ function CrosscheckAppContent() {
 
   // Vault state
   const [vaultEntries, setVaultEntries] = useState([]);
+
+  // Evidence Vault Incident Reporting state
+  const [isFilingIncident, setIsFilingIncident] = useState(false);
+  const [incidentCategory, setIncidentCategory] = useState("scam");
+  const [incidentDetails, setIncidentDetails] = useState("");
+  const [incidentPlatform, setIncidentPlatform] = useState("WhatsApp");
+  const [incidentScreenshot, setIncidentScreenshot] = useState(null);
+  const [incidentContactName, setIncidentContactName] = useState("");
+  const [incidentContactPhone, setIncidentContactPhone] = useState("");
+  const [incidentContactEmail, setIncidentContactEmail] = useState("");
+  const [incidentSuspectInfo, setIncidentSuspectInfo] = useState("");
+  const [isSubmittingIncident, setIsSubmittingIncident] = useState(false);
+  const [submittedIncidentResult, setSubmittedIncidentResult] = useState(null);
+  const [selectedDossierEntry, setSelectedDossierEntry] = useState(null);
+  const [isDossierModalOpen, setIsDossierModalOpen] = useState(false);
+  const [copiedCaseId, setCopiedCaseId] = useState(false);
+  const [copiedDraft, setCopiedDraft] = useState(false);
+  const screenshotFileRef = useRef(null);
 
   // The Family Safe-Word state
   const [safeWordLang, setSafeWordLang] = useState("en");
@@ -358,6 +387,87 @@ function CrosscheckAppContent() {
     setFamilySecret(cleanSeed);
     setIsSeedModalOpen(false);
     showToast("Family Seed successfully updated!", "success");
+  };
+
+  const handleScreenshotChange = (file) => {
+    if (!file) return;
+    if (file.size > 15 * 1024 * 1024) {
+      showToast("Screenshot must be under 15MB", "error");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setIncidentScreenshot({
+        name: file.name,
+        size: file.size,
+        mimeType: file.type,
+        previewUrl: typeof reader.result === "string" ? reader.result : null
+      });
+      showToast("Screenshot attached successfully!", "success");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSubmitIncident = async (e) => {
+    e?.preventDefault();
+    if (!incidentDetails.trim()) {
+      showToast("Please provide details of what happened.", "error");
+      return;
+    }
+
+    setIsSubmittingIncident(true);
+    try {
+      const result = await fileIncidentReport({
+        category: incidentCategory,
+        details: incidentDetails.trim(),
+        platform: incidentPlatform,
+        screenshot: incidentScreenshot,
+        contactName: incidentContactName.trim() || userProfile.displayName || "Citizen Complainant",
+        contactPhone: incidentContactPhone.trim(),
+        contactEmail: incidentContactEmail.trim() || userProfile.email || "",
+        suspectInfo: incidentSuspectInfo.trim(),
+      });
+
+      setSubmittedIncidentResult(result);
+      showToast("Incident report successfully queued & dispatched to Cyber Cell!", "success");
+      setVaultEntries(getVaultEntries());
+      // Reset form fields
+      setIncidentDetails("");
+      setIncidentScreenshot(null);
+      setIncidentSuspectInfo("");
+      setIsFilingIncident(false);
+    } catch (err) {
+      console.error("Failed to file incident report:", err);
+      showToast("Failed to file report: " + err.message, "error");
+    } finally {
+      setIsSubmittingIncident(false);
+    }
+  };
+
+  const handleDownloadDossier = (entry) => {
+    if (!entry) return;
+    const text = generateComplaintDraft(entry);
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Cyber_Complaint_${entry.caseId || entry.reportId}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("Complaint dossier downloaded successfully!", "success");
+  };
+
+  const handleDeleteVaultEntry = (id) => {
+    if (confirm("Are you sure you want to remove this record from the Evidence Vault?")) {
+      deleteVaultEntry(id);
+      setVaultEntries(getVaultEntries());
+      showToast("Record removed from Evidence Vault.", "info");
+      if (selectedDossierEntry?.reportId === id || selectedDossierEntry?.caseId === id) {
+        setIsDossierModalOpen(false);
+      }
+    }
   };
 
   const fetchDomainProfile = async (domain) => {
@@ -1188,44 +1298,629 @@ function CrosscheckAppContent() {
               ======================================================== */}
           {activeNav === "vault" && (
             <div className="space-y-6 animate-in fade-in-0 duration-200">
-              <div className="flex items-center justify-between">
+              {/* Top Controls Bar */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200/60 dark:border-gray-800/60">
                 <div>
-                  <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">Evidence Vault</h2>
-                  <p className="text-xs text-gray-400">Cryptographically chained ledger (SHA-256)</p>
+                  <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                    Evidence Vault & Incident Reporting
+                  </h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Document cyber crimes (scams, bullying, harassment). Reports are sealed in the vault and queued for Cyber Cell review.
+                  </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const res = await verifyVaultIntegrity();
-                    if (res.isValid) {
-                      showToast(`Hash chain verified! All ${res.totalEntries} blocks intact.`, "success");
-                    } else {
-                      showToast(`Ledger alert: ${res.errorReason}`, "error");
-                    }
-                  }}
-                  className="px-4 py-2 text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-full hover:bg-emerald-100 transition-colors"
-                >
-                  Verify Hash Chain
-                </button>
+
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsFilingIncident(!isFilingIncident);
+                      setSubmittedIncidentResult(null);
+                    }}
+                    className={`flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl shadow-xs transition-all ${
+                      isFilingIncident
+                        ? "bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-200"
+                        : "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/20"
+                    }`}
+                  >
+                    {isFilingIncident ? <X className="w-3.5 h-3.5" /> : <FilePlus className="w-3.5 h-3.5" />}
+                    <span>{isFilingIncident ? "Cancel Report" : "File Incident Report"}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const res = await verifyVaultIntegrity();
+                      if (res.isValid) {
+                        showToast(`Hash chain verified! All ${res.totalEntries} blocks cryptographically intact.`, "success");
+                      } else {
+                        showToast(`Ledger alert: ${res.errorReason}`, "error");
+                      }
+                    }}
+                    className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-[#15171C] border border-gray-200 dark:border-[#252830] hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl shadow-2xs transition-all"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Verify Chain</span>
+                  </button>
+                </div>
               </div>
 
-              <div className="p-6 bg-white dark:bg-[#15171C] border border-gray-200 dark:border-[#252830] rounded-2xl shadow-2xs">
-                {vaultEntries.length === 0 ? (
-                  <p className="text-xs text-gray-400 py-12 text-center">
-                    No items in Evidence Vault yet. Open any report and click "Add to Vault".
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {vaultEntries.map((e, idx) => (
-                      <div key={idx} className="p-4 bg-gray-50 dark:bg-[#1A1C22] border border-gray-200 dark:border-[#292C36] rounded-xl space-y-1">
-                        <div className="flex justify-between items-center text-xs">
-                          <span className="font-bold text-gray-900 dark:text-white">Block #{e.index}</span>
-                          <span className="font-mono text-gray-400 text-[10px]">{e.reportId}</span>
-                        </div>
-                        <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">{e.claimText}</p>
-                        <p className="font-mono text-[10px] text-gray-400 truncate">Hash: {e.entryHash}</p>
+              {/* Official Cyber Cell Emergency Hotline Banner */}
+              <div className="p-4 bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/40 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-start sm:items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 flex-shrink-0">
+                    <Phone className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-amber-950 dark:text-amber-200 block sm:inline mr-1">
+                      National Cyber Crime Helpline: Dial 1930 (Toll-Free 24x7)
+                    </span>
+                    <span className="text-amber-800/90 dark:text-amber-300/80 text-[11px]">
+                      • For active UPI or banking fraud, call within the golden hour to freeze transactions.
+                    </span>
+                  </div>
+                </div>
+                <a
+                  href="https://cybercrime.gov.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold text-blue-700 dark:text-blue-400 hover:underline flex items-center gap-1 flex-shrink-0 text-[11px]"
+                >
+                  <span>cybercrime.gov.in</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+
+              {/* Confirmation Card (When Report is Queued & Dispatched) */}
+              {submittedIncidentResult && (
+                <div className="p-6 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800 rounded-3xl shadow-xs space-y-4 animate-in fade-in-0 duration-300">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                        <Check className="w-5 h-5 stroke-[2.5]" />
                       </div>
-                    ))}
+                      <div>
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-800 dark:text-emerald-400 font-bold block">
+                          Case Registered & Dispatched
+                        </span>
+                        <h3 className="text-base font-extrabold text-emerald-950 dark:text-emerald-200">
+                          Your Report Has Been Queued for Cyber Cell Authorities
+                        </h3>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setSubmittedIncidentResult(null)}
+                      className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-full"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="p-4 bg-white/80 dark:bg-[#121316] rounded-2xl border border-emerald-200/80 dark:border-emerald-900/40 space-y-2 text-xs">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-semibold text-gray-600 dark:text-gray-400">
+                        Case Reference Number:
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <code className="px-2.5 py-1 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-900 dark:text-emerald-200 rounded-lg font-mono font-bold text-xs">
+                          {submittedIncidentResult.caseId}
+                        </code>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(submittedIncidentResult.caseId);
+                            setCopiedCaseId(true);
+                            setTimeout(() => setCopiedCaseId(false), 2000);
+                            showToast("Case Reference copied!", "success");
+                          }}
+                          className="p-1 text-gray-500 hover:text-gray-900 rounded"
+                          title="Copy Case Reference ID"
+                        >
+                          {copiedCaseId ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed pt-1">
+                      <strong>Next Steps:</strong> Your incident dossier has been sealed in the local tamper-evident vault with a SHA-256 cryptographic digest. It has been queued for investigation by the Cyber Crime Response Division. An authorized officer will review your statement and contact you on your provided contact details within <strong>24 to 48 hours</strong>.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadDossier(submittedIncidentResult)}
+                      className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gray-900 hover:bg-black rounded-xl shadow-xs transition-all"
+                    >
+                      <FileDown className="w-3.5 h-3.5" />
+                      <span>Download Official Complaint Dossier</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedDossierEntry(submittedIncidentResult);
+                        setIsDossierModalOpen(true);
+                      }}
+                      className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-[#1A1C22] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 rounded-xl transition-all"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>View Full Dossier</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setSubmittedIncidentResult(null)}
+                      className="text-xs font-semibold text-emerald-800 dark:text-emerald-400 hover:underline px-2"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* The Incident Report Filing Form */}
+              {isFilingIncident && (
+                <div className="p-6 sm:p-8 bg-white dark:bg-[#15171C] border border-gray-200/90 dark:border-[#252830] rounded-3xl shadow-xs space-y-6 animate-in fade-in-0 duration-200">
+                  <div className="flex items-start justify-between border-b border-gray-100 dark:border-[#202228] pb-4">
+                    <div>
+                      <h3 className="text-lg font-extrabold text-gray-900 dark:text-white tracking-tight">
+                        File a New Incident Report
+                      </h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        Select what happened, describe the incident, attach any proof, and submit for cyber cell review.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsFilingIncident(false)}
+                      className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-full"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSubmitIncident} className="space-y-6">
+                    {/* Step 1: Category Selection */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-2.5">
+                        1. Select Incident Type
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {[
+                          {
+                            id: "scam",
+                            label: "Financial Scam / Fraud",
+                            desc: "UPI fraud, fake investment schemes, phishing links, extortion, or voice-clone impersonation."
+                          },
+                          {
+                            id: "bullying",
+                            label: "Cyberbullying / Defamation",
+                            desc: "Targeted online abuse, defamation, public trolling, character assassination, or group harassment."
+                          },
+                          {
+                            id: "harassment",
+                            label: "Online Harassment & Threats",
+                            desc: "Direct intimidation, stalking, abusive DMs, extortion, or non-consensual deepfakes."
+                          },
+                          {
+                            id: "impersonation",
+                            label: "Identity Theft & Impersonation",
+                            desc: "Cloned social media profile posing as you or an executive to deceive contacts."
+                          },
+                          {
+                            id: "other",
+                            label: "Other Digital Crime",
+                            desc: "Unauthorized account takeover, ransomware, malware link, or digital sabotage."
+                          }
+                        ].map((cat) => {
+                          const isSelected = incidentCategory === cat.id;
+                          return (
+                            <button
+                              key={cat.id}
+                              type="button"
+                              onClick={() => setIncidentCategory(cat.id)}
+                              className={`p-4 rounded-2xl text-left border transition-all flex flex-col justify-between ${
+                                isSelected
+                                  ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-600 text-blue-950 dark:text-blue-200 shadow-2xs"
+                                  : "bg-gray-50/60 dark:bg-[#1A1C22] border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100/60"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-2 mb-1.5">
+                                <span className="font-bold text-xs">{cat.label}</span>
+                                {isSelected && (
+                                  <div className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center flex-shrink-0">
+                                    <Check className="w-2.5 h-2.5 stroke-[3]" />
+                                  </div>
+                                )}
+                              </div>
+                              <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+                                {cat.desc}
+                              </p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Step 2: What happened details */}
+                    <div className="space-y-4">
+                      <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">
+                        2. Incident Details
+                      </label>
+
+                      <div>
+                        <textarea
+                          rows={4}
+                          value={incidentDetails}
+                          onChange={(e) => setIncidentDetails(e.target.value)}
+                          placeholder="Please explain what happened in detail... (e.g. what the person said, message timeline, fraudulent amount or payment requests, threats made, etc.)"
+                          className="w-full px-4 py-3 text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-[#1A1C22] border border-gray-200 dark:border-gray-800 rounded-2xl placeholder:text-gray-400 focus:outline-none focus:bg-white dark:focus:bg-[#111215] focus:border-gray-900 dark:focus:border-gray-400 transition-all resize-none"
+                          required
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                            Platform / Channel Where It Occurred
+                          </label>
+                          <select
+                            value={incidentPlatform}
+                            onChange={(e) => setIncidentPlatform(e.target.value)}
+                            className="w-full px-3.5 py-2.5 text-xs font-medium bg-gray-50 dark:bg-[#1A1C22] border border-gray-200 dark:border-gray-800 rounded-xl focus:outline-none focus:border-gray-900 text-gray-900 dark:text-white"
+                          >
+                            <option value="WhatsApp">WhatsApp</option>
+                            <option value="Telegram">Telegram</option>
+                            <option value="Instagram">Instagram</option>
+                            <option value="Phone Call / Voice">Phone Call / Voice</option>
+                            <option value="Email">Email</option>
+                            <option value="SMS">SMS Message</option>
+                            <option value="Facebook">Facebook</option>
+                            <option value="X (Twitter)">X (Twitter)</option>
+                            <option value="Other">Other Website or App</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                            Suspect Phone / Username / UPI ID (Optional)
+                          </label>
+                          <input
+                            type="text"
+                            value={incidentSuspectInfo}
+                            onChange={(e) => setIncidentSuspectInfo(e.target.value)}
+                            placeholder="e.g. +91 98765 43210 or user@okhdfc"
+                            className="w-full px-3.5 py-2.5 text-xs text-gray-900 dark:text-white bg-gray-50 dark:bg-[#1A1C22] border border-gray-200 dark:border-gray-800 rounded-xl focus:outline-none focus:border-gray-900 placeholder:text-gray-400"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Step 3: Screenshot or Evidence Upload */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-2">
+                        3. Attach Screenshot or Supporting Proof (Optional)
+                      </label>
+
+                      <input
+                        type="file"
+                        ref={screenshotFileRef}
+                        accept="image/jpeg,image/png,image/webp,application/pdf"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files.length > 0) {
+                            handleScreenshotChange(e.target.files[0]);
+                          }
+                        }}
+                        className="hidden"
+                      />
+
+                      {!incidentScreenshot ? (
+                        <div
+                          onClick={() => screenshotFileRef.current?.click()}
+                          className="p-5 border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-gray-900 dark:hover:border-gray-400 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all bg-gray-50/50 dark:bg-[#1A1C22]/50 hover:bg-gray-50"
+                        >
+                          <Upload className="w-5 h-5 text-gray-500 mb-2" />
+                          <p className="text-xs font-bold text-gray-800 dark:text-gray-200 text-center">
+                            Click to upload screenshot of messages, payment receipts, or threatening posts
+                          </p>
+                          <p className="text-[11px] text-gray-400 mt-0.5 text-center">
+                            Supports JPG, PNG, WEBP, or PDF up to 15MB
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="p-3.5 bg-gray-50 dark:bg-[#1A1C22] border border-gray-200 dark:border-gray-800 rounded-2xl flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-3 overflow-hidden">
+                            {incidentScreenshot.previewUrl ? (
+                              <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0 border border-gray-300 dark:border-gray-600">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={incidentScreenshot.previewUrl}
+                                  alt="Screenshot preview"
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-600 flex-shrink-0">
+                                <FileText className="w-5 h-5" />
+                              </div>
+                            )}
+                            <div className="overflow-hidden">
+                              <p className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                                {incidentScreenshot.name}
+                              </p>
+                              <p className="text-[11px] text-gray-400">
+                                {(incidentScreenshot.size / 1024).toFixed(1)} KB • Evidence Attached
+                              </p>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIncidentScreenshot(null);
+                              if (screenshotFileRef.current) screenshotFileRef.current.value = "";
+                            }}
+                            className="p-1.5 text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 rounded-full"
+                            title="Remove screenshot"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Step 4: Contact details */}
+                    <div className="space-y-3 pt-2 border-t border-gray-100 dark:border-[#202228]">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">
+                          4. Your Contact Details (So Cyber Cell Authorities Can Reach You)
+                        </label>
+                        <span className="text-[11px] text-gray-400">Review within 24-48 hrs</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                            Your Full Name
+                          </label>
+                          <input
+                            type="text"
+                            value={incidentContactName}
+                            onChange={(e) => setIncidentContactName(e.target.value)}
+                            placeholder={userProfile.displayName || "Complainant Name"}
+                            className="w-full px-3.5 py-2.5 text-xs text-gray-900 dark:text-white bg-gray-50 dark:bg-[#1A1C22] border border-gray-200 dark:border-gray-800 rounded-xl focus:outline-none focus:border-gray-900"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                            Contact Phone / WhatsApp *
+                          </label>
+                          <input
+                            type="tel"
+                            value={incidentContactPhone}
+                            onChange={(e) => setIncidentContactPhone(e.target.value)}
+                            placeholder="+91 98765 43210"
+                            className="w-full px-3.5 py-2.5 text-xs text-gray-900 dark:text-white bg-gray-50 dark:bg-[#1A1C22] border border-gray-200 dark:border-gray-800 rounded-xl focus:outline-none focus:border-gray-900 font-mono"
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                            Email Address (Optional)
+                          </label>
+                          <input
+                            type="email"
+                            value={incidentContactEmail}
+                            onChange={(e) => setIncidentContactEmail(e.target.value)}
+                            placeholder="user@example.com"
+                            className="w-full px-3.5 py-2.5 text-xs text-gray-900 dark:text-white bg-gray-50 dark:bg-[#1A1C22] border border-gray-200 dark:border-gray-800 rounded-xl focus:outline-none focus:border-gray-900"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Submit and Action Buttons */}
+                    <div className="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-gray-100 dark:border-[#202228]">
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                        <span>Sealed with tamper-evident SHA-256 hash. Queued for official review.</span>
+                      </p>
+
+                      <div className="flex items-center gap-2.5">
+                        <button
+                          type="button"
+                          onClick={() => setIsFilingIncident(false)}
+                          className="px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all"
+                        >
+                          Cancel
+                        </button>
+
+                        <button
+                          type="submit"
+                          disabled={isSubmittingIncident}
+                          className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-75 rounded-xl shadow-xs transition-all"
+                        >
+                          {isSubmittingIncident ? (
+                            <>
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                              <span>Queuing Report...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Send className="w-3.5 h-3.5" />
+                              <span>Submit Report to Cyber Cell</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* Records & Ledger Section */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                    Evidence Ledger & Filed Cases ({vaultEntries.length})
+                  </h3>
+                  <span className="text-xs text-gray-400">Cryptographically Chained</span>
+                </div>
+
+                {vaultEntries.length === 0 ? (
+                  <div className="p-10 bg-white dark:bg-[#15171C] border border-gray-200 dark:border-[#252830] rounded-3xl text-center space-y-3">
+                    <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 text-gray-400 flex items-center justify-center mx-auto">
+                      <Archive className="w-6 h-6" />
+                    </div>
+                    <p className="text-sm font-bold text-gray-800 dark:text-gray-200">
+                      No Records in Evidence Vault Yet
+                    </p>
+                    <p className="text-xs text-gray-400 max-w-md mx-auto">
+                      File an incident report above if you encountered scams, bullying, or harassment, or save analyzed claims from verification reports.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setIsFilingIncident(true)}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gray-900 hover:bg-black rounded-xl shadow-xs transition-all"
+                    >
+                      <FilePlus className="w-3.5 h-3.5" />
+                      <span>File an Incident Report</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4">
+                    {vaultEntries.map((e, idx) => {
+                      const isIncident = e.isIncidentReport;
+                      const categoryBadgeColor = {
+                        scam: "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-900/60",
+                        bullying: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-900/60",
+                        harassment: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/60",
+                        impersonation: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900/60",
+                        other: "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700"
+                      }[e.incidentCategory || "other"] || "bg-gray-100 text-gray-700 border-gray-200";
+
+                      return (
+                        <div
+                          key={idx}
+                          className="p-5 bg-white dark:bg-[#15171C] border border-gray-200 dark:border-[#252830] rounded-2xl shadow-2xs hover:shadow-xs transition-all space-y-3"
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-gray-100 dark:border-[#202228]">
+                            <div className="flex items-center gap-2.5 flex-wrap">
+                              <span className="font-mono font-bold text-xs text-gray-900 dark:text-white">
+                                #{e.caseId || e.reportId}
+                              </span>
+                              <span className={`px-2.5 py-0.5 text-[10px] font-mono font-bold rounded-full border uppercase ${categoryBadgeColor}`}>
+                                {e.incidentCategory || "Digital Harm"}
+                              </span>
+                              {isIncident ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[10px] font-semibold bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 rounded-full border border-emerald-200 dark:border-emerald-900">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                                  <span>Queued for Cyber Cell Review</span>
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 rounded-full">
+                                  <span>Ledger Verified</span>
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="text-[11px] font-mono text-gray-400">
+                              {new Date(e.timestamp).toLocaleDateString("en-IN", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit"
+                              })}
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col md:flex-row gap-4 items-start">
+                            {e.screenshot?.previewUrl && (
+                              <div
+                                onClick={() => {
+                                  setSelectedDossierEntry(e);
+                                  setIsDossierModalOpen(true);
+                                }}
+                                className="w-24 h-24 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-100 flex-shrink-0 cursor-pointer group relative"
+                                title="Click to view attached evidence"
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={e.screenshot.previewUrl}
+                                  alt="Evidence thumbnail"
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                />
+                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold">
+                                  View
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="flex-1 space-y-1.5">
+                              <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 leading-relaxed">
+                                {e.details || e.claimText}
+                              </p>
+
+                              {isIncident && (
+                                <div className="flex items-center gap-4 text-[11px] text-gray-500 pt-1 flex-wrap">
+                                  {e.platform && <span>Channel: <strong>{e.platform}</strong></span>}
+                                  {e.contactPhone && <span>Contact: <strong>{e.contactPhone}</strong></span>}
+                                  {e.suspectInfo && <span>Suspect: <code className="font-mono bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">{e.suspectInfo}</code></span>}
+                                </div>
+                              )}
+
+                              <p className="font-mono text-[10px] text-gray-400 truncate pt-0.5">
+                                SHA-256: {e.entryHash}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="pt-2 flex items-center justify-between border-t border-gray-100 dark:border-[#202228] text-xs">
+                            <span className="text-[11px] text-gray-500">
+                              {isIncident
+                                ? "Queued for Cyber Cell • Review ETA 24-48 hrs"
+                                : `Trust Score: ${e.score}/100 • Verdict: ${e.verdict}`}
+                            </span>
+
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedDossierEntry(e);
+                                  setIsDossierModalOpen(true);
+                                }}
+                                className="px-3 py-1 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-[#1A1C22] border border-gray-200 dark:border-gray-800 hover:bg-gray-100 rounded-lg transition-all"
+                              >
+                                View Dossier
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleDownloadDossier(e)}
+                                className="px-3 py-1 text-xs font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 hover:bg-blue-100/70 rounded-lg transition-all"
+                                title="Download formal complaint letter"
+                              >
+                                Download Draft
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteVaultEntry(e.caseId || e.reportId)}
+                                className="p-1.5 text-gray-400 hover:text-red-600 rounded-lg transition-colors"
+                                title="Delete vault entry"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -1859,6 +2554,205 @@ function CrosscheckAppContent() {
           setIsModalOpen(true);
         }}
       />
+
+      {/* ========================================================
+          EVIDENCE VAULT CASE DOSSIER MODAL
+          ======================================================== */}
+      {isDossierModalOpen && selectedDossierEntry && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in-0 duration-200 overflow-y-auto">
+          <div className="bg-white dark:bg-[#15171C] border border-gray-200 dark:border-[#252830] rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6 my-8 max-h-[90vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between pb-4 border-b border-gray-100 dark:border-[#202228] flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                  <ShieldCheck className="w-5 h-5 stroke-[2.2]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-bold text-gray-900 dark:text-white">
+                      #{selectedDossierEntry.caseId || selectedDossierEntry.reportId}
+                    </span>
+                    <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 border border-blue-200 dark:border-blue-900 uppercase">
+                      {selectedDossierEntry.incidentCategory || "Digital Harm"}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight mt-0.5">
+                    Official Incident Dossier & Evidence Log
+                  </h3>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsDossierModalOpen(false)}
+                className="p-1.5 rounded-full text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body (Scrollable) */}
+            <div className="space-y-5 overflow-y-auto pr-1 flex-1 text-xs">
+              {/* Authority Status Banner */}
+              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/40 rounded-2xl space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+                  <span className="font-bold text-xs text-emerald-950 dark:text-emerald-200">
+                    {selectedDossierEntry.status === "QUEUED_FOR_REVIEW"
+                      ? "Dispatched & Queued for Cyber Cell Review"
+                      : "Cryptographically Verified Ledger Record"}
+                  </span>
+                </div>
+                <p className="text-[11px] text-emerald-800 dark:text-emerald-300 leading-relaxed">
+                  {selectedDossierEntry.statusMessage ||
+                    "This case has been logged with cryptographic immutability. An investigating officer has been notified for triage."}
+                </p>
+              </div>
+
+              {/* Complainant & Incident Meta Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-gray-50 dark:bg-[#121316] rounded-2xl border border-gray-100 dark:border-gray-800">
+                <div>
+                  <span className="text-[10px] uppercase font-mono font-bold text-gray-400 block mb-0.5">
+                    Complainant
+                  </span>
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    {selectedDossierEntry.contactName || "Citizen Complainant"}
+                  </p>
+                  {selectedDossierEntry.contactPhone && (
+                    <p className="text-gray-500 font-mono text-[11px]">{selectedDossierEntry.contactPhone}</p>
+                  )}
+                  {selectedDossierEntry.contactEmail && (
+                    <p className="text-gray-500 text-[11px]">{selectedDossierEntry.contactEmail}</p>
+                  )}
+                </div>
+
+                <div>
+                  <span className="text-[10px] uppercase font-mono font-bold text-gray-400 block mb-0.5">
+                    Channel & Suspect
+                  </span>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    Platform: <strong className="text-gray-900 dark:text-white">{selectedDossierEntry.platform || "Online"}</strong>
+                  </p>
+                  {selectedDossierEntry.suspectInfo && (
+                    <p className="text-gray-700 dark:text-gray-300">
+                      Suspect: <code className="font-mono bg-white dark:bg-gray-800 px-1 py-0.5 rounded text-[11px]">{selectedDossierEntry.suspectInfo}</code>
+                    </p>
+                  )}
+                  <p className="text-gray-400 text-[10px] font-mono mt-0.5">
+                    {new Date(selectedDossierEntry.timestamp).toLocaleString("en-IN")}
+                  </p>
+                </div>
+              </div>
+
+              {/* Statement of Facts */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] uppercase font-mono font-bold text-gray-400 block">
+                  Incident Statement
+                </span>
+                <div className="p-4 bg-white dark:bg-[#15171C] border border-gray-200 dark:border-gray-800 rounded-2xl text-gray-800 dark:text-gray-200 leading-relaxed font-sans">
+                  {selectedDossierEntry.details || selectedDossierEntry.claimText || "No statement provided."}
+                </div>
+              </div>
+
+              {/* Attached Screenshot Evidence */}
+              {selectedDossierEntry.screenshot?.previewUrl && (
+                <div className="space-y-1.5">
+                  <span className="text-[10px] uppercase font-mono font-bold text-gray-400 block">
+                    Attached Evidence Screenshot ({selectedDossierEntry.screenshot.name})
+                  </span>
+                  <div className="p-3 bg-gray-50 dark:bg-[#121316] border border-gray-200 dark:border-gray-800 rounded-2xl">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={selectedDossierEntry.screenshot.previewUrl}
+                      alt="Evidence Screenshot"
+                      className="max-h-72 rounded-xl object-contain mx-auto border border-gray-200 dark:border-gray-700 bg-white"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Cryptographic Ledger Verification */}
+              <div className="p-3.5 bg-gray-50 dark:bg-[#121316] border border-gray-200 dark:border-gray-800 rounded-2xl space-y-1 font-mono text-[10px]">
+                <div className="flex items-center justify-between text-gray-500">
+                  <span>SHA-256 Digest:</span>
+                  <span className="text-gray-800 dark:text-gray-200 font-bold truncate max-w-[280px]">
+                    {selectedDossierEntry.entryHash}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-gray-500">
+                  <span>Ledger Anchor:</span>
+                  <span className="truncate max-w-[280px]">
+                    {selectedDossierEntry.previousHash}
+                  </span>
+                </div>
+              </div>
+
+              {/* Formal Legal Complaint Letter */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase font-mono font-bold text-gray-400">
+                    Formal Legal Complaint Draft (Ready for 1930 / cybercrime.gov.in)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const text = generateComplaintDraft(selectedDossierEntry);
+                      navigator.clipboard.writeText(text);
+                      setCopiedDraft(true);
+                      setTimeout(() => setCopiedDraft(false), 2000);
+                      showToast("Complaint draft copied to clipboard!", "success");
+                    }}
+                    className="flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-700"
+                  >
+                    {copiedDraft ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                    <span>{copiedDraft ? "Copied" : "Copy Draft"}</span>
+                  </button>
+                </div>
+                <pre className="p-4 bg-gray-50 dark:bg-[#121316] border border-gray-200 dark:border-gray-800 rounded-2xl font-mono text-[11px] leading-relaxed text-gray-700 dark:text-gray-300 max-h-48 overflow-y-auto whitespace-pre-wrap">
+                  {generateComplaintDraft(selectedDossierEntry)}
+                </pre>
+              </div>
+            </div>
+
+            {/* Modal Footer Controls */}
+            <div className="pt-4 border-t border-gray-100 dark:border-[#202228] flex items-center justify-between gap-3 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsDossierModalOpen(false)}
+                className="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-gray-400 hover:text-gray-900 rounded-xl"
+              >
+                Close
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const text = generateComplaintDraft(selectedDossierEntry);
+                    navigator.clipboard.writeText(text);
+                    setCopiedDraft(true);
+                    setTimeout(() => setCopiedDraft(false), 2000);
+                    showToast("Complaint draft copied to clipboard!", "success");
+                  }}
+                  className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-[#1A1C22] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 rounded-xl transition-all"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copy Statement</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleDownloadDossier(selectedDossierEntry)}
+                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition-all"
+                >
+                  <FileDown className="w-3.5 h-3.5" />
+                  <span>Download Formal Letter</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
