@@ -10,44 +10,44 @@ import React, { useEffect, useState } from "react";
 export function normalizeVerdict(verdictInput) {
   if (!verdictInput) return null;
 
+  let text = "";
+  let score = null;
+
   if (typeof verdictInput === "string") {
-    const s = verdictInput.toLowerCase().trim();
-    if (
-      s === "fake" ||
-      s.includes("fake") ||
-      s.includes("manipulated") ||
-      s.includes("false") ||
-      s.includes("debunked") ||
-      s.includes("mislead") ||
-      s.includes("hoax") ||
-      s.includes("scam") ||
-      s.includes("fabricat")
-    ) {
-      return "FAKE";
+    text = verdictInput.toLowerCase().trim();
+  } else if (typeof verdictInput === "object") {
+    text = (
+      verdictInput.verdict ||
+      verdictInput.verdictText ||
+      verdictInput.claimVerdict ||
+      verdictInput.status ||
+      ""
+    ).toLowerCase().trim();
+
+    if (typeof verdictInput.score === "number") {
+      score = verdictInput.score;
+    } else if (verdictInput.scoringResult && typeof verdictInput.scoringResult.finalScore === "number") {
+      score = verdictInput.scoringResult.finalScore;
+    } else if (typeof verdictInput.trustScore === "number") {
+      score = verdictInput.trustScore;
     }
-    if (
-      s === "real" ||
-      s.includes("real") ||
-      s.includes("authentic") ||
-      s.includes("verified") ||
-      s.includes("true") ||
-      s.includes("no signs") ||
-      s.includes("genuine")
-    ) {
-      return "REAL";
-    }
+  }
+
+  // 1. Explicitly check for inconclusive / under review / pending states:
+  // Under review claims MUST NEVER show a REAL or FAKE stamp!
+  if (
+    text.includes("under review") ||
+    text.includes("inconclusive") ||
+    text.includes("unverified") ||
+    text.includes("disputed") ||
+    text.includes("pending") ||
+    text.includes("analyzing") ||
+    text.includes("developing")
+  ) {
     return null;
   }
 
-  // If verdictInput is a report object:
-  const text = (
-    verdictInput.verdict ||
-    verdictInput.verdictText ||
-    verdictInput.claimVerdict ||
-    verdictInput.status ||
-    ""
-  ).toLowerCase().trim();
-
+  // 2. Explicit FAKE / MANIPULATED classifications
   if (
     text.includes("fake") ||
     text.includes("manipulated") ||
@@ -56,27 +56,37 @@ export function normalizeVerdict(verdictInput) {
     text.includes("mislead") ||
     text.includes("hoax") ||
     text.includes("scam") ||
-    text.includes("fabricat")
+    text.includes("fabricat") ||
+    text.includes("deepfake") ||
+    text.includes("phishing")
   ) {
     return "FAKE";
   }
 
+  // 3. Explicit REAL / AUTHENTIC classifications
   if (
-    text.includes("real") ||
+    text.includes("verified fact") ||
+    text.includes("verified authentic") ||
+    text.includes("confirmed fact") ||
+    text.includes("genuine") ||
     text.includes("authentic") ||
-    text.includes("verified") ||
-    text.includes("true") ||
-    text.includes("no signs") ||
-    text.includes("genuine")
+    text.includes("corroborated") ||
+    text === "real" ||
+    text === "true"
   ) {
     return "REAL";
   }
 
-  if (typeof verdictInput.score === "number") {
-    return verdictInput.score < 55 ? "FAKE" : "REAL";
+  // 4. Strict score thresholds ONLY when text classification was ambiguous:
+  // High confidence only: >= 75 is REAL, <= 35 is FAKE.
+  // Anything between 36 and 74 is ambiguous / inconclusive -> NO STAMP!
+  if (score !== null) {
+    if (score <= 35) return "FAKE";
+    if (score >= 75) return "REAL";
+    return null;
   }
 
-  return "FAKE";
+  return null;
 }
 
 /**
