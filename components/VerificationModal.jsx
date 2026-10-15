@@ -380,9 +380,6 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#181818]/15 dark:border-[#2D2B27] bg-[#FAF7F0] dark:bg-[#1E1C19]">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] border border-[#181818]/20 shadow-xs font-bold text-xs">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
             <div>
               <h2 id="modal-title" className="text-base font-editorial font-bold text-[#181818] dark:text-[#F6F3EB] tracking-tight">
                 New Verification Check
