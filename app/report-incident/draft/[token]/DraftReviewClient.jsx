@@ -90,6 +90,10 @@ export default function DraftReviewClient({ initialDraft, token }) {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [pdfSuccess, setPdfSuccess] = useState(false);
 
+  useEffect(() => {
+    console.log("===> DRAFT REVIEW CLIENT MOUNTED <===");
+  }, []);
+
   // Sync selected bank code
   useEffect(() => {
     if (bankName) {
@@ -375,41 +379,6 @@ export default function DraftReviewClient({ initialDraft, token }) {
           </div>
         </div>
 
-        {/* SAMPLE DATA DETECTED BANNER */}
-        {(timelineSummary?.includes("Rajesh Kumar") || draft?.transcript?.includes("Rajesh Kumar")) && (
-          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-              <div>
-                <h4 className="font-bold text-xs">Currently Viewing Demonstration Sample Incident (&ldquo;Rajesh Kumar&rdquo;)</h4>
-                <p className="text-[11px] text-amber-800 mt-0.5">
-                  Your WhatsApp message details haven&apos;t arrived yet. To see your actual incident details, record your voice or paste your story below, or click &ldquo;Enter My Incident&rdquo;.
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              id="clear-sample-btn"
-              onClick={() => {
-                setAmountInr("");
-                setBankName("");
-                setTransactionIds("");
-                setScammerPhone("");
-                setScammerUpi("");
-                setTimelineSummary("");
-                setLiveNarrative("");
-                const el = document.getElementById("narrative-input-box");
-                if (el) {
-                  el.focus();
-                  el.scrollIntoView({ behavior: "smooth" });
-                }
-              }}
-              className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shrink-0 cursor-pointer transition shadow-2xs"
-            >
-              Enter My Incident
-            </button>
-          </div>
-        )}
 
         {/* INTERACTIVE VOICE & TEXT INTAKE STUDIO */}
         <div className="space-y-4">
@@ -657,7 +626,13 @@ export default function DraftReviewClient({ initialDraft, token }) {
             <button
               type="button"
               id="tab-1930"
-              onClick={() => setActionPackTab("1930")}
+              data-tab="1930"
+              onClick={() => {
+                setActionPackTab("1930");
+                if (typeof window !== "undefined" && window.crosscheckSwitchTab) {
+                  window.crosscheckSwitchTab("1930");
+                }
+              }}
               className={`w-full min-h-[46px] py-2.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-xs select-none touch-manipulation active:scale-[0.98] ${
                 actionPackTab === "1930"
                   ? "bg-red-600 text-white border border-red-600 shadow-md ring-2 ring-red-500/20"
@@ -671,7 +646,13 @@ export default function DraftReviewClient({ initialDraft, token }) {
             <button
               type="button"
               id="tab-portal"
-              onClick={() => setActionPackTab("portal")}
+              data-tab="portal"
+              onClick={() => {
+                setActionPackTab("portal");
+                if (typeof window !== "undefined" && window.crosscheckSwitchTab) {
+                  window.crosscheckSwitchTab("portal");
+                }
+              }}
               className={`w-full min-h-[46px] py-2.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-xs select-none touch-manipulation active:scale-[0.98] ${
                 actionPackTab === "portal"
                   ? "bg-blue-600 text-white border border-blue-600 shadow-md ring-2 ring-blue-500/20"
@@ -685,7 +666,13 @@ export default function DraftReviewClient({ initialDraft, token }) {
             <button
               type="button"
               id="tab-bank"
-              onClick={() => setActionPackTab("bank")}
+              data-tab="bank"
+              onClick={() => {
+                setActionPackTab("bank");
+                if (typeof window !== "undefined" && window.crosscheckSwitchTab) {
+                  window.crosscheckSwitchTab("bank");
+                }
+              }}
               className={`w-full min-h-[46px] py-2.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-xs select-none touch-manipulation active:scale-[0.98] ${
                 actionPackTab === "bank"
                   ? "bg-amber-600 text-white border border-amber-600 shadow-md ring-2 ring-amber-500/20"
@@ -699,7 +686,13 @@ export default function DraftReviewClient({ initialDraft, token }) {
             <button
               type="button"
               id="tab-platform"
-              onClick={() => setActionPackTab("platform")}
+              data-tab="platform"
+              onClick={() => {
+                setActionPackTab("platform");
+                if (typeof window !== "undefined" && window.crosscheckSwitchTab) {
+                  window.crosscheckSwitchTab("platform");
+                }
+              }}
               className={`w-full min-h-[46px] py-2.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-xs select-none touch-manipulation active:scale-[0.98] ${
                 actionPackTab === "platform"
                   ? "bg-purple-600 text-white border border-purple-600 shadow-md ring-2 ring-purple-500/20"
@@ -711,315 +704,437 @@ export default function DraftReviewClient({ initialDraft, token }) {
             </button>
           </div>
 
-          {/* Tab 1: 1930 Script */}
-          {actionPackTab === "1930" && (
-            <div className="p-6 bg-white border border-red-200 rounded-2xl shadow-sm space-y-4 animate-in fade-in-0 duration-200">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-red-50 border border-red-200">
-                <div className="flex items-center gap-2.5 text-red-700 font-bold text-sm">
-                  <PhoneCall className="w-5 h-5 text-red-600 shrink-0" />
-                  <div>
-                    <h3 className="font-serif font-bold text-base text-red-950">Immediate Action: Dial 1930 National Cyber Fraud Helpline</h3>
-                    <p className="text-xs text-red-800 font-normal mt-0.5">Free 24x7 Emergency Inter-bank Freeze Operator</p>
-                  </div>
-                </div>
-                <a
-                  href="tel:1930"
-                  className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center justify-center gap-2 transition shrink-0 shadow-sm"
-                >
-                  <PhoneCall className="w-3.5 h-3.5" />
-                  <span>Call 1930 Now</span>
-                </a>
-              </div>
+          {/* Synchronous Tab Switching & Copy Fallback Script */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  var tabs = ['1930', 'portal', 'bank', 'platform'];
+                  var activeConfig = {
+                    '1930': {
+                      btnClasses: ['bg-red-600', 'text-white', 'border-red-600', 'shadow-md', 'ring-2', 'ring-red-500/20'],
+                      iconActive: 'text-white',
+                      iconInactive: 'text-red-600'
+                    },
+                    'portal': {
+                      btnClasses: ['bg-blue-600', 'text-white', 'border-blue-600', 'shadow-md', 'ring-2', 'ring-blue-500/20'],
+                      iconActive: 'text-white',
+                      iconInactive: 'text-blue-600'
+                    },
+                    'bank': {
+                      btnClasses: ['bg-amber-600', 'text-white', 'border-amber-600', 'shadow-md', 'ring-2', 'ring-amber-500/20'],
+                      iconActive: 'text-white',
+                      iconInactive: 'text-amber-600'
+                    },
+                    'platform': {
+                      btnClasses: ['bg-purple-600', 'text-white', 'border-purple-600', 'shadow-md', 'ring-2', 'ring-purple-500/20'],
+                      iconActive: 'text-white',
+                      iconInactive: 'text-purple-600'
+                    }
+                  };
+                  var inactiveBtnClasses = ['bg-white', 'text-gray-700', 'border-black/10', 'hover:bg-black/5'];
 
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Call <strong>1930</strong> immediately from your phone. When the police operator answers, read this exact pre-filled script. This initiates the emergency inter-bank lien to freeze the fraudster&apos;s account before they withdraw cash:
-              </p>
+                  function doSwitch(target) {
+                    tabs.forEach(function(t) {
+                      var p = document.getElementById('panel-' + t);
+                      var b = document.getElementById('tab-' + t);
+                      if (p) p.style.display = (t === target) ? 'block' : 'none';
+                      if (b) {
+                        tabs.forEach(function(ot) {
+                          activeConfig[ot].btnClasses.forEach(function(c) { b.classList.remove(c); });
+                        });
+                        inactiveBtnClasses.forEach(function(c) { b.classList.remove(c); });
 
-              <div className="space-y-3 pt-2">
-                {script1930.map((step, idx) => (
-                  <div
-                    key={idx}
-                    className={`p-3.5 rounded-xl border text-xs transition ${
-                      step.critical
-                        ? "bg-red-50/70 border-red-200 text-red-950 font-medium"
-                        : "bg-gray-50 border-gray-200 text-gray-900"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between text-[11px] text-gray-500 mb-1">
-                      <span className="font-bold text-gray-700">Operator: &ldquo;{step.operatorPrompt}&rdquo;</span>
-                      <span className="font-mono text-[10px]">Step {idx + 1}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="font-sans font-bold text-sm">{step.answer}</p>
-                      <button
-                        type="button"
-                        onClick={() => copyToClipboard(step.answer, `step_${idx}`)}
-                        className="px-2.5 py-1 rounded-md bg-white border border-black/10 hover:bg-gray-100 text-[11px] font-medium shrink-0 flex items-center gap-1 transition cursor-pointer"
-                      >
-                        {copiedKey === `step_${idx}` ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
-                        <span>{copiedKey === `step_${idx}` ? "Copied" : "Copy"}</span>
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+                        var icon = b.querySelector('svg');
+                        if (t === target) {
+                          activeConfig[t].btnClasses.forEach(function(c) { b.classList.add(c); });
+                          if (icon) {
+                            icon.classList.remove(activeConfig[t].iconInactive);
+                            icon.classList.add(activeConfig[t].iconActive);
+                          }
+                        } else {
+                          inactiveBtnClasses.forEach(function(c) { b.classList.add(c); });
+                          if (icon) {
+                            icon.classList.remove(activeConfig[t].iconActive);
+                            icon.classList.add(activeConfig[t].iconInactive);
+                          }
+                        }
+                      }
+                    });
+                  }
 
-          {/* Tab 2: Cybercrime Portal Copy Fields */}
-          {actionPackTab === "portal" && (
-            <div className="p-6 bg-white border border-blue-200 rounded-2xl shadow-sm space-y-5 animate-in fade-in-0 duration-200">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-blue-50/70 border border-blue-200">
-                <div className="flex items-center gap-2.5">
-                  <Globe className="w-5 h-5 text-blue-700 shrink-0" />
-                  <div>
-                    <h3 className="font-serif font-bold text-base text-blue-950">National Cyber Crime Reporting Portal (cybercrime.gov.in)</h3>
-                    <p className="text-xs text-blue-800 font-normal mt-0.5">Ministry of Home Affairs Formal Registration System</p>
-                  </div>
-                </div>
-                <a
-                  href="https://cybercrime.gov.in"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shrink-0 shadow-sm"
-                >
-                  <span>Open cybercrime.gov.in</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              </div>
+                  window.crosscheckSwitchTab = doSwitch;
 
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Go to <strong>cybercrime.gov.in &gt; Report Other Cyber Crimes &gt; Financial Fraud</strong>. Use these 1-click copy fields to fill out the portal without retyping:
-              </p>
+                  function bind() {
+                    tabs.forEach(function(t) {
+                      var b = document.getElementById('tab-' + t);
+                      if (b && !b.__tabBound) {
+                        b.__tabBound = true;
+                        b.addEventListener('click', function(e) {
+                          doSwitch(t);
+                        });
+                      }
+                    });
+                  }
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="p-3.5 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-between gap-2">
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-gray-500 block font-mono">Category</span>
-                    <p className="text-xs font-bold text-gray-900 mt-0.5">{portalMappings.category}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => copyToClipboard(portalMappings.category, "cat")}
-                    className="p-1.5 rounded-lg border border-black/10 bg-white hover:bg-black/5 text-xs transition cursor-pointer"
-                  >
-                    {copiedKey === "cat" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-gray-500" />}
-                  </button>
-                </div>
+                  bind();
+                  if (typeof document !== 'undefined') {
+                    if (document.readyState === 'loading') {
+                      document.addEventListener('DOMContentLoaded', bind);
+                    }
+                    setTimeout(bind, 50);
+                    setTimeout(bind, 250);
+                  }
 
-                <div className="p-3.5 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-between gap-2">
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-gray-500 block font-mono">Sub-Category</span>
-                    <p className="text-xs font-bold text-gray-900 mt-0.5">{portalMappings.subCategory}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => copyToClipboard(portalMappings.subCategory, "subcat")}
-                    className="p-1.5 rounded-lg border border-black/10 bg-white hover:bg-black/5 text-xs transition cursor-pointer"
-                  >
-                    {copiedKey === "subcat" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-gray-500" />}
-                  </button>
-                </div>
+                  // Native fallback for copy buttons
+                  if (typeof document !== 'undefined' && !window.__copyBound) {
+                    window.__copyBound = true;
+                    document.addEventListener('click', function(e) {
+                      var btn = e.target.closest('[data-copy-text]');
+                      if (btn) {
+                        var text = btn.getAttribute('data-copy-text');
+                        if (text && navigator.clipboard) {
+                          navigator.clipboard.writeText(text).then(function() {
+                            var originalContent = btn.innerHTML;
+                            btn.innerHTML = '<span class="text-emerald-600 font-bold">✓ Copied!</span>';
+                            setTimeout(function() { btn.innerHTML = originalContent; }, 2000);
+                          }).catch(function() {});
+                        }
+                      }
+                    });
+                  }
+                })();
+              `,
+            }}
+          />
 
-                <div className="p-3.5 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-between gap-2">
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-gray-500 block font-mono">Disputed Amount</span>
-                    <p className="text-xs font-bold text-gray-900 mt-0.5 font-mono">{portalMappings.amount ? `₹${portalMappings.amount}` : "Not specified"}</p>
-                  </div>
-                  {portalMappings.amount && (
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard(portalMappings.amount, "amt")}
-                      className="p-1.5 rounded-lg border border-black/10 bg-white hover:bg-black/5 text-xs transition cursor-pointer"
-                    >
-                      {copiedKey === "amt" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-gray-500" />}
-                    </button>
-                  )}
-                </div>
-
-                <div className="p-3.5 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-between gap-2">
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-gray-500 block font-mono">Transaction Reference (UTR)</span>
-                    <p className="text-xs font-bold text-gray-900 mt-0.5 font-mono">{portalMappings.transactionId || "Pending"}</p>
-                  </div>
-                  {portalMappings.transactionId && (
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard(portalMappings.transactionId, "utr")}
-                      className="p-1.5 rounded-lg border border-black/10 bg-white hover:bg-black/5 text-xs transition cursor-pointer"
-                    >
-                      {copiedKey === "utr" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-gray-500" />}
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] uppercase font-bold text-gray-500 font-mono">Narrative Description (Copy &amp; Paste into Portal)</span>
-                  <button
-                    type="button"
-                    onClick={() => copyToClipboard(portalMappings.description, "portalDesc")}
-                    className="px-3 py-1 rounded-lg border border-black/15 bg-white hover:bg-black/5 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
-                  >
-                    {copiedKey === "portalDesc" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedKey === "portalDesc" ? "Copied Description!" : "Copy Description"}</span>
-                  </button>
-                </div>
-                <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-800 font-mono whitespace-pre-wrap max-h-56 overflow-y-auto">
-                  {portalMappings.description}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Tab 3: Bank Dispute */}
-          {actionPackTab === "bank" && (
-            <div className="p-6 bg-white border border-amber-200 rounded-2xl shadow-sm space-y-5 animate-in fade-in-0 duration-200">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-amber-50/70 border border-amber-200">
+          {/* Tab 1: 1930 Script Panel */}
+          <div
+            id="panel-1930"
+            style={{ display: actionPackTab === "1930" ? "block" : "none" }}
+            className="p-6 bg-white border border-red-200 rounded-2xl shadow-sm space-y-4 animate-in fade-in-0 duration-200"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-red-50 border border-red-200">
+              <div className="flex items-center gap-2.5 text-red-700 font-bold text-sm">
+                <PhoneCall className="w-5 h-5 text-red-600 shrink-0" />
                 <div>
-                  <h3 className="font-serif font-bold text-base text-gray-950">RBI Zero-Liability Bank Dispute Notice</h3>
-                  <p className="text-xs text-amber-900 mt-0.5">
-                    Statutory notice under RBI Circular DBR.No.Leg.BC.78/09.07.005/2017-18
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <label className="text-xs font-medium text-gray-600">Bank:</label>
-                  <select
-                    value={selectedBankCode}
-                    onChange={(e) => setSelectedBankCode(e.target.value)}
-                    className="px-3 py-1.5 rounded-lg border border-black/15 text-xs font-bold bg-white text-gray-900"
-                  >
-                    {BANK_DIRECTORY.map((b) => (
-                      <option key={b.code} value={b.code}>
-                        {b.name}
-                      </option>
-                    ))}
-                  </select>
+                  <h3 className="font-serif font-bold text-base text-red-950">Immediate Action: Dial 1930 National Cyber Fraud Helpline</h3>
+                  <p className="text-xs text-red-800 font-normal mt-0.5">Free 24x7 Emergency Inter-bank Freeze Operator</p>
                 </div>
               </div>
+              <a
+                href="tel:1930"
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center justify-center gap-2 transition shrink-0 shadow-sm"
+              >
+                <PhoneCall className="w-3.5 h-3.5" />
+                <span>Call 1930 Now</span>
+              </a>
+            </div>
 
-              <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-2.5 text-xs">
-                <div className="flex items-center justify-between border-b border-gray-200 pb-2">
-                  <span className="font-bold text-gray-700">Nodal Officer Email:</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-gray-900 font-semibold">{bankDispute.toEmail}</span>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              Call <strong>1930</strong> immediately from your phone. When the police operator answers, read this exact pre-filled script. This initiates the emergency inter-bank lien to freeze the fraudster&apos;s account before they withdraw cash:
+            </p>
+
+            <div className="space-y-3 pt-2">
+              {script1930.map((step, idx) => (
+                <div
+                  key={idx}
+                  className={`p-3.5 rounded-xl border text-xs transition ${
+                    step.critical
+                      ? "bg-red-50/70 border-red-200 text-red-950 font-medium"
+                      : "bg-gray-50 border-gray-200 text-gray-900"
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-[11px] text-gray-500 mb-1">
+                    <span className="font-bold text-gray-700">Operator: &ldquo;{step.operatorPrompt}&rdquo;</span>
+                    <span className="font-mono text-[10px]">Step {idx + 1}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-sans font-bold text-sm">{step.answer}</p>
                     <button
                       type="button"
-                      onClick={() => copyToClipboard(bankDispute.toEmail, "nodalEmail")}
-                      className="p-1 rounded hover:bg-gray-200 transition cursor-pointer"
+                      data-copy-text={step.answer}
+                      onClick={() => copyToClipboard(step.answer, `step_${idx}`)}
+                      className="px-2.5 py-1 rounded-md bg-white border border-black/10 hover:bg-gray-100 text-[11px] font-medium shrink-0 flex items-center gap-1 transition cursor-pointer"
                     >
-                      {copiedKey === "nodalEmail" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-gray-500" />}
+                      {copiedKey === `step_${idx}` ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                      <span>{copiedKey === `step_${idx}` ? "Copied" : "Copy"}</span>
                     </button>
                   </div>
                 </div>
-                <div className="flex items-center justify-between border-b border-gray-200 pb-2">
-                  <span className="font-bold text-gray-700">Subject:</span>
-                  <div className="flex items-center gap-2 max-w-md truncate">
-                    <span className="font-semibold text-gray-950 truncate">{bankDispute.subject}</span>
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard(bankDispute.subject, "bankSubj")}
-                      className="p-1 rounded hover:bg-gray-200 transition cursor-pointer shrink-0"
-                    >
-                      {copiedKey === "bankSubj" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-gray-500" />}
-                    </button>
-                  </div>
-                </div>
-                <div className="pt-2 font-mono text-[11px] leading-relaxed whitespace-pre-wrap text-gray-800 max-h-64 overflow-y-auto bg-white p-3.5 rounded-lg border border-gray-200">
-                  {bankDispute.body}
+              ))}
+            </div>
+          </div>
+
+          {/* Tab 2: Cybercrime Portal Copy Fields Panel */}
+          <div
+            id="panel-portal"
+            style={{ display: actionPackTab === "portal" ? "block" : "none" }}
+            className="p-6 bg-white border border-blue-200 rounded-2xl shadow-sm space-y-5 animate-in fade-in-0 duration-200"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-blue-50/70 border border-blue-200">
+              <div className="flex items-center gap-2.5">
+                <Globe className="w-5 h-5 text-blue-700 shrink-0" />
+                <div>
+                  <h3 className="font-serif font-bold text-base text-blue-950">National Cyber Crime Reporting Portal (cybercrime.gov.in)</h3>
+                  <p className="text-xs text-blue-800 font-normal mt-0.5">Ministry of Home Affairs Formal Registration System</p>
                 </div>
               </div>
+              <a
+                href="https://cybercrime.gov.in"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shrink-0 shadow-sm"
+              >
+                <span>Open cybercrime.gov.in</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
 
-              <div className="flex flex-wrap justify-end gap-3">
+            <p className="text-xs text-gray-600 leading-relaxed">
+              Go to <strong>cybercrime.gov.in &gt; Report Other Cyber Crimes &gt; Financial Fraud</strong>. Use these 1-click copy fields to fill out the portal without retyping:
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-3.5 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-between gap-2">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-gray-500 block font-mono">Category</span>
+                  <p className="text-xs font-bold text-gray-900 mt-0.5">{portalMappings.category}</p>
+                </div>
                 <button
                   type="button"
-                  onClick={() => copyToClipboard(bankDispute.body, "bankEmail")}
-                  className="px-4 py-2 rounded-xl border border-black/15 bg-white hover:bg-black/5 text-xs font-semibold flex items-center gap-2 transition cursor-pointer"
+                  data-copy-text={portalMappings.category}
+                  onClick={() => copyToClipboard(portalMappings.category, "cat")}
+                  className="p-1.5 rounded-lg border border-black/10 bg-white hover:bg-black/5 text-xs transition cursor-pointer"
                 >
-                  {copiedKey === "bankEmail" ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                  <span>{copiedKey === "bankEmail" ? "Copied Dispute Letter!" : "Copy Dispute Letter"}</span>
+                  {copiedKey === "cat" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-gray-500" />}
                 </button>
-                <a
-                  href={bankDispute.mailtoUrl || `mailto:${bankDispute.toEmail}?subject=${encodeURIComponent(bankDispute.subject)}&body=${encodeURIComponent(bankDispute.body)}`}
-                  className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition flex items-center gap-2 shadow-xs"
+              </div>
+
+              <div className="p-3.5 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-between gap-2">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-gray-500 block font-mono">Sub-Category</span>
+                  <p className="text-xs font-bold text-gray-900 mt-0.5">{portalMappings.subCategory}</p>
+                </div>
+                <button
+                  type="button"
+                  data-copy-text={portalMappings.subCategory}
+                  onClick={() => copyToClipboard(portalMappings.subCategory, "subcat")}
+                  className="p-1.5 rounded-lg border border-black/10 bg-white hover:bg-black/5 text-xs transition cursor-pointer"
                 >
-                  <Mail className="w-4 h-4" />
-                  <span>Open in Email Client</span>
-                </a>
+                  {copiedKey === "subcat" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-gray-500" />}
+                </button>
+              </div>
+
+              <div className="p-3.5 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-between gap-2">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-gray-500 block font-mono">Disputed Amount</span>
+                  <p className="text-xs font-bold text-gray-900 mt-0.5 font-mono">{portalMappings.amount ? `₹${portalMappings.amount}` : "Not specified"}</p>
+                </div>
+                {portalMappings.amount && (
+                  <button
+                    type="button"
+                    data-copy-text={String(portalMappings.amount)}
+                    onClick={() => copyToClipboard(portalMappings.amount, "amt")}
+                    className="p-1.5 rounded-lg border border-black/10 bg-white hover:bg-black/5 text-xs transition cursor-pointer"
+                  >
+                    {copiedKey === "amt" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-gray-500" />}
+                  </button>
+                )}
+              </div>
+
+              <div className="p-3.5 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-between gap-2">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-gray-500 block font-mono">Transaction Reference (UTR)</span>
+                  <p className="text-xs font-bold text-gray-900 mt-0.5 font-mono">{portalMappings.transactionId || "Pending"}</p>
+                </div>
+                {portalMappings.transactionId && (
+                  <button
+                    type="button"
+                    data-copy-text={portalMappings.transactionId}
+                    onClick={() => copyToClipboard(portalMappings.transactionId, "utr")}
+                    className="p-1.5 rounded-lg border border-black/10 bg-white hover:bg-black/5 text-xs transition cursor-pointer"
+                  >
+                    {copiedKey === "utr" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-gray-500" />}
+                  </button>
+                )}
               </div>
             </div>
-          )}
 
-          {/* Tab 4: Platform Reporting */}
-          {actionPackTab === "platform" && (
-            <div className="p-6 bg-white border border-purple-200 rounded-2xl shadow-sm space-y-5 animate-in fade-in-0 duration-200">
-              <div className="p-4 rounded-xl bg-purple-50/70 border border-purple-200">
-                <div className="flex items-center gap-2 text-purple-950 font-bold text-sm">
-                  <Smartphone className="w-4 h-4 text-purple-700" />
-                  <span>In-App Platform Abuse Reporting &amp; Account Freezing</span>
-                </div>
-                <p className="text-xs text-purple-900 mt-1 leading-relaxed">
-                  In addition to the police complaint, submit in-app reports directly to de-platform scam accounts, freeze recipient wallets, and disconnect fraudulent phone lines:
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] uppercase font-bold text-gray-500 font-mono">Narrative Description (Copy &amp; Paste into Portal)</span>
+                <button
+                  type="button"
+                  data-copy-text={portalMappings.description}
+                  onClick={() => copyToClipboard(portalMappings.description, "portalDesc")}
+                  className="px-3 py-1 rounded-lg border border-black/15 bg-white hover:bg-black/5 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                >
+                  {copiedKey === "portalDesc" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedKey === "portalDesc" ? "Copied Description!" : "Copy Description"}</span>
+                </button>
+              </div>
+              <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-800 font-mono whitespace-pre-wrap max-h-56 overflow-y-auto">
+                {portalMappings.description}
+              </div>
+            </div>
+          </div>
+
+          {/* Tab 3: Bank Dispute Panel */}
+          <div
+            id="panel-bank"
+            style={{ display: actionPackTab === "bank" ? "block" : "none" }}
+            className="p-6 bg-white border border-amber-200 rounded-2xl shadow-sm space-y-5 animate-in fade-in-0 duration-200"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-amber-50/70 border border-amber-200">
+              <div>
+                <h3 className="font-serif font-bold text-base text-gray-950">RBI Zero-Liability Bank Dispute Notice</h3>
+                <p className="text-xs text-amber-900 mt-0.5">
+                  Statutory notice under RBI Circular DBR.No.Leg.BC.78/09.07.005/2017-18
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {platformGuides.map((guide, idx) => (
-                  <div
-                    key={idx}
-                    className="p-5 rounded-2xl bg-[#FCFBF8] border border-black/10 flex flex-col justify-between space-y-4"
-                  >
-                    <div className="space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
-                          <ShieldAlert className="w-4 h-4 text-purple-600 shrink-0" />
-                          <span>{guide.platform}</span>
-                        </span>
-                        {guide.url && (
-                          <a
-                            href={guide.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[11px] font-semibold text-blue-700 hover:underline flex items-center gap-1"
-                          >
-                            <span>Open Portal</span>
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
-                        )}
-                      </div>
-
-                      <ol className="list-decimal list-inside text-xs text-gray-600 space-y-1.5 leading-relaxed pl-1">
-                        {guide.steps.map((step, sIdx) => (
-                          <li key={sIdx}>{step}</li>
-                        ))}
-                      </ol>
-                    </div>
-
-                    {guide.copySnippet && (
-                      <div className="p-3 bg-white rounded-xl border border-black/10 space-y-1.5">
-                        <div className="flex items-center justify-between text-[10px] font-mono text-gray-500">
-                          <span>PASTE INTO REPORT DESCRIPTION:</span>
-                          <button
-                            type="button"
-                            onClick={() => copyToClipboard(guide.copySnippet, `plat_${idx}`)}
-                            className="px-2 py-0.5 rounded border border-black/10 bg-gray-50 hover:bg-gray-100 text-[10px] font-sans font-medium flex items-center gap-1 cursor-pointer transition"
-                          >
-                            {copiedKey === `plat_${idx}` ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
-                            <span>{copiedKey === `plat_${idx}` ? "Copied" : "Copy"}</span>
-                          </button>
-                        </div>
-                        <p className="text-[11px] text-gray-800 font-mono line-clamp-3 leading-relaxed">
-                          {guide.copySnippet}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ))}
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-medium text-gray-600">Bank:</label>
+                <select
+                  value={selectedBankCode}
+                  onChange={(e) => setSelectedBankCode(e.target.value)}
+                  className="px-3 py-1.5 rounded-lg border border-black/15 text-xs font-bold bg-white text-gray-900"
+                >
+                  {BANK_DIRECTORY.map((b) => (
+                    <option key={b.code} value={b.code}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
-          )}
+
+            <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-2.5 text-xs">
+              <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                <span className="font-bold text-gray-700">Nodal Officer Email:</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-gray-900 font-semibold">{bankDispute.toEmail}</span>
+                  <button
+                    type="button"
+                    data-copy-text={bankDispute.toEmail}
+                    onClick={() => copyToClipboard(bankDispute.toEmail, "nodalEmail")}
+                    className="p-1 rounded hover:bg-gray-200 transition cursor-pointer"
+                  >
+                    {copiedKey === "nodalEmail" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-gray-500" />}
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                <span className="font-bold text-gray-700">Subject:</span>
+                <div className="flex items-center gap-2 max-w-md truncate">
+                  <span className="font-semibold text-gray-950 truncate">{bankDispute.subject}</span>
+                  <button
+                    type="button"
+                    data-copy-text={bankDispute.subject}
+                    onClick={() => copyToClipboard(bankDispute.subject, "bankSubj")}
+                    className="p-1 rounded hover:bg-gray-200 transition cursor-pointer shrink-0"
+                  >
+                    {copiedKey === "bankSubj" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-gray-500" />}
+                  </button>
+                </div>
+              </div>
+              <div className="pt-2 font-mono text-[11px] leading-relaxed whitespace-pre-wrap text-gray-800 max-h-64 overflow-y-auto bg-white p-3.5 rounded-lg border border-gray-200">
+                {bankDispute.body}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap justify-end gap-3">
+              <button
+                type="button"
+                data-copy-text={bankDispute.body}
+                onClick={() => copyToClipboard(bankDispute.body, "bankEmail")}
+                className="px-4 py-2 rounded-xl border border-black/15 bg-white hover:bg-black/5 text-xs font-semibold flex items-center gap-2 transition cursor-pointer"
+              >
+                {copiedKey === "bankEmail" ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                <span>{copiedKey === "bankEmail" ? "Copied Dispute Letter!" : "Copy Dispute Letter"}</span>
+              </button>
+              <a
+                href={bankDispute.mailtoUrl || `mailto:${bankDispute.toEmail}?subject=${encodeURIComponent(bankDispute.subject)}&body=${encodeURIComponent(bankDispute.body)}`}
+                className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition flex items-center gap-2 shadow-xs"
+              >
+                <Mail className="w-4 h-4" />
+                <span>Open in Email Client</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Tab 4: Platform Reporting Panel */}
+          <div
+            id="panel-platform"
+            style={{ display: actionPackTab === "platform" ? "block" : "none" }}
+            className="p-6 bg-white border border-purple-200 rounded-2xl shadow-sm space-y-5 animate-in fade-in-0 duration-200"
+          >
+            <div className="p-4 rounded-xl bg-purple-50/70 border border-purple-200">
+              <div className="flex items-center gap-2 text-purple-950 font-bold text-sm">
+                <Smartphone className="w-4 h-4 text-purple-700" />
+                <span>In-App Platform Abuse Reporting &amp; Account Freezing</span>
+              </div>
+              <p className="text-xs text-purple-900 mt-1 leading-relaxed">
+                In addition to the police complaint, submit in-app reports directly to de-platform scam accounts, freeze recipient wallets, and disconnect fraudulent phone lines:
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {platformGuides.map((guide, idx) => (
+                <div
+                  key={idx}
+                  className="p-5 rounded-2xl bg-[#FCFBF8] border border-black/10 flex flex-col justify-between space-y-4"
+                >
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                        <ShieldAlert className="w-4 h-4 text-purple-600 shrink-0" />
+                        <span>{guide.platform}</span>
+                      </span>
+                      {guide.url && (
+                        <a
+                          href={guide.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[11px] font-semibold text-blue-700 hover:underline flex items-center gap-1"
+                        >
+                          <span>Open Portal</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
+
+                    <ol className="list-decimal list-inside text-xs text-gray-600 space-y-1.5 leading-relaxed pl-1">
+                      {guide.steps.map((step, sIdx) => (
+                        <li key={sIdx}>{step}</li>
+                      ))}
+                    </ol>
+                  </div>
+
+                  {guide.copySnippet && (
+                    <div className="p-3 bg-white rounded-xl border border-black/10 space-y-1.5">
+                      <div className="flex items-center justify-between text-[10px] font-mono text-gray-500">
+                        <span>PASTE INTO REPORT DESCRIPTION:</span>
+                        <button
+                          type="button"
+                          data-copy-text={guide.copySnippet}
+                          onClick={() => copyToClipboard(guide.copySnippet, `plat_${idx}`)}
+                          className="px-2 py-0.5 rounded border border-black/10 bg-gray-50 hover:bg-gray-100 text-[10px] font-sans font-medium flex items-center gap-1 cursor-pointer transition"
+                        >
+                          {copiedKey === `plat_${idx}` ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                          <span>{copiedKey === `plat_${idx}` ? "Copied" : "Copy"}</span>
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-gray-800 font-mono line-clamp-3 leading-relaxed">
+                        {guide.copySnippet}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
 
           {/* 3-PAGE PDF DOWNLOAD & EVIDENCE VAULT INTEGRATION */}
           <div className="p-6 rounded-3xl bg-gray-950 text-white shadow-xl space-y-4">

@@ -146,11 +146,6 @@ function CrosscheckAppContent() {
   const [linkingError, setLinkingError] = useState("");
   const [linkingSuccess, setLinkingSuccess] = useState("");
 
-  // Demo mode state
-  const [demoLoading, setDemoLoading] = useState(false);
-  const [customNarrative, setCustomNarrative] = useState("");
-  const [showCustomInput, setShowCustomInput] = useState(false);
-  const [demoResult, setDemoResult] = useState(null);
 
   // Loading skeleton state
   const [isLoading, setIsLoading] = useState(true);
@@ -519,35 +514,6 @@ function CrosscheckAppContent() {
     }
   };
 
-  // WhatsApp Demo Trigger Action (Step 7)
-  const handleRunDemo = async (type = "voice") => {
-    setDemoLoading(true);
-    setDemoResult(null);
-    try {
-      const res = await fetch("/api/whatsapp/demo", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type,
-          narrative: customNarrative.trim() || undefined,
-          phoneNumber: whatsappLink.phoneNumber || undefined,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Demo simulation failed");
-      setDemoResult(data);
-      showToast(
-        type === "voice"
-          ? "Voice note transcribed & incident extracted!"
-          : "Text report processed & draft prepared!",
-        "success"
-      );
-    } catch (err) {
-      showToast(err.message || "Failed running demo", "error");
-    } finally {
-      setDemoLoading(false);
-    }
-  };
 
   const filteredReports = reports.filter((r) => {
     if (historyFilterSaved && !r.isSaved) return false;
@@ -873,98 +839,6 @@ function CrosscheckAppContent() {
                 </kbd>
               </div>
 
-              {/* WHATSAPP INTAKE CARD & DEMO BANNER (STEP 7) */}
-              <div className="space-y-3">
-                <div className="p-5 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent border border-emerald-500/25 dark:border-emerald-500/35 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-2xs">
-                  <div className="flex items-start gap-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                      <MessageSquare className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-[10px] font-mono uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                          WhatsApp Intake Channel
-                        </span>
-                        {whatsappLink.linked ? (
-                          <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                            Connected ({formatPhone(whatsappLink.phoneNumber)})
-                          </span>
-                        ) : (
-                          <span className="text-[10px] font-mono text-gray-500 dark:text-gray-400">
-                            +1 (555) 123-4567 (Business Account)
-                          </span>
-                        )}
-                      </div>
-                      <h2 className="text-xs font-bold text-gray-900 dark:text-white mt-1">
-                        Tell Crosscheck on WhatsApp: Voice Note or Text Intake
-                      </h2>
-                      <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 max-w-xl">
-                        Victims can voice record in Hindi/English or text what happened. Crosscheck auto-transcribes with Groq Whisper, extracts financial & legal metadata, alerts 1930 Golden Hour, and issues single-use Police & Bank complaint packs.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 w-full md:w-auto">
-                    <button
-                      type="button"
-                      onClick={() => handleRunDemo("voice")}
-                      disabled={demoLoading}
-                      className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-full shadow-2xs transition-all cursor-pointer"
-                    >
-                      {demoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mic className="w-3.5 h-3.5" />}
-                      <span>Test Voice Demo</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveNav("settings")}
-                      className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-[#16181E] border border-gray-200 dark:border-[#252830] hover:bg-gray-50 dark:hover:bg-white/5 rounded-full shadow-2xs transition-all cursor-pointer"
-                    >
-                      <Smartphone className="w-3.5 h-3.5" />
-                      <span>{whatsappLink.linked ? "Settings" : "Connect WhatsApp"}</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* DEMO RESULT INTAKE BANNER */}
-                {demoResult && (
-                  <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl animate-in fade-in-0 duration-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                        <span className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
-                          {demoResult.simulatedType === "voice" ? "Voice Note Transcribed & Incident Draft Created" : "Text Narrative Extracted & Draft Created"}
-                        </span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
-                          Token: {demoResult.token.slice(0, 8)}...
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-emerald-800 dark:text-emerald-300">
-                        {demoResult.incident?.incident_type ? `Type: ${demoResult.incident.incident_type}` : ""}
-                        {demoResult.incident?.amount_inr ? ` • Loss: ₹${Number(demoResult.incident.amount_inr).toLocaleString("en-IN")}` : ""}
-                        {demoResult.incident?.bank_name ? ` • Bank: ${demoResult.incident.bank_name}` : ""}
-                        {demoResult.incident?.transaction_ids?.[0] ? ` • UTR: ${demoResult.incident.transaction_ids[0]}` : ""}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 w-full md:w-auto">
-                      <Link
-                        href={`/report-incident/draft/${demoResult.token}`}
-                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-full shadow-2xs transition-colors"
-                      >
-                        <span>Review Pre-Filled Pack</span>
-                        <ArrowUpRight className="w-3.5 h-3.5" />
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => setDemoResult(null)}
-                        className="p-2 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 rounded-full"
-                        title="Dismiss"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
 
               {/* KPI ROW (4 EQUAL HEIGHT CARDS, DESKTOP 4, TABLET 2, MOBILE 1) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1767,123 +1641,6 @@ function CrosscheckAppContent() {
                   </div>
                 )}
 
-                {/* ========================================================
-                    INTERACTIVE DEMO MODE: SIMULATE WHATSAPP INTAKE
-                    ======================================================== */}
-                <div className="p-4 bg-gradient-to-r from-emerald-500/5 via-teal-500/5 to-transparent border border-emerald-500/20 dark:border-emerald-500/30 rounded-xl space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                          Interactive Demo Mode
-                        </span>
-                        <span className="text-xs font-bold text-gray-900 dark:text-white">
-                          Test WhatsApp Intake Pipeline
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-gray-400 mt-0.5">
-                        Test speech-to-text, incident fact extraction, and draft link generation with 1-click.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Preset Simulation Buttons */}
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => handleRunDemo("voice")}
-                      disabled={demoLoading}
-                      className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-full shadow-2xs transition-all disabled:opacity-50 cursor-pointer"
-                    >
-                      {demoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mic className="w-3.5 h-3.5" />}
-                      <span>Simulate Voice Note (Electricity Scam & ₹48.5k Loss)</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleRunDemo("text")}
-                      disabled={demoLoading}
-                      className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-[#16181E] border border-gray-200 dark:border-[#252830] hover:bg-gray-50 dark:hover:bg-white/5 rounded-full shadow-2xs transition-all disabled:opacity-50 cursor-pointer"
-                    >
-                      {demoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MessageSquare className="w-3.5 h-3.5" />}
-                      <span>Simulate Text Message (Courier Phishing & ₹65k Loss)</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowCustomInput(!showCustomInput)}
-                      className="text-xs text-gray-500 dark:text-gray-400 hover:underline px-2 py-2"
-                    >
-                      {showCustomInput ? "Hide Custom Narrative" : "Custom Narrative..."}
-                    </button>
-                  </div>
-
-                  {/* Custom Narrative Drawer */}
-                  {showCustomInput && (
-                    <div className="pt-2 space-y-2">
-                      <textarea
-                        rows={3}
-                        value={customNarrative}
-                        onChange={(e) => setCustomNarrative(e.target.value)}
-                        placeholder="Type or paste custom Hindi/English narrative here (e.g., 'Kal mujhe ek call aaya SBI officer banke aur ₹25,000 debit karwa liye...')"
-                        className="w-full p-2.5 text-xs bg-white dark:bg-[#16181E] border border-gray-200 dark:border-[#252830] rounded-xl focus:outline-none"
-                      />
-                    </div>
-                  )}
-
-                  {/* Demo Result Card */}
-                  {demoResult && (
-                    <div className="p-3.5 bg-white dark:bg-[#16181E] border border-emerald-500/30 rounded-xl space-y-2 animate-in fade-in-0 duration-200">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                          <span className="text-xs font-bold text-gray-900 dark:text-white">
-                            Intake Processed Successfully!
-                          </span>
-                        </div>
-                        <span className="text-[10px] font-mono text-gray-400">
-                          Source: {demoResult.simulatedType === "voice" ? "WhatsApp Voice Note" : "WhatsApp Text"}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px]">
-                        <div className="p-2 bg-gray-50 dark:bg-white/5 rounded-lg">
-                          <span className="text-gray-400 block text-[10px] uppercase font-bold">Category</span>
-                          <span className="font-semibold text-gray-900 dark:text-white capitalize">
-                            {demoResult.incident?.incident_type?.replace(/_/g, " ") || "Cybercrime"}
-                          </span>
-                        </div>
-                        <div className="p-2 bg-gray-50 dark:bg-white/5 rounded-lg">
-                          <span className="text-gray-400 block text-[10px] uppercase font-bold">Amount Lost</span>
-                          <span className="font-extrabold text-red-600 dark:text-red-400">
-                            {demoResult.incident?.amount_inr ? `₹${Number(demoResult.incident.amount_inr).toLocaleString("en-IN")}` : "Not stated"}
-                          </span>
-                        </div>
-                        <div className="p-2 bg-gray-50 dark:bg-white/5 rounded-lg">
-                          <span className="text-gray-400 block text-[10px] uppercase font-bold">Bank Name</span>
-                          <span className="font-semibold text-gray-900 dark:text-white">
-                            {demoResult.incident?.bank_name || "Detected"}
-                          </span>
-                        </div>
-                        <div className="p-2 bg-gray-50 dark:bg-white/5 rounded-lg">
-                          <span className="text-gray-400 block text-[10px] uppercase font-bold">UTR Reference</span>
-                          <span className="font-mono font-semibold text-gray-900 dark:text-white truncate block">
-                            {demoResult.incident?.transaction_ids?.[0] || "Detected"}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="pt-2 flex items-center justify-between gap-3">
-                        <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
-                          Single-use Link: <code className="font-mono text-emerald-600 dark:text-emerald-400">{demoResult.draftUrl}</code>
-                        </p>
-                        <Link
-                          href={`/report-incident/draft/${demoResult.token}`}
-                          className="shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-full shadow-2xs transition-colors"
-                        >
-                          <span>Review Pre-Filled Pack</span>
-                          <ArrowUpRight className="w-3.5 h-3.5" />
-                        </Link>
-                      </div>
-                    </div>
-                  )}
-                </div>
               </div>
 
               {/* Active Session & Logout */}

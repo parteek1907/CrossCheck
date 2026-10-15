@@ -4,8 +4,8 @@ import { Lock } from "lucide-react";
 import { getIncidentDraft } from "../../../../lib/dummyStore.js";
 import DraftReviewClient from "./DraftReviewClient";
 
-export default async function DraftPage({ params }) {
-  const resolvedParams = await params;
+async function DraftContent({ paramsPromise }) {
+  const resolvedParams = await paramsPromise;
   const token = resolvedParams?.token;
   const draft = token ? getIncidentDraft(token) : null;
 
@@ -69,6 +69,10 @@ export default async function DraftPage({ params }) {
     );
   }
 
+  return <DraftReviewClient initialDraft={draft} token={token} />;
+}
+
+export default function DraftPage({ params }) {
   return (
     <Suspense
       fallback={
@@ -77,7 +81,8 @@ export default async function DraftPage({ params }) {
         </div>
       }
     >
-      <DraftReviewClient initialDraft={draft} token={token} />
+      <DraftContent paramsPromise={params} />
     </Suspense>
   );
 }
+
