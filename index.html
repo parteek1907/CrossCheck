@@ -36,7 +36,7 @@
           <span>🗄️</span> Evidence Vault <span class="nav-badge" id="vault-badge-count">0</span>
         </button>
         <button class="nav-btn" role="tab" aria-selected="false" data-tab="tab-safecircle" id="nav-safecircle">
-          <span>🛡️</span> Safe Circle
+          <span>🔑</span> Family Safe-Word
         </button>
         <button class="nav-btn" role="tab" aria-selected="false" data-tab="tab-actionpath" id="nav-actionpath">
           <span>🚨</span> Action Path
@@ -309,81 +309,197 @@
     <!-- ========================================================
          TAB 4: ROTATING SAFE CIRCLE (OFFLINE TWO-WORD TOTP)
          ======================================================== -->
+    <!-- ========================================================
+         TAB 4: THE FAMILY SAFE-WORD (ASSUME THE FAKE IS PERFECT)
+         ======================================================== -->
     <section class="tab-pane" id="tab-safecircle" role="tabpanel" aria-labelledby="nav-safecircle">
-      <div style="margin-bottom: 1.5rem;">
-        <h2 style="font-size: 1.4rem; font-weight: 800;">Rotating Safe Circle Code</h2>
-        <p style="color: var(--text-muted); font-size: 0.9rem;">
-          Defend against AI voice clones and emergency imposter calls. Generates 60-second time-based 2-word passcodes completely offline.
-        </p>
-      </div>
-
-      <div class="safecircle-container">
-        
-        <!-- Live Code Generator Box -->
-        <div class="passcode-hero-box">
-          <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">
-            Active Family Authentication Code
-          </span>
-          <div class="two-word-code-display" id="safecircle-active-code">
-            LOADING...
-          </div>
-          
-          <div class="timer-ring-container">
-            <span>Next rotation in: <strong id="safecircle-sec-left">60s</strong></span>
-            <div class="timer-bar-wrap">
-              <div class="timer-bar-fill" id="safecircle-progress-bar" style="width: 100%;"></div>
-            </div>
-          </div>
-
-          <p style="font-size: 0.82rem; color: var(--text-muted); max-width: 420px; margin-top: 1.25rem;">
-            If someone calls claiming to be a family member in an emergency, ask them: <em>"What is the Safe Circle code right now?"</em> If they cannot speak these two words, hang up immediately.
+      <div style="margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+        <div>
+          <h2 style="font-size: 1.6rem; font-weight: 800; margin: 0;">The Family Safe-Word</h2>
+          <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem;">
+            Assume the fake is perfect. Out-of-band verification for family circles against voice-clone scams.
           </p>
         </div>
 
-        <!-- Spoken Code Verification Box -->
-        <div class="safecircle-verify-card">
-          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">
-            Verify Caller's Spoken Words
-          </h3>
-          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
-            Enter the two words recited by the caller to authenticate their identity:
-          </p>
+        <!-- Language Selector & WhatsApp controls -->
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <select id="safeword-lang-select" style="background: var(--bg-card); color: #fff; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); padding: 0.4rem 0.8rem; font-size: 0.82rem; font-weight: 700; cursor: pointer;">
+            <option value="en">🇬🇧 English</option>
+            <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+            <option value="hinglish">🇮🇳 Hinglish (Roman)</option>
+            <option value="ta">🇮🇳 தமிழ் (Tamil)</option>
+            <option value="bn">🇮🇳 বাংলা (Bengali)</option>
+            <option value="te">🇮🇳 తెలుగు (Telugu)</option>
+            <option value="mr">🇮🇳 मराठी (Marathi)</option>
+          </select>
 
-          <form id="safecircle-verify-form" onsubmit="return false;">
-            <div style="margin-bottom: 1rem;">
-              <input 
-                type="text" 
-                id="safecircle-input" 
-                class="claim-textarea" 
-                style="height: 48px; font-size: 1.1rem; font-family: var(--font-mono); text-transform: uppercase;"
-                placeholder="e.g. SILVER-FALCON" 
-                aria-label="Caller spoken code"
-              >
+          <button type="button" class="reset-btn" id="btn-share-whatsapp" style="display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">
+            <span>Share via WhatsApp</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Editorial Philosophy Statement -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-medium); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;">
+        <blockquote style="font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0 0 0.5rem 0; line-height: 1.4;">
+          “Voice-clone scams can't be detected, so stop trying and make them irrelevant.”
+        </blockquote>
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
+          <strong style="color: #fff;">The Counter-Intuitive Twist:</strong> Every detector assumes a fake can be spotted. Voice and video clones will soon be indistinguishable, so we break that assumption. Borrowing from banking dual-control and duress protocols: authentication happens out of band, through something an imposter cannot know.
+        </p>
+      </div>
+
+      <div class="safecircle-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+        
+        <!-- Left: Word Displays -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <!-- Card 1: Today's Safe-Word -->
+          <div class="passcode-hero-box" style="text-align: left; padding: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+              <span style="font-size: 0.78rem; font-weight: 700; color: #34d399; text-transform: uppercase; display: flex; align-items: center; gap: 0.4rem;">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: #34d399; display: inline-block;"></span>
+                Today's Family Safe-Word
+              </span>
+              <span style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted);" id="safecircle-time-remaining">
+                Rotates in 24h
+              </span>
             </div>
-            <button type="submit" class="primary-verify-btn" id="btn-safecircle-verify" style="width: 100%; justify-content: center;">
-              Authenticate Caller
-            </button>
-          </form>
 
-          <div id="safecircle-verify-result" style="margin-top: 1rem; display: none;"></div>
+            <div style="text-align: center; padding: 1.25rem; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius-md);">
+              <span style="font-size: 0.7rem; font-family: var(--font-mono); color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.4rem;">
+                Recite when called by family
+              </span>
+              <div class="two-word-code-display" id="safecircle-active-code" style="font-size: 2rem; font-weight: 800; color: #fff; margin: 0.5rem 0;">
+                LOADING...
+              </div>
 
-          <!-- Secret Configuration Toggle -->
-          <details style="margin-top: 1.5rem; font-size: 0.82rem; color: var(--text-dim);">
-            <summary style="cursor: pointer; font-weight: 600; color: var(--text-muted);">
-              Configure Shared Family Secret
-            </summary>
-            <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
-              <input 
-                type="text" 
-                id="safecircle-secret-input" 
-                style="flex: 1; background: var(--bg-input); border: 1px solid var(--border-medium); border-radius: var(--radius-sm); color: #fff; padding: 0.4rem 0.6rem; font-family: var(--font-mono); font-size: 0.8rem;"
-                placeholder="Enter custom family passphrase..."
-              >
-              <button type="button" class="reset-btn" id="btn-save-secret" style="padding: 0.4rem 0.8rem;">
-                Save Secret
+              <!-- Pronounce and Copy Buttons -->
+              <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 1rem;">
+                <button type="button" class="reset-btn" id="btn-pronounce-safeword" style="font-size: 0.78rem; font-weight: 700; padding: 0.35rem 0.75rem;">
+                  Pronounce
+                </button>
+                <button type="button" class="reset-btn" id="btn-copy-safeword" style="font-size: 0.78rem; font-weight: 700; padding: 0.35rem 0.75rem;">
+                  Copy Word
+                </button>
+              </div>
+            </div>
+
+            <!-- Grace period caption -->
+            <div style="margin-top: 1rem; display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); background: rgba(255, 255, 255, 0.03); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border: 1px dashed rgba(255, 255, 255, 0.1);">
+              <span>Yesterday's Word (Grace Period):</span>
+              <strong id="safeword-yesterday-display" style="font-family: var(--font-mono); color: #d4d4d8;">...</strong>
+            </div>
+          </div>
+
+          <!-- Card 2: Silent Duress Word -->
+          <div style="background: var(--bg-card); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--radius-lg); padding: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(245, 158, 11, 0.15); padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
+              <span style="font-size: 0.78rem; font-weight: 700; color: #fbbf24; text-transform: uppercase; display: flex; align-items: center; gap: 0.4rem;">
+                Silent Duress Word
+              </span>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.45; margin-bottom: 1rem;">
+              If you or your family member is pressured or coerced to give the safe-word, recite this word instead. It sounds completely normal to the caller, but silently signals your family to contact the police immediately and never transfer money.
+            </p>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: var(--radius-md); padding: 0.75rem 1rem;">
+              <div>
+                <span style="font-size: 0.68rem; font-family: var(--font-mono); text-transform: uppercase; color: #fbbf24; display: block;">
+                  Coercion Safe-Word (Secret)
+                </span>
+                <span id="safeword-duress-display" style="font-size: 1.25rem; font-weight: 800; font-family: var(--font-mono); color: #fff;">
+                  ••••••••••••
+                </span>
+              </div>
+              <button type="button" class="reset-btn" id="btn-toggle-duress" style="font-size: 0.75rem; padding: 0.35rem 0.7rem;">
+                Reveal
               </button>
             </div>
-          </details>
+          </div>
+        </div>
+
+        <!-- Right: Incoming Call Verification Simulator & Playbook -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div class="safecircle-verify-card" style="padding: 1.5rem;">
+            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem;">
+              Verify Incoming Call
+            </h3>
+            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.45; margin-bottom: 1rem;">
+              If a caller claims to be your son, daughter, or relative asking for urgent money from an unknown number, ask them: <em style="color: #fff; font-weight: 600;">"What is today's family safe-word?"</em>
+            </p>
+
+            <!-- Quick Preset Chips -->
+            <div style="margin-bottom: 1rem;">
+              <span style="font-size: 0.7rem; font-family: var(--font-mono); color: var(--text-dim); text-transform: uppercase; display: block; margin-bottom: 0.35rem;">
+                Quick Simulation:
+              </span>
+              <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                <button type="button" class="reset-btn" id="btn-preset-today" style="font-size: 0.72rem; padding: 0.25rem 0.6rem; background: rgba(16, 185, 129, 0.1); color: #34d399; border-color: rgba(16, 185, 129, 0.25);">
+                  Today's word
+                </button>
+                <button type="button" class="reset-btn" id="btn-preset-duress" style="font-size: 0.72rem; padding: 0.25rem 0.6rem; background: rgba(245, 158, 11, 0.1); color: #fbbf24; border-color: rgba(245, 158, 11, 0.25);">
+                  Duress word
+                </button>
+                <button type="button" class="reset-btn" id="btn-preset-imposter" style="font-size: 0.72rem; padding: 0.25rem 0.6rem; background: rgba(239, 68, 68, 0.1); color: #f87171; border-color: rgba(239, 68, 68, 0.25);">
+                  Unrecognized word
+                </button>
+              </div>
+            </div>
+
+            <form id="safecircle-verify-form" onsubmit="return false;">
+              <div style="margin-bottom: 0.75rem;">
+                <input 
+                  type="text" 
+                  id="safecircle-input" 
+                  class="claim-textarea" 
+                  style="height: 48px; font-size: 1rem; font-family: var(--font-mono); text-transform: uppercase;"
+                  placeholder="Type what caller spoke on the phone..." 
+                  aria-label="Caller spoken code"
+                >
+              </div>
+              <button type="submit" class="primary-verify-btn" id="btn-safecircle-verify" style="width: 100%; justify-content: center; background: #0284c7;">
+                Authenticate Caller Word
+              </button>
+            </form>
+
+            <div id="safecircle-verify-result" style="margin-top: 1rem; display: none;"></div>
+
+            <!-- Secret Configuration Toggle -->
+            <details style="margin-top: 1.5rem; font-size: 0.82rem; color: var(--text-dim);">
+              <summary style="cursor: pointer; font-weight: 600; color: var(--text-muted);">
+                Configure Shared Family Secret
+              </summary>
+              <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
+                <input 
+                  type="text" 
+                  id="safecircle-secret-input" 
+                  style="flex: 1; background: var(--bg-input); border: 1px solid var(--border-medium); border-radius: var(--radius-sm); color: #fff; padding: 0.4rem 0.6rem; font-family: var(--font-mono); font-size: 0.8rem;"
+                  placeholder="Enter custom family passphrase..."
+                >
+                <button type="button" class="reset-btn" id="btn-save-secret" style="padding: 0.4rem 0.8rem;">
+                  Save Seed
+                </button>
+              </div>
+            </details>
+          </div>
+
+          <!-- Family Safety Protocol -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 1.25rem;">
+            <h4 style="font-size: 0.85rem; font-weight: 800; text-transform: uppercase; color: #fff; margin-bottom: 0.75rem;">
+              Family Safety Protocol
+            </h4>
+            <div style="display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.8rem; color: var(--text-muted);">
+              <div style="background: rgba(255, 255, 255, 0.03); padding: 0.6rem 0.75rem; border-radius: var(--radius-sm);">
+                <strong style="color: #fff;">1. The Shared Rule:</strong> Share your secret seed once with your family. Agree that no urgent funds are ever sent without today's safe-word.
+              </div>
+              <div style="background: rgba(255, 255, 255, 0.03); padding: 0.6rem 0.75rem; border-radius: var(--radius-sm);">
+                <strong style="color: #fff;">2. The Question:</strong> When a crying voice says <em>"Papa, accident ho gaya hai, turant 50,000 bhejo"</em>, calmly ask: <strong style="color: #fbbf24;">"Beta, aaj ka safe-word kya hai?"</strong>
+              </div>
+              <div style="background: rgba(255, 255, 255, 0.03); padding: 0.6rem 0.75rem; border-radius: var(--radius-sm);">
+                <strong style="color: #fff;">3. Out-of-band security:</strong> Audio and video can be cloned from public clips, but an offline secret known only to your family circle cannot be guessed.
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>

@@ -17,6 +17,7 @@ import {
   X,
   Loader2,
   AlertCircle,
+  LayoutDashboard,
 } from "lucide-react";
 import { saveStoredReport } from "../lib/storage.js";
 
@@ -119,6 +120,29 @@ export default function LandingPage() {
     e.stopPropagation();
   };
 
+  const readFileAsBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result;
+        if (typeof result === "string") {
+          const parts = result.split(",");
+          resolve({
+            name: file.name,
+            size: file.size,
+            mimeType: file.type,
+            data: parts[1] || "",
+            previewUrl: file.type.startsWith("image/") ? result : null,
+          });
+        } else {
+          resolve(null);
+        }
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleStartVerification = async (e) => {
     e?.preventDefault();
     if (isVerifying) return;
@@ -135,10 +159,17 @@ export default function LandingPage() {
     setProgressMsg("Connecting to verification ledger...");
 
     let payload = "";
+    let mediaPayload = null;
+
     if (selectedFile) {
       payload = trimmedText
         ? `Claim regarding media [${selectedFile.name}]: ${trimmedText}`
         : `Verification of circulated media file: ${selectedFile.name} (${formatFileSize(selectedFile.size)})`;
+      try {
+        mediaPayload = await readFileAsBase64(selectedFile);
+      } catch (err) {
+        console.warn("Could not encode file:", err);
+      }
     } else {
       payload = trimmedText;
     }
@@ -151,7 +182,7 @@ export default function LandingPage() {
           "Content-Type": "application/json",
           Accept: "text/event-stream",
         },
-        body: JSON.stringify({ content: payload }),
+        body: JSON.stringify({ content: payload, media: mediaPayload }),
       });
 
       if (!res.ok) {
@@ -253,14 +284,8 @@ export default function LandingPage() {
         <div className="max-w-[1360px] mx-auto px-6 sm:px-10 lg:px-16">
           {/* Main Masthead Banner */}
           <div className="relative flex items-end justify-between pb-0.5">
-            {/* Left Column: Stacked Mono Quote */}
-            <div className="w-40 hidden sm:block text-left text-[9px] lg:text-[10px] font-mono tracking-[0.25em] text-[#55524B] uppercase leading-[1.6] select-none pb-1">
-              TRUTH<br />
-              DESERVES<br />
-              A SECOND<br />
-              LOOK<br />
-              <span className="inline-block mt-0.5 tracking-normal text-[#181818]/50">—</span>
-            </div>
+            {/* Left Column: Symmetrical spacer */}
+            <div className="w-40 sm:w-44 hidden sm:block" aria-hidden="true" />
 
             {/* Center: Monumental Crosscheck Wordmark with Globe */}
             <div className="relative flex-1 flex flex-col items-center justify-end">
@@ -300,13 +325,17 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right Column: Stacked Mono Guidelines */}
-            <div className="w-40 hidden sm:block text-right text-[9px] lg:text-[10px] font-mono tracking-[0.25em] text-[#55524B] uppercase leading-[1.6] select-none pb-1">
-              VERIFY<br />
-              UNDERSTAND<br />
-              QUESTION<br />
-              BE SAFER<br />
-              <span className="inline-block mt-0.5 tracking-normal text-[#181818]/50">—</span>
+            {/* Right Column: Dashboard Navigation Link */}
+            <div className="w-auto sm:w-44 flex justify-end items-center pb-2">
+              <Link
+                href="/dashboard"
+                className="group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#181818]/20 bg-[#F6F3EB] hover:bg-[#181818] text-[#181818] hover:text-[#F6F3EB] text-[11px] font-mono uppercase tracking-[0.16em] font-medium transition-all duration-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#181818]"
+                aria-label="Go to Dashboard"
+              >
+                <LayoutDashboard className="w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110" />
+                <span>Dashboard</span>
+                <ArrowRight className="w-3 h-3 opacity-60 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:opacity-100" />
+              </Link>
             </div>
           </div>
         </div>

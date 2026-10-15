@@ -43,17 +43,27 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
   const fileInputRef = useRef(null);
   const modalRef = useRef(null);
   const textInputRef = useRef(null);
+  const abortControllerRef = useRef(null);
+
+  const handleClose = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsVerifying(false);
+    onClose();
+  };
 
   // Keyboard shortcut Esc handler
   useEffect(() => {
     function handleKeyDown(e) {
-      if (e.key === "Escape" && isOpen && !isVerifying) {
-        onClose();
+      if (e.key === "Escape" && isOpen) {
+        handleClose();
       }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, isVerifying, onClose]);
+  }, [isOpen]);
 
   // Focus and prefill on open
   useEffect(() => {
@@ -184,36 +194,68 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const readFileAsBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result;
+        if (typeof result === "string") {
+          const parts = result.split(",");
+          resolve({
+            name: file.name,
+            size: file.size,
+            mimeType: file.type,
+            data: parts[1] || "",
+            previewUrl: file.type.startsWith("image/") ? result : null
+          });
+        } else {
+          resolve(null);
+        }
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleVerify = async () => {
     if (!isInputValid() || isVerifying) return;
 
     setErrorMessage("");
     setStreamError(null);
     setIsVerifying(true);
-    setProgressPct(5);
+    setProgressPct(8);
     setProgressStage("extract_claim");
-    setProgressMessage("Initiating verification request...");
+    setProgressMessage("Extracting content & isolating factual claim assertions...");
 
-    let payloadContent = "";
+    abortControllerRef.current = new AbortController();
+
+    let payload = {};
     let mediaFile = null;
 
-    if (activeTab === "text") {
-      payloadContent = textContent.trim();
-    } else if (activeTab === "link") {
-      payloadContent = `URL Verification target: ${linkUrl.trim()}`;
-    } else if (activeTab === "file") {
-      payloadContent = `Circulating media document: ${selectedFile.name} (${formatFileSize(selectedFile.size)})`;
-      mediaFile = selectedFile;
-    }
-
     try {
+      if (activeTab === "text") {
+        payload = { content: textContent.trim() };
+      } else if (activeTab === "link") {
+        payload = { url: linkUrl.trim(), content: linkUrl.trim() };
+      } else if (activeTab === "file") {
+        if (!selectedFile) throw new Error("Please select a file to verify.");
+        mediaFile = selectedFile;
+        setProgressMessage(`Reading and encoding ${selectedFile.name}...`);
+        const mediaData = await readFileAsBase64(selectedFile);
+        payload = {
+          content: selectedFile.name,
+          media: mediaData
+        };
+      }
+
       const response = await fetch("/api/verify?stream=true", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept: "text/event-stream",
         },
-        body: JSON.stringify({ content: payloadContent }),
+        body: JSON.stringify(payload),
+        signal: abortControllerRef.current.signal,
       });
 
       if (!response.ok) {
@@ -265,7 +307,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                     type: mediaFile.type,
                     previewUrl: filePreviewUrl,
                   }
-                : null,
+                : (data.submittedMedia || null),
             };
 
             setTimeout(() => {
@@ -274,7 +316,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
               if (typeof onComplete === "function") {
                 onComplete(reportData);
               }
-            }, 400);
+            }, 300);
             return;
           } else if (event === "error") {
             throw new Error(data.error || "Verification pipeline encountered an error.");
@@ -282,6 +324,11 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
         }
       }
     } catch (err) {
+      if (err.name === "AbortError") {
+        console.info("Verification aborted by user.");
+        setIsVerifying(false);
+        return;
+      }
       console.error("[Modal Verification Error]", err);
       setIsVerifying(false);
       setStreamError(err.message || "Failed to complete verification. Please try again.");
@@ -294,7 +341,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in-0 duration-200"
       onClick={(e) => {
-        if (e.target === e.currentTarget && !isVerifying) onClose();
+        if (e.target === e.currentTarget) handleClose();
       }}
       role="dialog"
       aria-modal="true"
@@ -307,7 +354,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-white shadow-sm font-bold text-xs">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 border border-blue-200 shadow-2xs font-bold text-xs">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
@@ -320,9 +367,8 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
             </div>
           </div>
           <button
-            onClick={onClose}
-            disabled={isVerifying}
-            className="p-1.5 rounded-full text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+            onClick={handleClose}
+            className="p-1.5 rounded-full text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors cursor-pointer"
             title="Close (Esc)"
             aria-label="Close dialog"
           >
@@ -401,7 +447,19 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                     className="w-full px-4 py-3 text-sm text-gray-900 bg-gray-50 border border-gray-200 rounded-2xl placeholder:text-gray-400 focus:outline-none focus:bg-white focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-all resize-none"
                   />
                   <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
-                    <span>Minimum 5 characters required</span>
+                    <div className="flex items-center gap-2">
+                      <span>Minimum 5 characters required</span>
+                      {textContent.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setTextContent("")}
+                          className="text-gray-400 hover:text-gray-800 flex items-center gap-0.5 text-[11px] underline cursor-pointer"
+                        >
+                          <X className="w-3 h-3" />
+                          <span>Clear</span>
+                        </button>
+                      )}
+                    </div>
                     <span className={textContent.length < 5 ? "text-gray-400" : "text-emerald-600 font-semibold"}>
                       {textContent.length} characters
                     </span>
@@ -424,9 +482,19 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                         if (errorMessage) setErrorMessage("");
                       }}
                       placeholder="https://example.com/breaking-news-report"
-                      className="w-full pl-10 pr-4 py-3 text-sm text-gray-900 bg-gray-50 border border-gray-200 rounded-2xl placeholder:text-gray-400 focus:outline-none focus:bg-white focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-all"
+                      className="w-full pl-10 pr-10 py-3 text-sm text-gray-900 bg-gray-50 border border-gray-200 rounded-2xl placeholder:text-gray-400 focus:outline-none focus:bg-white focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-all"
                     />
                     <LinkIcon className="absolute w-4 h-4 text-gray-400 -translate-y-1/2 left-3.5 top-1/2" />
+                    {linkUrl.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setLinkUrl("")}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-800 hover:bg-gray-200 rounded-full cursor-pointer"
+                        title="Clear link"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                   <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
                     <span>Supports HTTP / HTTPS web articles</span>
@@ -548,7 +616,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
               {/* Progress Bar */}
               <div className="w-full h-2 mb-6 overflow-hidden rounded-full bg-gray-100 border border-gray-200/50">
                 <div
-                  className="h-full bg-gray-900 rounded-full transition-all duration-300 ease-out"
+                  className="h-full bg-blue-600 rounded-full transition-all duration-300 ease-out"
                   style={{ width: `${Math.max(5, progressPct)}%` }}
                 />
               </div>
@@ -626,8 +694,20 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
 
               {/* Status Message */}
               <div className="p-3 mt-4 text-xs font-mono text-gray-700 bg-gray-50 border border-gray-200 rounded-xl flex items-center gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-gray-900 flex-shrink-0" />
+                <Sparkles className="w-3.5 h-3.5 text-gray-900 flex-shrink-0 animate-pulse" />
                 <span className="truncate">{progressMessage}</span>
+              </div>
+
+              {/* Cancel Button during verification */}
+              <div className="flex justify-center pt-3">
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="px-4 py-1.5 text-xs font-semibold text-gray-500 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span>Cancel Check</span>
+                </button>
               </div>
             </div>
           )}
@@ -675,7 +755,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
                 type="button"
                 onClick={handleVerify}
                 disabled={!isInputValid()}
-                className="flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-gray-900 hover:bg-black disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed rounded-full shadow-sm transition-all"
+                className="flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed rounded-full shadow-sm transition-all"
               >
                 <ShieldCheck className="w-4 h-4" />
                 <span>Verify</span>

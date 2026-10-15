@@ -24,7 +24,6 @@ import { getReportById, toggleSaveReport } from "../../../lib/storage.js";
 import { saveToVault } from "../../../lib/vault.js";
 import { exportReportPdf } from "../../../lib/exportPdf.js";
 import { performErrorLevelAnalysis, inspectImageExif } from "../../../lib/forensics.js";
-import { getActionProtocol } from "../../../lib/actionpath.js";
 
 function ReportDetailContent() {
   const params = useParams();
@@ -42,8 +41,6 @@ function ReportDetailContent() {
   const [exifResult, setExifResult] = useState(null);
   const [elaQuality, setElaQuality] = useState(0.75);
   const [elaAmp, setElaAmp] = useState(20);
-
-  const [checkedSteps, setCheckedSteps] = useState({});
 
   useEffect(() => {
     if (!reportId) return;
@@ -103,7 +100,7 @@ function ReportDetailContent() {
             The verification report "{reportId}" was not found in your on-device storage.
           </p>
           <Link
-            href="/"
+            href="/dashboard"
             className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-gray-900 hover:bg-black rounded-full transition-all"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -143,20 +140,19 @@ function ReportDetailContent() {
     try {
       await saveToVault(report, "Archived from report view", report.category || "Misinformation");
       setVaultAdded(true);
+      window.dispatchEvent(new Event("crosscheck_vault_updated"));
       setTimeout(() => setVaultAdded(false), 2500);
     } catch (err) {
       alert("Failed to save to vault: " + err.message);
     }
   };
 
-  const protocol = getActionProtocol(report.category || "misinformation", report.score || 50);
-
   return (
     <div className="min-h-screen bg-[#F9FAFB] text-gray-900 font-sans flex flex-col">
       {/* Top Header */}
       <header className="h-16 px-6 lg:px-10 border-b border-gray-200 bg-white flex items-center justify-between sticky top-0 z-30">
         <Link
-          href="/"
+          href="/dashboard"
           className="flex items-center gap-2 text-xs font-bold text-gray-700 hover:text-black transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -304,83 +300,104 @@ function ReportDetailContent() {
         </section>
 
         {/* ========================================================
-            C. SOURCES GROUPED BY INDEPENDENCE
+            C. PRIMARY VERIFIED EVIDENCE SOURCES (5-10 Conclusive)
             ======================================================== */}
-        <section className="p-6 bg-white border border-gray-200 rounded-3xl shadow-xs space-y-4">
-          <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-            <div>
-              <h2 className="text-sm font-bold text-gray-900">
-                Sources Grouped by Independence
-              </h2>
-              <p className="text-xs text-gray-500 mt-0.5">
-                {report.sources?.length || 0} news articles evaluated across{" "}
-                {report.clusteringResult?.independentSourceCount || 1} independent source cluster(s).
-              </p>
-            </div>
-            <span className="px-3 py-1 text-xs font-mono bg-gray-100 text-gray-700 rounded-full font-semibold">
-              Union-Find Isolated
-            </span>
-          </div>
+        {(() => {
+          const displaySources = (report.sources || [])
+            .filter(s => s.stance === "CONTRADICT" || s.stance === "SUPPORT")
+            .slice(0, 10);
+          const effectiveSources = displaySources.length > 0
+            ? displaySources
+            : (report.sources || []).filter(s => s.stance !== "IRRELEVANT").slice(0, 10);
 
-          <div className="space-y-3">
-            {(!report.sources || report.sources.length === 0) ? (
-              <p className="text-xs text-gray-500 py-4">No wire reports retrieved for this query.</p>
-            ) : (
-              report.sources.map((src, idx) => {
-                const isContradict = src.stance === "CONTRADICT";
-                const isSupport = src.stance === "SUPPORT";
-                return (
-                  <div
-                    key={idx}
-                    className="p-4 bg-gray-50 hover:bg-gray-100/70 border border-gray-200 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-3 transition-colors"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-xs text-gray-900 hover:text-blue-600 cursor-pointer">
-                          {src.title}
-                        </span>
-                        <span
-                          className={`text-[10px] font-mono px-2 py-0.5 rounded-full border font-bold ${
-                            isContradict
-                              ? "bg-red-50 text-red-700 border-red-200"
-                              : isSupport
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : "bg-gray-200 text-gray-700 border-gray-300"
-                          }`}
-                        >
-                          {src.stance || "IRRELEVANT"}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3 text-[11px] text-gray-500">
-                        <span className="font-semibold text-gray-700">{src.source || src.domain}</span>
-                        <span>•</span>
-                        <span>Reliability: {Math.round((src.reliability || 0.75) * 100)}%</span>
-                        {src.country && (
-                          <>
+          return (
+            <section className="p-6 bg-white border border-gray-200 rounded-3xl shadow-xs space-y-4">
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+                <div>
+                  <h2 className="text-sm font-bold text-gray-900">
+                    Primary Verified Evidence Sources ({effectiveSources.length})
+                  </h2>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Authoritative news wire & fact-check sources directly confirming or refuting the claim.
+                  </p>
+                </div>
+                <span className="px-3 py-1 text-xs font-mono bg-gray-100 text-gray-700 rounded-full font-semibold">
+                  Curated Evidence
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                {effectiveSources.length === 0 ? (
+                  <p className="text-xs text-gray-500 py-4">No conclusive wire reports found for this claim.</p>
+                ) : (
+                  effectiveSources.map((src, idx) => {
+                    const isContradict = src.stance === "CONTRADICT";
+                    const isSupport = src.stance === "SUPPORT";
+                    const badgeLabel = isContradict ? "Refutes Claim" : isSupport ? "Confirms Claim" : "Relevant";
+                    const cleanTitle = (src.title || "")
+                      .replace(/\s*[-–|]\s*(The Times of India|Times of India|The Indian Express|Indian Express|India Today|BBC|NDTV|Hindustan Times|Firstpost|BOOM|Vishvas News|Reuters|Associated Press|ANI|PIB).*$/i, "")
+                      .trim() || src.title;
+
+                    return (
+                      <div
+                        key={idx}
+                        className="p-4 bg-gray-50 hover:bg-gray-100/70 border border-gray-200 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-3 transition-colors"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-xs text-gray-900 hover:text-blue-600 transition-colors">
+                              {cleanTitle}
+                            </span>
+                            <span
+                              className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full border font-bold flex-shrink-0 ${
+                                isContradict
+                                  ? "bg-red-50 text-red-700 border-red-200"
+                                  : isSupport
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                  : "bg-blue-50 text-blue-700 border-blue-200"
+                              }`}
+                            >
+                              {badgeLabel}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 text-[11px] text-gray-500">
+                            <span className="font-semibold text-gray-700">{src.source || src.domain}</span>
                             <span>•</span>
-                            <span>{src.country}</span>
-                          </>
+                            <span>Reliability: {Math.round((src.reliability || 0.85) * 100)}%</span>
+                            {src.publishDate && (
+                              <>
+                                <span>•</span>
+                                <span>{src.publishDate}</span>
+                              </>
+                            )}
+                            {src.country && src.country !== "unknown" && (
+                              <>
+                                <span>•</span>
+                                <span>{src.country}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {src.url && (
+                          <a
+                            href={src.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-600 font-bold hover:underline flex items-center gap-1 flex-shrink-0 self-start md:self-center"
+                          >
+                            <span>Source Link</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
                         )}
                       </div>
-                    </div>
-
-                    {src.url && (
-                      <a
-                        href={src.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-blue-600 font-bold hover:underline flex items-center gap-1 flex-shrink-0"
-                      >
-                        <span>Source Link</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    )}
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </section>
+                    );
+                  })
+                )}
+              </div>
+            </section>
+          );
+        })()}
 
         {/* ========================================================
             D. MEDIA FORENSICS (ONLY WHEN IMAGE WAS SUBMITTED)
@@ -481,70 +498,7 @@ function ReportDetailContent() {
         )}
 
         {/* ========================================================
-            E. ACTION PATH & STATUTORY HELPLINES
-            ======================================================== */}
-        <section className="p-6 bg-white border border-gray-200 rounded-3xl shadow-xs space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100">
-            <div>
-              <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-500" />
-                <span>Recommended Action Path</span>
-              </h2>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Statutory escalation procedures, evidence preservation steps, and emergency hotlines.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <a
-                href="tel:1930"
-                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-full transition-colors flex items-center gap-1.5 shadow-sm"
-              >
-                <span>Call 1930</span>
-              </a>
-              <a
-                href="https://cybercrime.gov.in"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 text-xs font-bold text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors flex items-center gap-1.5"
-              >
-                <span>cybercrime.gov.in</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {protocol?.steps?.map((step, idx) => (
-              <div
-                key={idx}
-                onClick={() => setCheckedSteps((prev) => ({ ...prev, [idx]: !prev[idx] }))}
-                className="p-4 bg-gray-50 hover:bg-gray-100/60 border border-gray-200 rounded-2xl flex items-start gap-3 cursor-pointer transition-colors"
-              >
-                <div
-                  className={`w-4 h-4 rounded border mt-0.5 flex items-center justify-center transition-all ${
-                    checkedSteps[idx]
-                      ? "bg-gray-900 border-gray-900 text-white"
-                      : "border-gray-300 bg-white"
-                  }`}
-                >
-                  {checkedSteps[idx] && <Check className="w-3 h-3" />}
-                </div>
-                <div>
-                  <p className={`text-xs font-bold ${checkedSteps[idx] ? "line-through text-gray-400" : "text-gray-900"}`}>
-                    {step.title}
-                  </p>
-                  <p className="text-[11px] text-gray-500 mt-0.5">
-                    {step.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ========================================================
-            F. LIMITS OF THIS CHECK & AUDIT ID
+            E. LIMITS OF THIS CHECK & AUDIT ID
             ======================================================== */}
         <section className="p-6 bg-gray-50 border border-gray-200 rounded-3xl text-xs space-y-4">
           <div className="flex items-center gap-2 text-gray-700 font-bold">

@@ -10,7 +10,17 @@ import { detectRepeatClaim } from "./similarity.js";
 import { loadTrendingHoaxes, downloadShareCard } from "./trending.js";
 import { performErrorLevelAnalysis, inspectImageExif } from "./forensics.js";
 import { saveToVault, getVaultEntries, verifyVaultIntegrity, generateComplaintDraft, clearVault } from "./vault.js";
-import { generateSafeCircleCode, verifySafeCircleSpokenCode, setSafeCircleSecret, getSafeCircleSecret } from "./safecircle.js";
+import {
+  generateSafeCircleCode,
+  verifySafeCircleSpokenCode,
+  setSafeCircleSecret,
+  getSafeCircleSecret,
+  generateDailyFamilySafeWord,
+  verifyFamilySafeWord,
+  getSafeWordLanguage,
+  setSafeWordLanguage,
+  SAFE_WORD_LANGUAGES
+} from "./safecircle.js";
 import { getActionProtocol } from "./actionpath.js";
 
 // Global State
@@ -716,76 +726,208 @@ function openComplaintModal(vaultEntry) {
 }
 
 /**
- * Rotating Safe Circle Feature (Offline 60s TOTP)
+ * The Family Safe-Word Engine (Assume the fake is perfect)
+ * Daily rotating TOTP, localized wordlists, silent duress protocol, and emergency verifier
  */
 function initSafeCircleTimer() {
   const codeDisplay = document.getElementById("safecircle-active-code");
-  const secLeftDisplay = document.getElementById("safecircle-sec-left");
-  const progressBar = document.getElementById("safecircle-progress-bar");
+  const timeRemainingDisplay = document.getElementById("safecircle-time-remaining");
+  const yesterdayDisplay = document.getElementById("safeword-yesterday-display");
+  const duressDisplay = document.getElementById("safeword-duress-display");
+  const langSelect = document.getElementById("safeword-lang-select");
   const secretInput = document.getElementById("safecircle-secret-input");
+  const btnToggleDuress = document.getElementById("btn-toggle-duress");
+  const verifyInput = document.getElementById("safecircle-input");
+  const resultBox = document.getElementById("safecircle-verify-result");
 
-  secretInput.value = getSafeCircleSecret();
+  let currentSafeData = null;
+  let isDuressRevealed = false;
 
-  document.getElementById("btn-save-secret").addEventListener("click", () => {
-    const val = secretInput.value.trim();
-    if (setSafeCircleSecret(val)) {
-      alert("Family Safe Circle secret updated successfully!");
-      updateSafeCircle();
-    } else {
-      alert("Secret must be at least 4 characters long.");
-    }
-  });
+  if (secretInput) {
+    secretInput.value = getSafeCircleSecret();
+  }
 
-  async function updateSafeCircle() {
-    if (!state.wordlist || state.wordlist.length === 0) return;
-    try {
-      const result = await generateSafeCircleCode(state.wordlist);
-      codeDisplay.textContent = result.code;
-      secLeftDisplay.textContent = `${result.secondsRemaining}s`;
-      progressBar.style.width = `${result.progressPercent}%`;
+  if (langSelect) {
+    langSelect.value = getSafeWordLanguage();
+    langSelect.addEventListener("change", (e) => {
+      setSafeWordLanguage(e.target.value);
+      updateDailySafeWord();
+    });
+  }
 
-      if (result.secondsRemaining <= 10) {
-        progressBar.style.background = "var(--verdict-danger)";
+  const btnSaveSecret = document.getElementById("btn-save-secret");
+  if (btnSaveSecret && secretInput) {
+    btnSaveSecret.addEventListener("click", () => {
+      const val = secretInput.value.trim();
+      if (setSafeCircleSecret(val)) {
+        alert("Family Safe-Word secret seed updated successfully!");
+        updateDailySafeWord();
       } else {
-        progressBar.style.background = "var(--accent-cyan)";
+        alert("Secret seed must be at least 4 characters long.");
+      }
+    });
+  }
+
+  async function updateDailySafeWord() {
+    try {
+      const lang = getSafeWordLanguage();
+      currentSafeData = await generateDailyFamilySafeWord({ language: lang });
+
+      if (codeDisplay) codeDisplay.textContent = currentSafeData.code;
+      if (timeRemainingDisplay) {
+        timeRemainingDisplay.textContent = `Rotates in ${currentSafeData.timeRemainingFormatted}`;
+      }
+      if (yesterdayDisplay) {
+        yesterdayDisplay.textContent = currentSafeData.yesterdayCode;
+      }
+      if (duressDisplay) {
+        duressDisplay.textContent = isDuressRevealed ? currentSafeData.duressCode : "••••••••••••";
       }
     } catch (err) {
-      console.warn("Safe Circle generation error:", err);
+      console.warn("Daily Safe-Word generation error:", err);
     }
   }
 
-  // Update immediately and on 1-second interval
-  updateSafeCircle();
-  setInterval(updateSafeCircle, 1000);
+  if (btnToggleDuress) {
+    btnToggleDuress.addEventListener("click", () => {
+      isDuressRevealed = !isDuressRevealed;
+      btnToggleDuress.textContent = isDuressRevealed ? "Hide" : "Reveal";
+      if (duressDisplay && currentSafeData) {
+        duressDisplay.textContent = isDuressRevealed ? currentSafeData.duressCode : "••••••••••••";
+      }
+    });
+  }
 
-  // Spoken code verification
-  document.getElementById("btn-safecircle-verify").addEventListener("click", async () => {
-    const input = document.getElementById("safecircle-input").value.trim();
-    const resultBox = document.getElementById("safecircle-verify-result");
+  const btnPronounce = document.getElementById("btn-pronounce-safeword");
+  if (btnPronounce) {
+    btnPronounce.addEventListener("click", () => {
+      if (!currentSafeData?.code || typeof window === "undefined" || !("speechSynthesis" in window)) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(currentSafeData.code);
+      const lang = getSafeWordLanguage();
+      const voiceMap = {
+        hi: "hi-IN",
+        ta: "ta-IN",
+        bn: "bn-IN",
+        te: "te-IN",
+        mr: "mr-IN",
+        hinglish: "hi-IN",
+        en: "en-US",
+      };
+      utterance.lang = voiceMap[lang] || "en-US";
+      utterance.rate = 0.85;
+      window.speechSynthesis.speak(utterance);
+    });
+  }
+
+  const btnCopyWord = document.getElementById("btn-copy-safeword");
+  if (btnCopyWord) {
+    btnCopyWord.addEventListener("click", () => {
+      if (!currentSafeData?.code) return;
+      navigator.clipboard?.writeText(currentSafeData.code);
+      const originalText = btnCopyWord.textContent;
+      btnCopyWord.textContent = "✓ Copied!";
+      setTimeout(() => { btnCopyWord.textContent = originalText; }, 2000);
+    });
+  }
+
+  const btnPresetToday = document.getElementById("btn-preset-today");
+  if (btnPresetToday && verifyInput) {
+    btnPresetToday.addEventListener("click", () => {
+      if (currentSafeData) {
+        verifyInput.value = currentSafeData.code;
+        executeVerify();
+      }
+    });
+  }
+
+  const btnPresetDuress = document.getElementById("btn-preset-duress");
+  if (btnPresetDuress && verifyInput) {
+    btnPresetDuress.addEventListener("click", () => {
+      if (currentSafeData) {
+        verifyInput.value = currentSafeData.duressCode;
+        executeVerify();
+      }
+    });
+  }
+
+  const btnPresetImposter = document.getElementById("btn-preset-imposter");
+  if (btnPresetImposter && verifyInput) {
+    btnPresetImposter.addEventListener("click", () => {
+      verifyInput.value = "Send 50000 immediately emergency";
+      executeVerify();
+    });
+  }
+
+  const btnShareWhatsApp = document.getElementById("btn-share-whatsapp");
+  if (btnShareWhatsApp) {
+    btnShareWhatsApp.addEventListener("click", () => {
+      if (!currentSafeData) return;
+      const text = encodeURIComponent(
+        `🔐 *Crosscheck Family Safe-Word Protocol*\n\n` +
+        `Today's Safe-Word: *${currentSafeData.code}*\n` +
+        `Language: ${currentSafeData.language.label}\n\n` +
+        `⚠️ *Family Rule:* If anyone calls claiming an emergency or asking for urgent money, ask them for today's safe-word first. Never send money without it!`
+      );
+      window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
+    });
+  }
+
+  async function executeVerify() {
+    if (!verifyInput || !resultBox) return;
+    const input = verifyInput.value.trim();
     resultBox.style.display = "block";
 
     if (!input) {
-      resultBox.innerHTML = `<span style="color: #fca5a5;">Please enter the two words spoken by caller.</span>`;
+      resultBox.innerHTML = `<span style="color: #fca5a5;">Please enter the words spoken by the caller.</span>`;
       return;
     }
 
-    const verification = await verifySafeCircleSpokenCode(input, state.wordlist);
-    if (verification.isValid) {
+    const verification = await verifyFamilySafeWord(input, { language: getSafeWordLanguage() });
+
+    if (verification.status === "DURESS_ALERT") {
       resultBox.innerHTML = `
-        <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid var(--verdict-safe-border); border-radius: var(--radius-md); padding: 0.85rem; color: #6ee7b7; font-size: 0.88rem;">
-          <strong>✅ CALLER AUTHENTICATED:</strong> Valid Safe Circle member.<br>
-          <span style="font-size: 0.78rem; opacity: 0.85;">Code: ${verification.matchedCode} (${verification.timeDeltaDescription})</span>
+        <div style="background: rgba(220, 38, 38, 0.2); border: 1px solid #f87171; border-radius: var(--radius-md); padding: 1rem; color: #fecaca; font-size: 0.88rem; line-height: 1.5;">
+          <strong style="color: #fff; font-size: 0.95rem;">${verification.title}</strong><br>
+          ${verification.message}<br><br>
+          <div style="font-weight: 700; color: #fff;">
+            1. Keep calm and do NOT confront the caller.<br>
+            2. Do NOT transfer any money or OTP.<br>
+            3. Immediately call Indian Cybercrime Helpline <strong>1930</strong> or local police.
+          </div>
+        </div>
+      `;
+    } else if (verification.status === "AUTHENTIC_TODAY") {
+      resultBox.innerHTML = `
+        <div style="background: rgba(16, 185, 129, 0.18); border: 1px solid #34d399; border-radius: var(--radius-md); padding: 1rem; color: #a7f3d0; font-size: 0.88rem; line-height: 1.5;">
+          <strong style="color: #fff; font-size: 0.95rem;">${verification.title}</strong><br>
+          ${verification.message}
+        </div>
+      `;
+    } else if (verification.status === "GRACE_PERIOD") {
+      resultBox.innerHTML = `
+        <div style="background: rgba(245, 158, 11, 0.18); border: 1px solid #fbbf24; border-radius: var(--radius-md); padding: 1rem; color: #fef3c7; font-size: 0.88rem; line-height: 1.5;">
+          <strong style="color: #fff; font-size: 0.95rem;">${verification.title}</strong><br>
+          ${verification.message}
         </div>
       `;
     } else {
       resultBox.innerHTML = `
-        <div style="background: rgba(220, 38, 38, 0.15); border: 1px solid var(--verdict-danger-border); border-radius: var(--radius-md); padding: 0.85rem; color: #fca5a5; font-size: 0.88rem;">
-          <strong>🚨 WARNING — UNVERIFIED CALLER:</strong> ${verification.reason}<br>
-          <span style="font-size: 0.78rem; opacity: 0.85;">Do not transfer money or share one-time passwords. Hang up and call back on a verified number.</span>
+        <div style="background: rgba(220, 38, 38, 0.18); border: 1px solid #ef4444; border-radius: var(--radius-md); padding: 1rem; color: #fecaca; font-size: 0.88rem; line-height: 1.5;">
+          <strong style="color: #fff; font-size: 0.95rem;">${verification.title}</strong><br>
+          ${verification.message}
         </div>
       `;
     }
-  });
+  }
+
+  const btnVerify = document.getElementById("btn-safecircle-verify");
+  if (btnVerify) {
+    btnVerify.addEventListener("click", executeVerify);
+  }
+
+  updateDailySafeWord();
+  setInterval(updateDailySafeWord, 60000);
 }
 
 /**

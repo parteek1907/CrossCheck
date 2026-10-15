@@ -32,6 +32,19 @@ import {
   Moon,
   Languages,
   Check,
+  Copy,
+  Volume2,
+  Lock,
+  Unlock,
+  Eye,
+  EyeOff,
+  Share2,
+  KeyRound,
+  Users,
+  PhoneCall,
+  Clock,
+  ShieldAlert,
+  AlertCircle,
 } from "lucide-react";
 
 import {
@@ -47,7 +60,17 @@ import {
   saveSettings,
 } from "../../lib/storage.js";
 import { getVaultEntries, verifyVaultIntegrity } from "../../lib/vault.js";
-import { generateSafeCircleCode, verifySafeCircleSpokenCode } from "../../lib/safecircle.js";
+import {
+  generateSafeCircleCode,
+  verifySafeCircleSpokenCode,
+  generateDailyFamilySafeWord,
+  verifyFamilySafeWord,
+  SAFE_WORD_LANGUAGES,
+  getSafeCircleSecret,
+  setSafeCircleSecret,
+  getSafeWordLanguage,
+  setSafeWordLanguage,
+} from "../../lib/safecircle.js";
 import { VerificationModal } from "../../components/VerificationModal";
 import { CommandPalette } from "../../components/CommandPalette";
 import { ToastProvider, useToast } from "../../components/Toast";
@@ -58,7 +81,7 @@ const I18N = {
     dashboard: "Dashboard",
     history: "History",
     vault: "Evidence Vault",
-    safeCircle: "Safe Circle",
+    safeCircle: "Family Safe-Word",
     sourceExplorer: "Source Explorer",
     settings: "Settings",
     helpCenter: "Help Center (1930)",
@@ -81,7 +104,7 @@ const I18N = {
     dashboard: "डैशबोर्ड",
     history: "इतिहास",
     vault: "साक्ष्य वॉल्ट",
-    safeCircle: "सुरक्षा घेरा",
+    safeCircle: "फ़ैमिली सेफ़-वर्ड",
     sourceExplorer: "स्रोत एक्सप्लोरर",
     settings: "सेटिंग्स",
     helpCenter: "सहायता केंद्र (1930)",
@@ -136,12 +159,22 @@ function CrosscheckAppContent() {
   // Vault state
   const [vaultEntries, setVaultEntries] = useState([]);
 
-  // Safe circle state
-  const [wordlist, setWordlist] = useState([]);
-  const [safeCode, setSafeCode] = useState({ code: "LOADING...", secondsRemaining: 60, progressPercent: 100 });
+  // The Family Safe-Word state
+  const [safeWordLang, setSafeWordLang] = useState("en");
+  const [dailySafeWord, setDailySafeWord] = useState(null);
+  const [isDuressRevealed, setIsDuressRevealed] = useState(false);
   const [verifyInput, setVerifyInput] = useState("");
   const [verifyResult, setVerifyResult] = useState(null);
-  const familySecret = "CROSSCHECK-CIRCLE-FAMILY-2026";
+  const [familySecret, setFamilySecret] = useState(getSafeCircleSecret());
+  const [isSeedModalOpen, setIsSeedModalOpen] = useState(false);
+  const [newSeedInput, setNewSeedInput] = useState("");
+  const [copiedSafeWord, setCopiedSafeWord] = useState(false);
+  const [copiedDuressWord, setCopiedDuressWord] = useState(false);
+  const [copiedSeed, setCopiedSeed] = useState(false);
+
+  // Legacy safeCode & wordlist for tests / 60s demo mode
+  const [wordlist, setWordlist] = useState([]);
+  const [safeCode, setSafeCode] = useState({ code: "LOADING...", secondsRemaining: 60, progressPercent: 100 });
 
   // Source Explorer state
   const [domainQuery, setDomainQuery] = useState("reuters.com");
@@ -163,6 +196,8 @@ function CrosscheckAppContent() {
     setTempName(prof.displayName || "Guest");
     const sett = getSettings();
     setLocalSettings(sett);
+    setSafeWordLang(getSafeWordLanguage());
+    setFamilySecret(getSafeCircleSecret());
     if (sett.theme === "dark") {
       document.documentElement.classList.add("dark");
     } else {
@@ -182,6 +217,8 @@ function CrosscheckAppContent() {
     window.addEventListener("crosscheck_reports_updated", refreshLocalData);
     window.addEventListener("crosscheck_profile_updated", refreshLocalData);
     window.addEventListener("crosscheck_settings_updated", refreshLocalData);
+    window.addEventListener("crosscheck_vault_updated", refreshLocalData);
+    window.addEventListener("focus", refreshLocalData);
 
     fetchDomainProfile("reuters.com");
 
@@ -189,6 +226,8 @@ function CrosscheckAppContent() {
       window.removeEventListener("crosscheck_reports_updated", refreshLocalData);
       window.removeEventListener("crosscheck_profile_updated", refreshLocalData);
       window.removeEventListener("crosscheck_settings_updated", refreshLocalData);
+      window.removeEventListener("crosscheck_vault_updated", refreshLocalData);
+      window.removeEventListener("focus", refreshLocalData);
     };
   }, [refreshLocalData]);
 
@@ -198,7 +237,7 @@ function CrosscheckAppContent() {
       dashboard: "Dashboard",
       history: "History",
       vault: "Evidence Vault",
-      safecircle: "Safe Circle",
+      safecircle: "The Family Safe-Word",
       clustering: "Source Explorer",
       settings: "Settings",
       help: "Help Center",
@@ -236,19 +275,90 @@ function CrosscheckAppContent() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Safe Circle countdown
+  // Live countdown and code generation for The Family Safe-Word
   useEffect(() => {
-    if (wordlist.length === 0) return;
-    const interval = setInterval(async () => {
+    let isMounted = true;
+    const updateCodes = async () => {
       try {
-        const res = await generateSafeCircleCode(wordlist, familySecret);
-        setSafeCode(res);
+        const daily = await generateDailyFamilySafeWord({
+          language: safeWordLang,
+          secret: familySecret
+        });
+        if (isMounted) setDailySafeWord(daily);
+
+        if (wordlist.length > 0) {
+          const legacy = await generateSafeCircleCode(wordlist, familySecret);
+          if (isMounted) setSafeCode(legacy);
+        }
       } catch (e) {
-        console.warn(e);
+        console.warn("Safe word update error:", e);
       }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [wordlist, familySecret]);
+    };
+
+    updateCodes();
+    const interval = setInterval(updateCodes, 1000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [safeWordLang, familySecret, wordlist]);
+
+  const handleCopySafeWord = (text, type = "safe") => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    if (type === "safe") {
+      setCopiedSafeWord(true);
+      setTimeout(() => setCopiedSafeWord(false), 2000);
+    } else {
+      setCopiedDuressWord(true);
+      setTimeout(() => setCopiedDuressWord(false), 2000);
+    }
+    showToast("Copied to clipboard!", "success");
+  };
+
+  const handleCopySeed = () => {
+    navigator.clipboard.writeText(familySecret);
+    setCopiedSeed(true);
+    setTimeout(() => setCopiedSeed(false), 2000);
+    showToast("Family Seed copied to clipboard!", "success");
+  };
+
+  const handleShareToWhatsApp = () => {
+    if (!dailySafeWord) return;
+    const text = `🛡️ *TrustLens - Family Safe-Word Setup*\n\nTo defeat AI voice-clone scams, our family is using out-of-band rotating safe-words.\n\n🔑 *Our Family Seed:* ${familySecret}\n🗣️ *Today's Safe-Word:* "${dailySafeWord.code}" (${dailySafeWord.language?.label || "English"})\n\n⚠️ *Family Rule:* If anyone calls asking for urgent money claiming to be family from an unknown number, ALWAYS ask for today's safe-word first!`;
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank");
+  };
+
+  const handleSpeakSafeWord = (word, langId) => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(word);
+      if (langId === "hi") utterance.lang = "hi-IN";
+      else if (langId === "ta") utterance.lang = "ta-IN";
+      else if (langId === "bn") utterance.lang = "bn-IN";
+      else if (langId === "te") utterance.lang = "te-IN";
+      else if (langId === "mr") utterance.lang = "mr-IN";
+      else utterance.lang = "en-US";
+      utterance.rate = 0.85;
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      console.warn("TTS error:", e);
+    }
+  };
+
+  const handleSaveCustomSeed = (newSeed) => {
+    if (!newSeed || newSeed.trim().length < 4) {
+      showToast("Seed must be at least 4 characters.", "warning");
+      return;
+    }
+    const cleanSeed = newSeed.trim().toUpperCase();
+    setSafeCircleSecret(cleanSeed);
+    setFamilySecret(cleanSeed);
+    setIsSeedModalOpen(false);
+    showToast("Family Seed successfully updated!", "success");
+  };
 
   const fetchDomainProfile = async (domain) => {
     if (!domain) return;
@@ -420,7 +530,7 @@ function CrosscheckAppContent() {
               setIsModalOpen(true);
               setIsMobileDrawerOpen(false);
             }}
-            className="w-full h-10 px-3.5 flex items-center justify-center gap-2 text-xs font-bold text-white bg-gray-900 hover:bg-black dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100 rounded-lg shadow-sm transition-all focus-visible:ring-2 focus-visible:ring-gray-900"
+            className="w-full h-10 px-3.5 flex items-center justify-center gap-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-lg shadow-sm transition-all focus-visible:ring-2 focus-visible:ring-blue-600"
           >
             <Plus className="w-4 h-4 flex-shrink-0" />
             <span className="hidden min-[1100px]:inline">{t.newVerification}</span>
@@ -448,7 +558,7 @@ function CrosscheckAppContent() {
                 { id: "dashboard", label: t.dashboard, icon: LayoutDashboard },
                 { id: "history", label: t.history, icon: HistoryIcon, badge: reports.length },
                 { id: "vault", label: t.vault, icon: Archive, badge: vaultEntries.length },
-                { id: "safecircle", label: t.safeCircle, icon: Radio },
+                { id: "safecircle", label: t.safeCircle, icon: KeyRound },
                 { id: "clustering", label: t.sourceExplorer, icon: Globe2 },
               ].map((item) => {
                 const Icon = item.icon;
@@ -535,7 +645,7 @@ function CrosscheckAppContent() {
               title={`${userProfile.displayName || "Guest"} — Stored on this device`}
               className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#16181E] border border-gray-200 dark:border-[#252830] flex items-center gap-2.5"
             >
-              <div className="w-7 h-7 rounded-full bg-gray-900 text-white dark:bg-white dark:text-gray-900 flex items-center justify-center text-xs font-bold flex-shrink-0">
+              <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 flex items-center justify-center text-xs font-bold flex-shrink-0">
                 {userProfile.displayName ? userProfile.displayName.slice(0, 1).toUpperCase() : "G"}
               </div>
               <div className="hidden min-[1100px]:block overflow-hidden flex-1">
@@ -717,7 +827,7 @@ function CrosscheckAppContent() {
                               className="flex-1 flex flex-col items-center group relative h-full justify-end"
                             >
                               <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center z-20 pointer-events-none">
-                                <div className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-mono px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                                <div className="bg-slate-800 dark:bg-white text-white dark:text-gray-900 text-[10px] font-mono px-2 py-1 rounded shadow-lg whitespace-nowrap">
                                   {d.label}: {d.count} checks
                                 </div>
                               </div>
@@ -725,7 +835,7 @@ function CrosscheckAppContent() {
                                 style={{ height: barHeight }}
                                 className={`w-full rounded-t transition-all ${
                                   d.count > 0
-                                    ? "bg-gray-900 dark:bg-white hover:bg-black"
+                                    ? "bg-blue-600 dark:bg-blue-500 hover:bg-blue-700"
                                     : "bg-gray-100 dark:bg-white/10 hover:bg-gray-200"
                                 }`}
                               />
@@ -869,7 +979,7 @@ function CrosscheckAppContent() {
                         setModalPrefill(null);
                         setIsModalOpen(true);
                       }}
-                      className="mt-5 flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-gray-900 hover:bg-black dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100 rounded-full shadow-sm transition-all focus-visible:ring-2 focus-visible:ring-gray-900"
+                      className="mt-5 flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-full shadow-sm transition-all focus-visible:ring-2 focus-visible:ring-blue-600"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>{t.runFirstCheck}</span>
@@ -1017,7 +1127,7 @@ function CrosscheckAppContent() {
                   onClick={() => setHistoryFilterSaved(!historyFilterSaved)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full border transition-all ${
                     historyFilterSaved
-                      ? "bg-gray-900 text-white border-gray-900 dark:bg-white dark:text-gray-900"
+                      ? "bg-blue-600 text-white border-blue-600 dark:bg-blue-600 dark:text-white"
                       : "bg-white dark:bg-[#15171C] text-gray-700 dark:text-gray-300 border-gray-300 dark:border-[#252830] hover:bg-gray-50"
                   }`}
                 >
@@ -1052,7 +1162,7 @@ function CrosscheckAppContent() {
                             type="button"
                             onClick={(e) => handleBookmarkToggle(r.reportId, e)}
                             className={`p-1.5 rounded-full border ${
-                              r.isSaved ? "bg-amber-100 text-amber-700 border-amber-300" : "bg-white dark:bg-black text-gray-400 border-gray-200 dark:border-gray-800"
+                              r.isSaved ? "bg-amber-100 text-amber-700 border-amber-300" : "bg-white dark:bg-[#1A1C22] text-gray-400 border-gray-200 dark:border-gray-800"
                             }`}
                           >
                             <Bookmark className="w-3.5 h-3.5" />
@@ -1060,7 +1170,7 @@ function CrosscheckAppContent() {
                           <button
                             type="button"
                             onClick={() => router.push(`/report/${encodeURIComponent(r.reportId)}`)}
-                            className="px-3 py-1 text-xs font-bold text-gray-900 dark:text-white hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-gray-900 rounded-full border border-gray-300 dark:border-gray-700 transition-all"
+                            className="px-3 py-1 text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 dark:hover:bg-blue-600 rounded-full border border-gray-300 dark:border-gray-700 transition-all"
                           >
                             Inspect
                           </button>
@@ -1123,58 +1233,434 @@ function CrosscheckAppContent() {
           )}
 
           {/* ========================================================
-              SAFE CIRCLE VIEW
+              THE FAMILY SAFE-WORD VIEW
+              "Assume the fake is perfect."
+              Out-of-band cryptographic authentication against AI voice cloning.
               ======================================================== */}
           {activeNav === "safecircle" && (
             <div className="space-y-6 animate-in fade-in-0 duration-200">
-              <div>
-                <h2 className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">Safe Circle</h2>
-                <p className="text-xs text-gray-400">Rotating verbal authentication against AI voice cloning scams</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-6 bg-white dark:bg-[#15171C] border border-gray-200 dark:border-[#252830] rounded-2xl shadow-2xs text-center space-y-4">
-                  <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Current Verbal Code</div>
-                  <div className="text-3xl font-mono font-extrabold tracking-widest text-gray-900 dark:text-white py-4 bg-gray-50 dark:bg-[#111215] rounded-xl border border-gray-200 dark:border-[#292C36]">
-                    {safeCode.code}
-                  </div>
-                  <div className="text-xs font-mono text-gray-400 flex items-center justify-center gap-1.5">
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Rotates in {safeCode.secondsRemaining}s</span>
-                  </div>
+              {/* Header & Controls Bar */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200/60 dark:border-gray-800/60">
+                <div>
+                  <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                    The Family Safe-Word
+                  </h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Assume the fake is perfect. Out-of-band verification for family circles against voice-clone scams.
+                  </p>
                 </div>
 
-                <div className="p-6 bg-white dark:bg-[#15171C] border border-gray-200 dark:border-[#252830] rounded-2xl shadow-2xs space-y-3">
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">Test Code Authenticity</h3>
-                  <input
-                    type="text"
-                    value={verifyInput}
-                    onChange={(e) => setVerifyInput(e.target.value)}
-                    placeholder="Enter spoken word heard on call..."
-                    className="w-full px-4 py-2.5 text-xs bg-gray-50 dark:bg-[#111215] border border-gray-200 dark:border-[#292C36] rounded-full focus:outline-none focus:border-gray-900 dark:focus:border-white"
-                  />
+                {/* Top Action Controls: Language, Sync Seed, WhatsApp */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* Language Selector */}
+                  <div className="relative flex items-center">
+                    <Languages className="w-3.5 h-3.5 text-gray-400 absolute left-3 pointer-events-none" />
+                    <select
+                      value={safeWordLang}
+                      onChange={(e) => {
+                        const newLang = e.target.value;
+                        setSafeWordLang(newLang);
+                        setSafeWordLanguage(newLang);
+                        showToast(`Language set to ${SAFE_WORD_LANGUAGES[newLang]?.label}`, "success");
+                      }}
+                      aria-label="Select family safe-word language"
+                      className="pl-8 pr-7 py-1.5 text-xs font-semibold bg-white dark:bg-[#15171C] border border-gray-200 dark:border-[#252830] text-gray-800 dark:text-gray-200 rounded-lg shadow-2xs focus:outline-none focus:ring-1 focus:ring-gray-400 transition-all cursor-pointer"
+                    >
+                      {Object.values(SAFE_WORD_LANGUAGES).map((l) => (
+                        <option key={l.id} value={l.id} className="dark:bg-[#15171C]">
+                          {l.flag} {l.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Seed Sync Button */}
                   <button
                     type="button"
-                    onClick={async () => {
-                      const res = await verifySafeCircleSpokenCode(verifyInput, wordlist, familySecret);
-                      setVerifyResult(res);
-                      if (res.isValid) {
-                        showToast("Authentication code valid!", "success");
-                      } else {
-                        showToast("Invalid authentication code", "error");
-                      }
+                    onClick={() => {
+                      setNewSeedInput(familySecret);
+                      setIsSeedModalOpen(true);
                     }}
-                    className="w-full py-2 text-xs font-bold text-white bg-gray-900 hover:bg-black dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100 rounded-full transition-all"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-[#15171C] border border-gray-200 dark:border-[#252830] hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg shadow-2xs transition-all"
                   >
-                    Authenticate
+                    <KeyRound className="w-3.5 h-3.5" />
+                    <span>Family Seed</span>
                   </button>
-                  {verifyResult && (
-                    <p className={`text-xs font-bold text-center ${verifyResult.isValid ? "text-emerald-600" : "text-red-600"}`}>
-                      {verifyResult.isValid ? "✅ Code Authentic!" : "❌ Invalid Code"}
-                    </p>
-                  )}
+
+                  {/* WhatsApp Share Button */}
+                  <button
+                    type="button"
+                    onClick={handleShareToWhatsApp}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 hover:bg-emerald-100/70 rounded-lg transition-all"
+                    title="Share family seed and safe-word via WhatsApp"
+                  >
+                    <Share2 className="w-3.5 h-3.5" />
+                    <span>Share via WhatsApp</span>
+                  </button>
                 </div>
               </div>
+
+              {/* Editorial Statement: The Hook & Counter-Intuitive Twist */}
+              <div className="p-6 bg-white dark:bg-[#15171C] rounded-2xl border border-gray-200/80 dark:border-[#252830] shadow-xs space-y-3">
+                <blockquote className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white leading-relaxed">
+                  “Voice-clone scams can't be detected, so stop trying and make them irrelevant.”
+                </blockquote>
+                <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                  <strong className="font-semibold text-gray-900 dark:text-gray-200">The Counter-Intuitive Twist:</strong> Every detector assumes a fake can be spotted. Voice and video clones will soon be indistinguishable, so we break that assumption. Borrowing from banking dual-control and espionage duress codes: authentication happens out of band, through something an imposter cannot know.
+                </p>
+              </div>
+
+              {/* Main Interactive Grid: Left Column (Words) | Right Column (Verify Simulator) */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                {/* Left Column: Today's Safe-Word & The Silent Duress Word */}
+                <div className="lg:col-span-6 space-y-6">
+                  {/* Card 1: Today's Rotating Safe-Word */}
+                  <div className="p-6 bg-white dark:bg-[#15171C] border border-gray-200 dark:border-[#252830] rounded-2xl shadow-xs space-y-5">
+                    <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-[#202228]">
+                      <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                        Today's Family Safe-Word
+                      </span>
+                      <div className="flex items-center gap-1.5 text-xs font-mono text-gray-500 dark:text-gray-400">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>Rotates in {dailySafeWord?.timeRemainingFormatted || "24h"}</span>
+                      </div>
+                    </div>
+
+                    {/* Word Display Box */}
+                    <div className="p-6 bg-gray-50/70 dark:bg-[#111215] border border-gray-200/70 dark:border-[#292C36] rounded-xl text-center space-y-3">
+                      <span className="text-xs text-gray-500 block">
+                        Recite when contacted by a family member
+                      </span>
+                      <div className="text-3xl sm:text-4xl font-extrabold tracking-wide text-gray-900 dark:text-white py-1">
+                        {dailySafeWord?.code || "LOADING..."}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {dailySafeWord?.language?.label || "English"}
+                      </div>
+
+                      {/* Action Buttons: Pronounce & Copy */}
+                      <div className="pt-2 flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleSpeakSafeWord(dailySafeWord?.code, safeWordLang)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-[#1A1C22] border border-gray-200 dark:border-[#252830] hover:bg-gray-50 dark:hover:bg-white/10 rounded-lg transition-all active:scale-95 shadow-2xs"
+                          title="Listen to pronunciation"
+                        >
+                          <Volume2 className="w-3.5 h-3.5 text-blue-600" />
+                          <span>Pronounce</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleCopySafeWord(dailySafeWord?.code, "safe")}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-[#1A1C22] border border-gray-200 dark:border-[#252830] hover:bg-gray-50 dark:hover:bg-white/10 rounded-lg transition-all active:scale-95 shadow-2xs"
+                        >
+                          {copiedSafeWord ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 text-emerald-600" />
+                              <span className="text-emerald-600">Copied</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3.5 h-3.5" />
+                              <span>Copy Word</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Yesterday's Word (Grace Period Caption) */}
+                    <div className="flex items-center justify-between px-3 py-2 bg-gray-50/60 dark:bg-[#111215] border border-gray-200/60 dark:border-gray-800 rounded-lg text-xs text-gray-500">
+                      <span>Yesterday's word (grace period):</span>
+                      <span className="font-mono font-medium text-gray-800 dark:text-gray-200">
+                        {dailySafeWord?.yesterdayCode || "..."}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Card 2: The Silent Duress Word */}
+                  <div className="p-6 bg-white dark:bg-[#15171C] border border-amber-200/70 dark:border-amber-900/40 rounded-2xl shadow-xs space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-amber-100 dark:border-amber-900/30">
+                      <div className="flex items-center gap-2">
+                        <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                        <span className="text-xs font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
+                          Silent Duress Word
+                        </span>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                      If you or your family member is coerced to give the safe-word under pressure or threat, recite this word instead. It sounds normal to the caller, but discreetly signals family to refuse transfers and notify authorities.
+                    </p>
+
+                    {/* Masked Duress Word */}
+                    <div className="p-4 bg-amber-50/40 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/30 rounded-xl flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-[11px] font-medium text-amber-800 dark:text-amber-400">
+                          Coercion signal word
+                        </div>
+                        <div className="text-xl font-mono font-bold text-gray-900 dark:text-white mt-0.5">
+                          {isDuressRevealed ? (dailySafeWord?.duressCode || "...") : "••••••••••••••"}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setIsDuressRevealed(!isDuressRevealed)}
+                          className="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-[#1A1C22] border border-gray-200 dark:border-[#252830] hover:bg-gray-50 rounded-lg transition-all"
+                        >
+                          {isDuressRevealed ? "Hide" : "Reveal"}
+                        </button>
+
+                        {isDuressRevealed && (
+                          <button
+                            type="button"
+                            onClick={() => handleCopySafeWord(dailySafeWord?.duressCode, "duress")}
+                            className="p-1.5 text-xs text-gray-700 dark:text-gray-300 bg-white dark:bg-[#1A1C22] border border-gray-200 dark:border-[#252830] hover:bg-gray-50 rounded-lg transition-all"
+                            title="Copy duress code"
+                          >
+                            {copiedDuressWord ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: Interactive Emergency Caller Verifier */}
+                <div className="lg:col-span-6 space-y-6">
+                  <div className="p-6 bg-white dark:bg-[#15171C] border border-gray-200 dark:border-[#252830] rounded-2xl shadow-xs space-y-5">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <PhoneCall className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+                        <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                          Verify Incoming Call
+                        </h3>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                        If a caller claims to be your son, daughter, or relative asking for urgent money from an unknown number, ask: <em className="font-semibold text-gray-800 dark:text-gray-200">"What is today's family safe-word?"</em>
+                      </p>
+                    </div>
+
+                    {/* Quick Demo Test Chips */}
+                    <div className="space-y-1.5">
+                      <span className="text-[11px] font-medium text-gray-400 block">
+                        Quick simulation:
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (dailySafeWord) {
+                              setVerifyInput(dailySafeWord.code);
+                              handleAuthenticate(dailySafeWord.code);
+                            }
+                          }}
+                          className="px-2.5 py-1 text-xs font-medium rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-700 dark:text-gray-300 transition-colors"
+                        >
+                          Today's word
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (dailySafeWord) {
+                              setVerifyInput(dailySafeWord.duressCode);
+                              handleAuthenticate(dailySafeWord.duressCode);
+                            }
+                          }}
+                          className="px-2.5 py-1 text-xs font-medium rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-700 dark:text-gray-300 transition-colors"
+                        >
+                          Duress word
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setVerifyInput("Send money immediately");
+                            handleAuthenticate("Send money immediately");
+                          }}
+                          className="px-2.5 py-1 text-xs font-medium rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-700 dark:text-gray-300 transition-colors"
+                        >
+                          Unrecognized word
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Input Field */}
+                    <div className="space-y-2">
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={verifyInput}
+                          onChange={(e) => setVerifyInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleAuthenticate();
+                            }
+                          }}
+                          placeholder="Type what the caller spoke on the phone..."
+                          className="w-full pl-4 pr-10 py-2.5 text-xs bg-gray-50 dark:bg-[#111215] border border-gray-200 dark:border-[#292C36] rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all font-medium"
+                        />
+                        {verifyInput && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setVerifyInput("");
+                              setVerifyResult(null);
+                            }}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 dark:hover:text-white"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleAuthenticate()}
+                        className="w-full py-2.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-xl shadow-xs transition-all active:scale-98 flex items-center justify-center gap-2"
+                      >
+                        <ShieldCheck className="w-4 h-4" />
+                        <span>Authenticate Caller Word</span>
+                      </button>
+                    </div>
+
+                    {/* Verification Result Card */}
+                    {verifyResult && (
+                      <div
+                        className={`p-4 rounded-xl border transition-all animate-in fade-in-0 duration-150 space-y-1.5 ${
+                          verifyResult.status === "DURESS_ALERT"
+                            ? "bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-800 text-red-900 dark:text-red-200"
+                            : verifyResult.status === "AUTHENTIC_TODAY"
+                            ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200"
+                            : verifyResult.status === "GRACE_PERIOD"
+                            ? "bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200"
+                            : "bg-red-50/70 dark:bg-red-950/30 border-red-200 dark:border-red-900/50 text-red-800 dark:text-red-300"
+                        }`}
+                      >
+                        <div className="font-bold text-sm flex items-center gap-2">
+                          <span>{verifyResult.title}</span>
+                        </div>
+                        <p className="text-xs leading-relaxed opacity-90">
+                          {verifyResult.message}
+                        </p>
+
+                        {/* Extra Guidance on Duress / Imposter */}
+                        {verifyResult.status === "DURESS_ALERT" && (
+                          <div className="pt-2 mt-2 border-t border-red-200 dark:border-red-800 space-y-1 text-[11px] font-medium text-red-800 dark:text-red-300">
+                            <div>1. Keep calm and do not confront the caller.</div>
+                            <div>2. Do not transfer any money or OTP.</div>
+                            <div>3. Immediately contact cybercrime helpline <strong>1930</strong> or local authorities.</div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Indian Family Protection Playbook */}
+                  <div className="p-6 bg-white dark:bg-[#15171C] border border-gray-200 dark:border-[#252830] rounded-2xl shadow-xs space-y-3">
+                    <h4 className="text-xs font-semibold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                      <Users className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Family Protocol</span>
+                    </h4>
+                    <div className="space-y-2 text-xs text-gray-600 dark:text-gray-400">
+                      <div className="p-2.5 bg-gray-50/70 dark:bg-[#111215] rounded-lg border border-gray-100 dark:border-gray-800 flex gap-2">
+                        <span className="font-semibold text-gray-900 dark:text-white font-mono">1.</span>
+                        <span><strong>The Shared Rule:</strong> Share your family seed once. Agree that no urgent funds will be transferred without today's word.</span>
+                      </div>
+                      <div className="p-2.5 bg-gray-50/70 dark:bg-[#111215] rounded-lg border border-gray-100 dark:border-gray-800 flex gap-2">
+                        <span className="font-semibold text-gray-900 dark:text-white font-mono">2.</span>
+                        <span><strong>The Question:</strong> When a crying voice says <em>"Papa, accident ho gaya hai, turant paise bhejo"</em>, calmly ask: <strong>"Beta, aaj ka safe-word kya hai?"</strong></span>
+                      </div>
+                      <div className="p-2.5 bg-gray-50/70 dark:bg-[#111215] rounded-lg border border-gray-100 dark:border-gray-800 flex gap-2">
+                        <span className="font-semibold text-gray-900 dark:text-white font-mono">3.</span>
+                        <span><strong>Out-of-band security:</strong> Audio and video can be cloned from public clips, but an offline secret known only to your family cannot be guessed.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Family Seed Configuration Modal */}
+              {isSeedModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in-0 duration-200">
+                  <div className="bg-white dark:bg-[#15171C] border border-gray-200 dark:border-[#252830] rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-[#202228]">
+                      <div className="flex items-center gap-2">
+                        <KeyRound className="w-4 h-4 text-gray-900 dark:text-white" />
+                        <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                          Family Shared Secret Seed
+                        </h3>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsSeedModalOpen(false)}
+                        className="p-1 rounded-full text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                      All family members must share the exact same secret seed on their phones so that your daily rotating safe-words always match offline.
+                    </p>
+
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300 uppercase font-mono">
+                        Secret Seed Key
+                      </label>
+                      <input
+                        type="text"
+                        value={newSeedInput}
+                        onChange={(e) => setNewSeedInput(e.target.value.toUpperCase())}
+                        placeholder="e.g. SHARMA-MUMBAI-2026"
+                        className="w-full px-4 py-2.5 font-mono text-xs uppercase bg-gray-50 dark:bg-[#111215] border border-gray-200 dark:border-[#292C36] rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const rand = `CROSSCHECK-${Math.random().toString(36).substring(2, 8).toUpperCase()}-2026`;
+                          setNewSeedInput(rand);
+                        }}
+                        className="text-xs text-blue-600 dark:text-blue-400 font-bold hover:underline"
+                      >
+                        Generate Random Seed
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleCopySeed}
+                        className="text-xs text-gray-600 dark:text-gray-400 font-semibold hover:underline flex items-center gap-1"
+                      >
+                        {copiedSeed ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{copiedSeed ? "Copied" : "Copy Current"}</span>
+                      </button>
+                    </div>
+
+                    <div className="pt-3 border-t border-gray-100 dark:border-[#202228] flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsSeedModalOpen(false)}
+                        className="flex-1 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-[#1A1C22] hover:bg-gray-200 rounded-full transition-all"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSaveCustomSeed(newSeedInput)}
+                        className="flex-1 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-full transition-all"
+                      >
+                        Save & Sync Seed
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -1200,7 +1686,7 @@ function CrosscheckAppContent() {
                   <button
                     type="button"
                     onClick={() => fetchDomainProfile(domainQuery)}
-                    className="px-5 py-2 text-xs font-bold text-white bg-gray-900 hover:bg-black dark:bg-white dark:text-gray-900 rounded-full"
+                    className="px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-full transition-all"
                   >
                     Lookup
                   </button>
@@ -1237,7 +1723,7 @@ function CrosscheckAppContent() {
                     onClick={() => handleThemeToggle("light")}
                     className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-full border transition-all ${
                       settings.theme === "light"
-                        ? "bg-gray-900 text-white border-gray-900 shadow-sm"
+                        ? "bg-blue-600 text-white border-blue-600 shadow-sm"
                         : "bg-white dark:bg-[#111215] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:bg-gray-50"
                     }`}
                   >
@@ -1249,7 +1735,7 @@ function CrosscheckAppContent() {
                     onClick={() => handleThemeToggle("dark")}
                     className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-full border transition-all ${
                       settings.theme === "dark"
-                        ? "bg-white text-gray-900 border-white shadow-sm"
+                        ? "bg-blue-600 text-white border-blue-600 shadow-sm"
                         : "bg-white dark:bg-[#111215] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:bg-gray-50"
                     }`}
                   >
@@ -1268,7 +1754,7 @@ function CrosscheckAppContent() {
                     onClick={() => handleLanguageToggle("en")}
                     className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-full border transition-all ${
                       settings.language === "en"
-                        ? "bg-gray-900 text-white border-gray-900 dark:bg-white dark:text-gray-900 shadow-sm"
+                        ? "bg-blue-600 text-white border-blue-600 dark:bg-blue-600 dark:text-white shadow-sm"
                         : "bg-white dark:bg-[#111215] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:bg-gray-50"
                     }`}
                   >
@@ -1280,7 +1766,7 @@ function CrosscheckAppContent() {
                     onClick={() => handleLanguageToggle("hi")}
                     className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-full border transition-all ${
                       settings.language === "hi"
-                        ? "bg-gray-900 text-white border-gray-900 dark:bg-white dark:text-gray-900 shadow-sm"
+                        ? "bg-blue-600 text-white border-blue-600 dark:bg-blue-600 dark:text-white shadow-sm"
                         : "bg-white dark:bg-[#111215] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:bg-gray-50"
                     }`}
                   >
@@ -1302,7 +1788,7 @@ function CrosscheckAppContent() {
                   />
                   <button
                     onClick={handleSaveName}
-                    className="px-4 py-1.5 text-xs font-bold text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-full"
+                    className="px-4 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 rounded-full transition-all"
                   >
                     Save
                   </button>
