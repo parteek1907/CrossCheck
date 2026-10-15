@@ -250,6 +250,9 @@ function CrosscheckAppContent() {
   const [showManualInput, setShowManualInput] = useState(false);
   const [manualInputText, setManualInputText] = useState("");
   const recognitionRef = useRef(null);
+  const liveTranscriptRef = useRef("");
+  const isStoppingToAnalyzeRef = useRef(false);
+  const analyzeTimeoutRef = useRef(null);
 
   // Legacy safeCode & wordlist for tests / 60s demo mode
   const [wordlist, setWordlist] = useState([]);
@@ -417,6 +420,9 @@ function CrosscheckAppContent() {
           recognitionRef.current.abort();
         } catch {}
       }
+      if (analyzeTimeoutRef.current) {
+        clearTimeout(analyzeTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -436,6 +442,15 @@ function CrosscheckAppContent() {
         } catch {}
       }
 
+      if (analyzeTimeoutRef.current) {
+        clearTimeout(analyzeTimeoutRef.current);
+      }
+
+      liveTranscriptRef.current = "";
+      isStoppingToAnalyzeRef.current = false;
+      setLiveTranscript("");
+      setCallAnalysisResult(null);
+
       const recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
@@ -453,23 +468,17 @@ function CrosscheckAppContent() {
 
       recognition.onstart = () => {
         setIsListening(true);
-        setLiveTranscript("");
-        setCallAnalysisResult(null);
         showToast("Microphone listening... Hold phone near speaker or speak caller words.", "info");
       };
 
       recognition.onresult = (event) => {
-        let interim = "";
-        let final = "";
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            final += event.results[i][0].transcript;
-          } else {
-            interim += event.results[i][0].transcript;
-          }
+        let fullTranscript = "";
+        for (let i = 0; i < event.results.length; ++i) {
+          fullTranscript += event.results[i][0].transcript + " ";
         }
-        const combined = (final || interim).trim();
+        const combined = fullTranscript.trim();
         if (combined) {
+          liveTranscriptRef.current = combined;
           setLiveTranscript(combined);
         }
       };
@@ -479,11 +488,25 @@ function CrosscheckAppContent() {
         if (event.error !== "no-speech") {
           showToast(`Microphone notice: ${event.error}`, "warning");
         }
-        setIsListening(false);
+        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+          setIsListening(false);
+          showToast("Microphone access denied. Please allow microphone permissions or use quick simulation.", "error");
+        }
       };
 
       recognition.onend = () => {
         setIsListening(false);
+        if (isStoppingToAnalyzeRef.current) {
+          isStoppingToAnalyzeRef.current = false;
+          if (analyzeTimeoutRef.current) clearTimeout(analyzeTimeoutRef.current);
+          const captured = (liveTranscriptRef.current || "").trim();
+          if (captured) {
+            handleAnalyzeCallerSpeech(captured);
+          } else {
+            showToast("No speech audio was detected. Hold mic near caller speaker, or choose a simulation below.", "warning");
+            setShowManualInput(true);
+          }
+        }
       };
 
       recognitionRef.current = recognition;
@@ -496,23 +519,49 @@ function CrosscheckAppContent() {
   };
 
   const stopListening = (autoAnalyze = true) => {
+    setIsListening(false);
+
+    if (autoAnalyze) {
+      isStoppingToAnalyzeRef.current = true;
+    }
+
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
-      } catch {}
+      } catch (e) {
+        console.warn("Recognition stop error:", e);
+      }
     }
-    setIsListening(false);
-    if (autoAnalyze && liveTranscript.trim()) {
-      handleAnalyzeCallerSpeech(liveTranscript.trim());
-    }
+
+    if (!autoAnalyze) return;
+
+    // Safety fallback: in case recognition.onend doesn't fire or is delayed by browser
+    if (analyzeTimeoutRef.current) clearTimeout(analyzeTimeoutRef.current);
+    analyzeTimeoutRef.current = setTimeout(() => {
+      if (isStoppingToAnalyzeRef.current) {
+        isStoppingToAnalyzeRef.current = false;
+        const captured = (liveTranscriptRef.current || liveTranscript).trim();
+        if (captured) {
+          handleAnalyzeCallerSpeech(captured);
+        } else {
+          showToast("No speech audio was detected. Hold mic near caller speaker, or choose a simulation below.", "warning");
+          setShowManualInput(true);
+        }
+      }
+    }, 350);
   };
 
   const handleAnalyzeCallerSpeech = async (speechText) => {
-    const textToAnalyze = (speechText || liveTranscript || manualInputText).trim();
+    const textToAnalyze = (speechText || liveTranscriptRef.current || liveTranscript || manualInputText).trim();
     if (!textToAnalyze) {
       showToast("No spoken or written words detected to analyze.", "warning");
+      setShowManualInput(true);
       return;
     }
+
+    // Keep transcript in sync for display
+    setLiveTranscript(textToAnalyze);
+    liveTranscriptRef.current = textToAnalyze;
 
     setIsAnalyzingCall(true);
     setCallAnalysisResult(null);
@@ -2530,6 +2579,7 @@ function CrosscheckAppContent() {
                           type="button"
                           onClick={() => {
                             const text = `Hey, it's me. Don't worry, our family safe-word is ${safeWordData?.code || "GOLDEN LOTUS"}.`;
+                            liveTranscriptRef.current = text;
                             setLiveTranscript(text);
                             handleAnalyzeCallerSpeech(text);
                           }}
@@ -2543,6 +2593,7 @@ function CrosscheckAppContent() {
                           type="button"
                           onClick={() => {
                             const text = "Papa! I had a terrible accident, police are arresting me, please urgently send ₹50,000 on this UPI right now!";
+                            liveTranscriptRef.current = text;
                             setLiveTranscript(text);
                             handleAnalyzeCallerSpeech(text);
                           }}
@@ -2556,6 +2607,7 @@ function CrosscheckAppContent() {
                           type="button"
                           onClick={() => {
                             const text = `I am in urgent trouble, transfer the funds immediately, code is ${safeWordData?.duressCode || "SILVER FALCON"}.`;
+                            liveTranscriptRef.current = text;
                             setLiveTranscript(text);
                             handleAnalyzeCallerSpeech(text);
                           }}
@@ -3199,6 +3251,25 @@ function CrosscheckAppContent() {
 }
 
 export default function CrosscheckApp() {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return (
+      <div className="h-[100dvh] w-full bg-[#F9FAFB] dark:bg-[#0B0C0E] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-7 h-7 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-mono text-gray-400 dark:text-gray-500 tracking-wide">
+            Loading Crosscheck Workspace...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <ToastProvider>
       <CrosscheckAppContent />
