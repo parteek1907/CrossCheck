@@ -49,3 +49,7 @@ __pycache__/
 # scratch
 scratch/
 
+# runtime data & local logs
+data/dummy_store.json
+*.log
+data/*.log
