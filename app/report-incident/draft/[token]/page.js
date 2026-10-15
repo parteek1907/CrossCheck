@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { Lock } from "lucide-react";
 import { getIncidentDraft } from "../../../../lib/dummyStore.js";
@@ -68,5 +69,15 @@ export default async function DraftPage({ params }) {
     );
   }
 
-  return <DraftReviewClient initialDraft={draft} token={token} />;
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center text-xs font-bold text-gray-500">
+          Loading incident review...
+        </div>
+      }
+    >
+      <DraftReviewClient initialDraft={draft} token={token} />
+    </Suspense>
+  );
 }

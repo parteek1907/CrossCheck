@@ -53,7 +53,7 @@ export default function VoiceIntakeStudio({
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const timerIntervalRef = useRef(null);
   const silenceTimerRef = useRef(null);
-  const lastSoundTimeRef = useRef(Date.now());
+  const lastSoundTimeRef = useRef(0);
   const hasSpokenRef = useRef(false);
   const [silenceNotification, setSilenceNotification] = useState("");
 
