@@ -54,6 +54,7 @@ import {
   Edit3,
   RotateCcw,
   CheckCircle2,
+  UserPlus,
 } from "lucide-react";
 
 import {
@@ -83,6 +84,9 @@ import {
   SAFE_WORD_LANGUAGES,
   getSafeWordLanguage,
   setSafeWordLanguage,
+  getFamilyMembers,
+  addFamilyMember,
+  deleteFamilyMember,
 } from "../../lib/safecircle.js";
 import { VerificationModal } from "../../components/VerificationModal";
 import { CommandPalette } from "../../components/CommandPalette";
@@ -94,7 +98,7 @@ const I18N = {
     dashboard: "Dashboard",
     history: "History",
     vault: "Evidence Vault",
-    safeCircle: "Family Safe-Word",
+    safeCircle: "Safe-Word",
     settings: "Settings",
     helpCenter: "Help Center (1930)",
     newVerification: "New verification",
@@ -116,7 +120,7 @@ const I18N = {
     dashboard: "डैशबोर्ड",
     history: "इतिहास",
     vault: "साक्ष्य वॉल्ट",
-    safeCircle: "फ़ैमिली सेफ़-वर्ड",
+    safeCircle: "सेफ़-वर्ड",
     settings: "सेटिंग्स",
     helpCenter: "सहायता केंद्र (1930)",
     newVerification: "नया सत्यापन",
@@ -239,6 +243,13 @@ function CrosscheckAppContent() {
   const [editSafeInput, setEditSafeInput] = useState("");
   const [editDuressInput, setEditDuressInput] = useState("");
 
+  // Family Members Directory State
+  const [familyMembers, setFamilyMembers] = useState([]);
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [newMemberRelation, setNewMemberRelation] = useState("Father");
+  const [newMemberName, setNewMemberName] = useState("");
+  const [newMemberPhone, setNewMemberPhone] = useState("");
+
   // Microphone & Live Call Audio Analysis State
   const [isListening, setIsListening] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState("");
@@ -273,6 +284,7 @@ function CrosscheckAppContent() {
     setLocalSettings(sett);
     setSafeWordLang(getSafeWordLanguage());
     setSafeWordData(getFamilySafeWord(getSafeWordLanguage()));
+    setFamilyMembers(getFamilyMembers());
     if (sett.theme === "dark") {
       document.documentElement.classList.add("dark");
     } else {
@@ -293,6 +305,7 @@ function CrosscheckAppContent() {
     window.addEventListener("crosscheck_profile_updated", refreshLocalData);
     window.addEventListener("crosscheck_settings_updated", refreshLocalData);
     window.addEventListener("crosscheck_vault_updated", refreshLocalData);
+    window.addEventListener("crosscheck_family_members_updated", refreshLocalData);
     window.addEventListener("focus", refreshLocalData);
 
     return () => {
@@ -300,6 +313,7 @@ function CrosscheckAppContent() {
       window.removeEventListener("crosscheck_profile_updated", refreshLocalData);
       window.removeEventListener("crosscheck_settings_updated", refreshLocalData);
       window.removeEventListener("crosscheck_vault_updated", refreshLocalData);
+      window.removeEventListener("crosscheck_family_members_updated", refreshLocalData);
       window.removeEventListener("focus", refreshLocalData);
     };
   }, [refreshLocalData]);
@@ -310,7 +324,7 @@ function CrosscheckAppContent() {
       dashboard: "Dashboard",
       history: "History",
       vault: "Evidence Vault",
-      safecircle: "The Family Safe-Word",
+      safecircle: "Safe-Word",
       settings: "Settings",
       help: "Help Center",
     };
@@ -622,9 +636,46 @@ function CrosscheckAppContent() {
 
   const handleShareToWhatsApp = () => {
     if (!safeWordData) return;
-    const text = `🛡️ *Crosscheck - Family Safe-Word Protocol*\n\nTo defeat AI voice-clone & phone extortion scams, our family is using this authentication word:\n\n🗣️ *Family Safe-Word:* "${safeWordData.code}"\n🤫 *Silent Duress Code:* "${safeWordData.duressCode}"\n\n⚠️ *Family Rule:* If anyone calls asking for urgent money claiming to be family from an unknown number, ALWAYS ask for this safe-word first!`;
+    const text = `🛡️ *Crosscheck - Safe-Word Protocol*\n\nTo defeat AI voice-clone & phone extortion scams, our family is using this authentication word:\n\n🗣️ *Safe-Word:* "${safeWordData.code}"\n🤫 *Silent Duress Code:* "${safeWordData.duressCode}"\n\n⚠️ *Family Rule:* If anyone calls asking for urgent money claiming to be family from an unknown number, ALWAYS ask for this safe-word first!`;
     const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank");
+  };
+
+  const handleAddMemberSubmit = (e) => {
+    e.preventDefault();
+    if (!newMemberName.trim()) {
+      showToast("Please enter the family member's name.", "warning");
+      return;
+    }
+    if (!newMemberPhone.trim()) {
+      showToast("Please enter a contact phone number.", "warning");
+      return;
+    }
+    const updated = addFamilyMember({
+      relation: newMemberRelation,
+      name: newMemberName.trim(),
+      phone: newMemberPhone.trim(),
+    });
+    setFamilyMembers(updated);
+    setIsAddMemberModalOpen(false);
+    setNewMemberName("");
+    setNewMemberPhone("");
+    setNewMemberRelation("Father");
+    showToast(`Added ${newMemberRelation} (${newMemberName.trim()}) to Safe-Word Circle`, "success");
+  };
+
+  const handleDeleteMember = (id, name, relation) => {
+    const updated = deleteFamilyMember(id);
+    setFamilyMembers(updated);
+    showToast(`Removed ${relation || "member"} (${name || ""})`, "info");
+  };
+
+  const handleSendSafeWordToMember = (member) => {
+    const cleanPhone = (member.phone || "").replace(/[^\d+]/g, "");
+    const text = `🛡️ *Crosscheck - Safe-Word Protocol*\n\nHey ${member.name || member.relation},\nTo protect our family from AI voice-clone & extortion scams, remember our safe-word:\n\n🗣️ *Safe-Word:* "${safeWordData?.code || 'GOLDEN LOTUS'}"\n\n⚠️ *Family Rule:* If anyone calls from an unknown number asking for urgent money claiming to be family, ALWAYS ask for this safe-word first!`;
+    const url = `https://wa.me/${cleanPhone.replace("+", "")}?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank");
+    showToast(`Opening WhatsApp to send safe-word to ${member.name || member.relation}...`, "success");
   };
 
   const handleSpeakSafeWord = (word, langId) => {
@@ -901,10 +952,13 @@ function CrosscheckAppContent() {
           {/* Brand Logo & Close for Mobile */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5" title="Crosscheck">
-              <div className="w-8 h-8 rounded-xl bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] flex items-center justify-center flex-shrink-0 shadow-xs border border-[#181818] dark:border-[#F4EFEB]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07L19.07 4.93" />
-                </svg>
+              <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 border border-[#181818]/15 dark:border-[#2D2B27] bg-[#FAF7F0] dark:bg-[#191816] flex items-center justify-center transition-transform hover:scale-105">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/crosscheck_logo.jpg"
+                  alt="Crosscheck Logo"
+                  className="w-full h-full object-cover mix-blend-multiply dark:mix-blend-screen"
+                />
               </div>
               <span className="font-editorial text-2xl font-bold tracking-tight text-[#181818] dark:text-[#F4EFEB] hidden min-[1100px]:inline">
                 Crosscheck
@@ -2246,13 +2300,13 @@ function CrosscheckAppContent() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#181818]/15 dark:border-[#2D2B27]">
                 <div>
                   <div className="text-[10px] font-mono tracking-widest text-[#747068] uppercase font-bold mb-1">
-                    CONFIDENTIAL WIRE • VOICE CLONE INTERCEPT
+                    CONFIDENTIAL WIRE • OUT-OF-BAND PROTOCOL
                   </div>
                   <h2 className="text-2xl sm:text-3xl font-editorial font-bold text-[#181818] dark:text-[#F6F3EB] tracking-tight">
-                    The Family Safe-Word
+                    Safe-Word
                   </h2>
                   <p className="text-xs text-[#55524B] dark:text-[#A8A29E] mt-1 font-serif">
-                    Assume the fake is perfect. Persistent out-of-band authentication for families against voice-clone extortion scams.
+                    Assume the fake is perfect. Persistent out-of-band authentication for your family circle against voice-clone extortion scams.
                   </p>
                 </div>
 
@@ -2269,7 +2323,7 @@ function CrosscheckAppContent() {
                         setSafeWordLanguage(newLang);
                         showToast(`Language set to ${SAFE_WORD_LANGUAGES[newLang]?.label}`, "success");
                       }}
-                      aria-label="Select family safe-word language"
+                      aria-label="Select safe-word language"
                       className="pl-8 pr-7 py-1.5 text-xs font-semibold bg-[#FCFAF6] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] text-[#181818] dark:text-[#F6F3EB] rounded-xl shadow-xs focus:outline-none focus:ring-1 focus:ring-[#181818] dark:focus:ring-[#F4EFEB] transition-all cursor-pointer"
                     >
                       {Object.values(SAFE_WORD_LANGUAGES).map((l) => (
@@ -2284,7 +2338,7 @@ function CrosscheckAppContent() {
                   <button
                     type="button"
                     onClick={handleOpenEditWordModal}
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#181818] dark:text-[#F6F3EB] bg-[#FCFAF6] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] hover:bg-[#EFECE4] dark:hover:bg-[#252320] rounded-xl shadow-xs transition-all active:scale-[0.98]"
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#181818] dark:text-[#F6F3EB] bg-[#FCFAF6] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] hover:bg-[#EFECE4] dark:hover:bg-[#252320] rounded-xl shadow-xs transition-all active:scale-[0.98] cursor-pointer"
                   >
                     <Edit3 className="w-3.5 h-3.5 text-[#181818] dark:text-[#F6F3EB]" />
                     <span>Edit Word</span>
@@ -2294,7 +2348,7 @@ function CrosscheckAppContent() {
                   <button
                     type="button"
                     onClick={handleShareToWhatsApp}
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#2D6A4F] dark:text-[#74C69D] bg-[#EDF7F1] dark:bg-[#1B2820] border border-[#2D6A4F]/30 hover:bg-[#D8EEDF] rounded-xl shadow-xs transition-all active:scale-[0.98]"
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#2D6A4F] dark:text-[#74C69D] bg-[#EDF7F1] dark:bg-[#1B2820] border border-[#2D6A4F]/30 hover:bg-[#D8EEDF] rounded-xl shadow-xs transition-all active:scale-[0.98] cursor-pointer"
                     title="Share safe-word via WhatsApp"
                   >
                     <Share2 className="w-3.5 h-3.5" />
@@ -2303,25 +2357,15 @@ function CrosscheckAppContent() {
                 </div>
               </div>
 
-              {/* Editorial Statement: The Hook & Counter-Intuitive Twist */}
-              <div className="p-6 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/15 dark:border-[#2D2B27] rounded-2xl shadow-sm space-y-3">
-                <blockquote className="text-base sm:text-lg font-editorial italic font-semibold text-[#181818] dark:text-[#F6F3EB] leading-relaxed">
-                  “Voice-clone scams can't be detected, so stop trying and make them irrelevant.”
-                </blockquote>
-                <p className="text-xs text-[#55524B] dark:text-[#A8A29E] leading-relaxed">
-                  <strong className="font-semibold text-[#181818] dark:text-[#F6F3EB]">The Counter-Intuitive Twist:</strong> Every detector assumes a fake can be spotted. Voice and video clones will soon be indistinguishable, so we break that assumption. Borrowing from banking dual-control and espionage duress codes: authentication happens out of band, through something an imposter cannot know.
-                </p>
-              </div>
-
-              {/* Main Interactive Grid: Left Column (Words) | Right Column (Verify Incoming Call via Mic) */}
+              {/* Main Interactive Grid: Left Column (Words & Playbook) | Right Column (Family Members Directory) */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 {/* Left Column: Persistent Safe-Word, Silent Duress Word & Playbook */}
                 <div className="lg:col-span-5 space-y-6">
-                  {/* Card 1: Persistent Family Safe-Word */}
-                  <div className="p-6 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/15 dark:border-[#2D2B27] rounded-2xl shadow-sm space-y-5">
+                  {/* Card 1: Persistent Safe-Word */}
+                  <div className="p-6 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/15 dark:border-[#2D2B27] rounded-2xl shadow-sm space-y-5 newspaper-card">
                     <div className="flex items-center justify-between pb-3 border-b border-[#181818]/10 dark:border-[#2D2B27]">
                       <span className="text-xs font-mono font-bold text-[#181818] dark:text-[#F6F3EB] uppercase tracking-wider">
-                        Family Safe-Word
+                        Active Safe-Word
                       </span>
                       <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] rounded-full">
                         {safeWordData?.isCustom ? "Custom Word" : "Standard Word"}
@@ -2345,7 +2389,7 @@ function CrosscheckAppContent() {
                         <button
                           type="button"
                           onClick={() => handleSpeakSafeWord(safeWordData?.code, safeWordLang)}
-                          className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#181818] dark:text-[#F6F3EB] bg-[#FCFAF6] dark:bg-[#252320] border border-[#181818]/20 dark:border-[#2D2B27] hover:bg-[#EFECE4] rounded-xl transition-all active:scale-[0.98] shadow-xs"
+                          className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#181818] dark:text-[#F6F3EB] bg-[#FCFAF6] dark:bg-[#252320] border border-[#181818]/20 dark:border-[#2D2B27] hover:bg-[#EFECE4] rounded-xl transition-all active:scale-[0.98] shadow-xs cursor-pointer"
                           title="Listen to pronunciation"
                         >
                           <Volume2 className="w-3.5 h-3.5 text-[#181818] dark:text-[#F6F3EB]" />
@@ -2355,7 +2399,7 @@ function CrosscheckAppContent() {
                         <button
                           type="button"
                           onClick={() => handleCopySafeWord(safeWordData?.code, "safe")}
-                          className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#181818] dark:text-[#F6F3EB] bg-[#FCFAF6] dark:bg-[#252320] border border-[#181818]/20 dark:border-[#2D2B27] hover:bg-[#EFECE4] rounded-xl transition-all active:scale-[0.98] shadow-xs"
+                          className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#181818] dark:text-[#F6F3EB] bg-[#FCFAF6] dark:bg-[#252320] border border-[#181818]/20 dark:border-[#2D2B27] hover:bg-[#EFECE4] rounded-xl transition-all active:scale-[0.98] shadow-xs cursor-pointer"
                         >
                           {copiedSafeWord ? (
                             <>
@@ -2373,7 +2417,7 @@ function CrosscheckAppContent() {
                         <button
                           type="button"
                           onClick={handleOpenEditWordModal}
-                          className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#F6F3EB] bg-[#181818] dark:bg-[#F4EFEB] dark:text-[#181818] hover:bg-black rounded-xl transition-all active:scale-[0.98] shadow-xs"
+                          className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-[#F6F3EB] bg-[#181818] dark:bg-[#F4EFEB] dark:text-[#181818] hover:bg-black rounded-xl transition-all active:scale-[0.98] shadow-xs cursor-pointer"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                           <span>Edit</span>
@@ -2387,7 +2431,7 @@ function CrosscheckAppContent() {
                   </div>
 
                   {/* Card 2: The Silent Duress Word (VINTAGE AMBER / TERRACOTTA BROADSHEET) */}
-                  <div className="p-6 bg-[#FFF9EC] dark:bg-[#252018] border border-[#C58F2C]/30 dark:border-[#C58F2C]/40 rounded-2xl shadow-sm space-y-4">
+                  <div className="p-6 bg-[#FFF9EC] dark:bg-[#252018] border border-[#C58F2C]/30 dark:border-[#C58F2C]/40 rounded-2xl shadow-sm space-y-4 newspaper-card">
                     <div className="flex items-center justify-between pb-3 border-b border-[#C58F2C]/20">
                       <div className="flex items-center gap-2">
                         <ShieldAlert className="w-4 h-4 text-[#C58F2C]" />
@@ -2398,7 +2442,7 @@ function CrosscheckAppContent() {
                       <button
                         type="button"
                         onClick={handleOpenEditWordModal}
-                        className="text-xs text-[#C58F2C] font-semibold hover:underline flex items-center gap-1 font-mono"
+                        className="text-xs text-[#C58F2C] font-semibold hover:underline flex items-center gap-1 font-mono cursor-pointer"
                       >
                         <Edit3 className="w-3 h-3" />
                         <span>Edit</span>
@@ -2424,7 +2468,7 @@ function CrosscheckAppContent() {
                         <button
                           type="button"
                           onClick={() => setIsDuressRevealed(!isDuressRevealed)}
-                          className="px-3 py-1.5 text-xs font-semibold text-[#181818] dark:text-[#F6F3EB] bg-[#FCFAF6] dark:bg-[#252320] border border-[#181818]/20 dark:border-[#2D2B27] hover:bg-[#EFECE4] rounded-lg transition-all active:scale-[0.98]"
+                          className="px-3 py-1.5 text-xs font-semibold text-[#181818] dark:text-[#F6F3EB] bg-[#FCFAF6] dark:bg-[#252320] border border-[#181818]/20 dark:border-[#2D2B27] hover:bg-[#EFECE4] rounded-lg transition-all active:scale-[0.98] cursor-pointer"
                         >
                           {isDuressRevealed ? "Hide" : "Reveal"}
                         </button>
@@ -2433,7 +2477,7 @@ function CrosscheckAppContent() {
                           <button
                             type="button"
                             onClick={() => handleCopySafeWord(safeWordData?.duressCode, "duress")}
-                            className="p-1.5 text-xs text-[#181818] dark:text-[#F6F3EB] bg-[#FCFAF6] dark:bg-[#252320] border border-[#181818]/20 dark:border-[#2D2B27] hover:bg-[#EFECE4] rounded-lg transition-all"
+                            className="p-1.5 text-xs text-[#181818] dark:text-[#F6F3EB] bg-[#FCFAF6] dark:bg-[#252320] border border-[#181818]/20 dark:border-[#2D2B27] hover:bg-[#EFECE4] rounded-lg transition-all cursor-pointer"
                             title="Copy duress code"
                           >
                             {copiedDuressWord ? <Check className="w-4 h-4 text-[#2D6A4F]" /> : <Copy className="w-4 h-4" />}
@@ -2444,7 +2488,7 @@ function CrosscheckAppContent() {
                   </div>
 
                   {/* Indian Family Protection Playbook */}
-                  <div className="p-6 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/15 dark:border-[#2D2B27] rounded-2xl shadow-sm space-y-3">
+                  <div className="p-6 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/15 dark:border-[#2D2B27] rounded-2xl shadow-sm space-y-3 newspaper-card">
                     <h4 className="text-xs font-mono font-bold text-[#181818] dark:text-[#F6F3EB] uppercase tracking-wider flex items-center gap-2">
                       <Users className="w-3.5 h-3.5 text-[#181818] dark:text-[#F6F3EB]" />
                       <span>Family Protocol</span>
@@ -2466,303 +2510,221 @@ function CrosscheckAppContent() {
                   </div>
                 </div>
 
-                {/* Right Column: Microphone Listening & Live Phone Call Verifier */}
+                {/* Right Column: Family Members Directory (Added per user request) */}
                 <div className="lg:col-span-7 space-y-6">
-                  <div className="p-6 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/15 dark:border-[#2D2B27] rounded-2xl shadow-sm space-y-5">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <PhoneCall className="w-4 h-4 text-[#181818] dark:text-[#F6F3EB]" />
-                        <h3 className="text-base font-editorial font-bold text-[#181818] dark:text-[#F6F3EB]">
-                          Verify Incoming Call
-                        </h3>
+                  <div className="p-6 bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/15 dark:border-[#2D2B27] rounded-2xl shadow-sm space-y-5 newspaper-card">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#181818]/10 dark:border-[#2D2B27]">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-[#181818] dark:text-[#F6F3EB]" />
+                          <h3 className="text-base font-editorial font-bold text-[#181818] dark:text-[#F6F3EB]">
+                            Family Members ({familyMembers.length})
+                          </h3>
+                        </div>
+                        <p className="text-xs text-[#55524B] dark:text-[#A8A29E] mt-0.5 font-serif">
+                          Designate family members (Father, Mother, Sister, etc.) who share this safe-word.
+                        </p>
                       </div>
-                      <p className="text-xs text-[#55524B] dark:text-[#A8A29E] leading-relaxed font-serif">
-                        Put the caller on speaker. Press the microphone button to listen to the call audio. The AI model inspects the words, checks against your family safe-word, and identifies voice-clone extortion tactics.
-                      </p>
-                    </div>
 
-                    {/* Microphone Listening Central Component */}
-                    <div className="space-y-4">
-                      {!isListening && !isAnalyzingCall && (
-                        <button
-                          type="button"
-                          onClick={startListening}
-                          className="w-full p-6 rounded-2xl bg-[#181818] dark:bg-[#F4EFEB] hover:bg-black text-[#F6F3EB] dark:text-[#181818] shadow-lg border border-[#181818]/30 transition-all flex flex-col items-center justify-center gap-2.5 group cursor-pointer active:scale-[0.98]"
-                        >
-                          <div className="w-14 h-14 rounded-full bg-white/10 dark:bg-black/10 border border-white/20 dark:border-black/20 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
-                            <Mic className="w-7 h-7 text-[#F6F3EB] dark:text-[#181818]" />
-                          </div>
-                          <div className="text-center">
-                            <div className="text-sm font-bold tracking-tight">
-                              Tap to Listen to Caller Speech
-                            </div>
-                            <div className="text-xs text-[#DCD6CD] dark:text-[#55524B] opacity-90 mt-0.5">
-                              Hold phone near speaker or speak caller words into microphone
-                            </div>
-                          </div>
-                        </button>
-                      )}
-
-                      {isListening && (
-                        <div className="w-full p-6 rounded-2xl bg-[#FDF1EE] dark:bg-[#2B1B19] border-2 border-[#C84630] shadow-sm flex flex-col items-center justify-center gap-3">
-                          <div className="relative">
-                            <div className="absolute inset-0 rounded-full bg-[#C84630] animate-ping opacity-30" />
-                            <div className="w-14 h-14 rounded-full bg-[#C84630] flex items-center justify-center relative z-10 shadow-lg">
-                              <Mic className="w-7 h-7 text-white animate-pulse" />
-                            </div>
-                          </div>
-                          <div className="text-center space-y-1">
-                            <div className="flex items-center justify-center gap-2 text-sm font-bold text-[#C84630]">
-                              <span className="w-2.5 h-2.5 rounded-full bg-[#C84630] animate-ping" />
-                              <span>Listening to Incoming Call Audio...</span>
-                            </div>
-                            <p className="text-xs text-[#78281F] dark:text-[#FCDFD7]">
-                              Caller speech is being captured in real-time
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => stopListening(true)}
-                            className="mt-2 px-6 py-2.5 text-xs font-bold text-white bg-[#C84630] hover:bg-[#A8321E] rounded-full shadow-md transition-all cursor-pointer flex items-center gap-2 active:scale-95"
-                          >
-                            <MicOff className="w-3.5 h-3.5" />
-                            <span>Stop & Analyze Call</span>
-                          </button>
-                        </div>
-                      )}
-
-                      {isAnalyzingCall && (
-                        <div className="w-full p-7 rounded-2xl bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] shadow-sm flex flex-col items-center justify-center gap-3">
-                          <RefreshCw className="w-8 h-8 text-[#181818] dark:text-[#F6F3EB] animate-spin" />
-                          <div className="text-center space-y-1">
-                            <div className="text-sm font-bold text-[#181818] dark:text-[#F6F3EB]">
-                              Forensic AI Analyzing Call Audio...
-                            </div>
-                            <div className="text-xs text-[#747068]">
-                              Comparing against family safe-word & identifying voice-clone extortion patterns
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Live Audio Transcript Box */}
-                      {liveTranscript && (
-                        <div className="p-3.5 bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/15 dark:border-[#2D2B27] rounded-xl space-y-1.5 animate-in fade-in-0 shadow-xs">
-                          <div className="text-[10px] font-mono font-semibold uppercase text-[#747068] flex items-center justify-between">
-                            <span>Transcribed Audio Stream</span>
-                            {isListening ? (
-                              <span className="text-[#C84630] font-bold flex items-center gap-1 font-mono">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#C84630] animate-ping" />
-                                LIVE RECORDING
-                              </span>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => handleAnalyzeCallerSpeech(liveTranscript)}
-                                className="text-[#181818] dark:text-[#F6F3EB] font-bold hover:underline font-mono"
-                              >
-                                Re-analyze
-                              </button>
-                            )}
-                          </div>
-                          <p className="text-xs text-[#181818] dark:text-[#F6F3EB] font-medium italic leading-relaxed">
-                            "{liveTranscript}"
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Quick Simulation Chips */}
-                    <div className="space-y-1.5 pt-1">
-                      <span className="text-[11px] font-mono font-medium text-[#747068] block uppercase">
-                        Quick Call Simulation:
-                      </span>
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const text = `Hey, it's me. Don't worry, our family safe-word is ${safeWordData?.code || "GOLDEN LOTUS"}.`;
-                            liveTranscriptRef.current = text;
-                            setLiveTranscript(text);
-                            handleAnalyzeCallerSpeech(text);
-                          }}
-                          className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-[#EDF7F1] hover:bg-[#D8EEDF] text-[#2D6A4F] dark:bg-[#1B2820] dark:text-[#74C69D] border border-[#2D6A4F]/30 transition-colors flex items-center gap-1.5 shadow-2xs active:scale-[0.98]"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>Simulate: Safe-word Match</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const text = "Papa! I had a terrible accident, police are arresting me, please urgently send ₹50,000 on this UPI right now!";
-                            liveTranscriptRef.current = text;
-                            setLiveTranscript(text);
-                            handleAnalyzeCallerSpeech(text);
-                          }}
-                          className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-[#FDF1EE] hover:bg-[#F9DDD8] text-[#C84630] dark:bg-[#2B1B19] dark:text-[#FCDFD7] border border-[#C84630]/30 transition-colors flex items-center gap-1.5 shadow-2xs active:scale-[0.98]"
-                        >
-                          <AlertTriangle className="w-3.5 h-3.5" />
-                          <span>Simulate: Voice-Clone Scam</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const text = `I am in urgent trouble, transfer the funds immediately, code is ${safeWordData?.duressCode || "SILVER FALCON"}.`;
-                            liveTranscriptRef.current = text;
-                            setLiveTranscript(text);
-                            handleAnalyzeCallerSpeech(text);
-                          }}
-                          className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-[#FFF9EC] hover:bg-[#FEF1D4] text-[#C58F2C] dark:bg-[#252018] dark:text-[#FBE5AA] border border-[#C58F2C]/30 transition-colors flex items-center gap-1.5 shadow-2xs active:scale-[0.98]"
-                        >
-                          <ShieldAlert className="w-3.5 h-3.5" />
-                          <span>Simulate: Duress Coercion</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Manual Input Toggle for Noisy Environments or Accessibility */}
-                    <div className="pt-2 border-t border-[#181818]/10 dark:border-[#2D2B27]">
                       <button
                         type="button"
-                        onClick={() => setShowManualInput(!showManualInput)}
-                        className="text-xs text-[#55524B] hover:text-[#181818] dark:hover:text-[#F6F3EB] font-medium flex items-center gap-1 font-mono"
+                        onClick={() => setIsAddMemberModalOpen(true)}
+                        className="inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-bold text-[#F6F3EB] bg-[#181818] hover:bg-black dark:bg-[#F4EFEB] dark:text-[#181818] rounded-xl shadow-xs border border-[#181818]/20 transition-all cursor-pointer active:scale-[0.98]"
                       >
-                        <span>{showManualInput ? "▲ Hide manual typing" : "▼ Or type caller text manually"}</span>
+                        <UserPlus className="w-3.5 h-3.5" />
+                        <span>Add Family Member</span>
                       </button>
-
-                      {showManualInput && (
-                        <div className="mt-3 space-y-2 animate-in fade-in-0">
-                          <input
-                            type="text"
-                            value={manualInputText}
-                            onChange={(e) => setManualInputText(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault();
-                                handleAnalyzeCallerSpeech(manualInputText);
-                              }
-                            }}
-                            placeholder="Type what caller spoke on the phone..."
-                            className="w-full px-4 py-2.5 text-xs bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] rounded-xl text-[#181818] dark:text-[#F6F3EB] placeholder-[#747068] focus:outline-none focus:ring-1 focus:ring-[#181818] dark:focus:ring-[#F4EFEB] font-medium shadow-xs"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleAnalyzeCallerSpeech(manualInputText)}
-                            className="w-full py-2.5 text-xs font-bold text-[#F6F3EB] bg-[#181818] dark:bg-[#F4EFEB] dark:text-[#181818] hover:bg-black rounded-xl transition-all shadow-xs active:scale-[0.98]"
-                          >
-                            Authenticate Typed Speech
-                          </button>
-                        </div>
-                      )}
                     </div>
 
-                    {/* Forensic Call Analysis Verdict Card (VINTAGE STAMP VERDICT) */}
-                    {callAnalysisResult && (
-                      <div
-                        className={`p-5 rounded-2xl border transition-all animate-in fade-in-0 duration-200 space-y-3.5 ${
-                          callAnalysisResult.verdict === "VERIFIED_FAMILY"
-                            ? "bg-[#EDF7F1] dark:bg-[#1B2820] border-[#2D6A4F]/40 text-[#1B4332] dark:text-[#D8F3DC] shadow-sm"
-                            : callAnalysisResult.verdict === "DURESS_ALERT"
-                            ? "bg-[#FFF9EC] dark:bg-[#252018] border-[#C58F2C]/50 text-[#6B4B10] dark:text-[#FBE5AA] shadow-sm"
-                            : "bg-[#FDF1EE] dark:bg-[#2B1B19] border-[#C84630]/40 text-[#78281F] dark:text-[#FCDFD7] shadow-sm"
-                        }`}
-                      >
-                        {/* Verdict Header Badge */}
-                        <div className="flex items-center justify-between flex-wrap gap-2">
-                          <div className="flex items-center gap-2.5">
-                            {callAnalysisResult.verdict === "VERIFIED_FAMILY" ? (
-                              <div className="w-8 h-8 rounded-xl bg-[#2D6A4F] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-                                <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
-                              </div>
-                            ) : callAnalysisResult.verdict === "DURESS_ALERT" ? (
-                              <div className="w-8 h-8 rounded-xl bg-[#C58F2C] text-white flex items-center justify-center flex-shrink-0 animate-pulse shadow-xs">
-                                <ShieldAlert className="w-4 h-4 stroke-[2.5]" />
-                              </div>
-                            ) : (
-                              <div className="w-8 h-8 rounded-xl bg-[#C84630] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-                                <AlertTriangle className="w-4 h-4 stroke-[2.5]" />
-                              </div>
-                            )}
-                            <div>
-                              <div className="text-[10px] uppercase font-mono font-bold tracking-wider opacity-80">
-                                {callAnalysisResult.verdict === "VERIFIED_FAMILY"
-                                  ? "Authentication Confirmed"
-                                  : callAnalysisResult.verdict === "DURESS_ALERT"
-                                  ? "Duress Emergency Alert"
-                                  : "Imposter Scam Alert"}
-                              </div>
-                              <h4 className="text-sm font-editorial font-bold tracking-tight">
-                                {callAnalysisResult.headline}
-                              </h4>
-                            </div>
-                          </div>
-
-                          <div className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#FAF7F0] dark:bg-[#1E1C19] border border-current/20 shadow-xs text-[#181818] dark:text-[#F6F3EB]">
-                            {callAnalysisResult.confidence}% {callAnalysisResult.verdict === "VERIFIED_FAMILY" ? "Confidence" : "Scam Risk"}
-                          </div>
+                    {/* Members List */}
+                    {familyMembers.length === 0 ? (
+                      <div className="p-8 text-center bg-[#FAF7F0] dark:bg-[#1E1C19] rounded-2xl border border-[#181818]/15 dark:border-[#2D2B27] space-y-3">
+                        <div className="w-10 h-10 rounded-full bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] flex items-center justify-center mx-auto">
+                          <Users className="w-5 h-5" />
                         </div>
-
-                        {/* Summary */}
-                        <p className="text-xs leading-relaxed opacity-95">
-                          {callAnalysisResult.summary}
+                        <p className="text-sm font-editorial font-bold text-[#181818] dark:text-[#F6F3EB]">
+                          No Family Members Added Yet
                         </p>
+                        <p className="text-xs text-[#747068] max-w-sm mx-auto">
+                          Add your parents, siblings, or spouse to ensure everyone has access to your safe-word protocol.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setIsAddMemberModalOpen(true)}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#F6F3EB] bg-[#181818] hover:bg-black rounded-xl shadow-xs cursor-pointer active:scale-[0.98]"
+                        >
+                          <UserPlus className="w-3.5 h-3.5" />
+                          <span>Add First Member</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {familyMembers.map((member) => {
+                          const relationBadgeStyle = {
+                            Father: "bg-[#EDF7F1] text-[#2D6A4F] border-[#BCE3CE] dark:bg-[#11241A] dark:text-[#52B788] dark:border-[#1E4631]",
+                            Mother: "bg-[#FDF1EE] text-[#C84630] border-[#F7C4BC] dark:bg-[#2B1512] dark:text-[#E05A44] dark:border-[#52241D]",
+                            Sister: "bg-[#FFF9EC] text-[#C58F2C] border-[#FDE68A] dark:bg-[#2B1E08] dark:text-[#D48806] dark:border-[#573C0C]",
+                            Brother: "bg-[#FAF7F0] text-[#181818] border-[#181818]/20 dark:bg-[#22201D] dark:text-[#F4EFEB]",
+                            Spouse: "bg-[#FDF1EE] text-[#C84630] border-[#F7C4BC] dark:bg-[#2B1512] dark:text-[#E05A44] dark:border-[#52241D]",
+                          }[member.relation] || "bg-[#FAF7F0] text-[#181818] border-[#181818]/20 dark:bg-[#22201D] dark:text-[#F4EFEB]";
 
-                        {/* Red Flags / Threat Signals */}
-                        {callAnalysisResult.threatSignals?.length > 0 && (
-                          <div className="p-3.5 bg-[#FAF7F0]/80 dark:bg-black/30 rounded-xl space-y-1.5 text-xs border border-current/10">
-                            <span className="font-bold text-[11px] font-mono uppercase tracking-wider block">
-                              Detected Threat Signals:
-                            </span>
-                            <ul className="space-y-1 list-disc list-inside">
-                              {callAnalysisResult.threatSignals.map((sig, idx) => (
-                                <li key={idx} className="font-medium">
-                                  {sig}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
-                        {/* Recommended Actions */}
-                        {callAnalysisResult.recommendedActions?.length > 0 && (
-                          <div className="space-y-1 text-xs pt-1">
-                            <span className="font-bold text-[11px] font-mono uppercase tracking-wider block">
-                              Recommended Immediate Action:
-                            </span>
-                            <div className="space-y-1">
-                              {callAnalysisResult.recommendedActions.map((action, idx) => (
-                                <div key={idx} className="flex items-start gap-1.5 font-medium">
-                                  <span className="font-mono font-bold">{idx + 1}.</span>
-                                  <span>{action}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Add to Evidence Vault Action Button for Scams */}
-                        {callAnalysisResult.verdict !== "VERIFIED_FAMILY" && (
-                          <div className="pt-2 border-t border-current/20 flex items-center justify-between flex-wrap gap-2">
-                            <span className="text-[11px] font-mono opacity-85">
-                              Helpline: <strong>1930</strong> (National Cybercrime Reporting)
-                            </span>
-                            <button
-                              type="button"
-                              onClick={handleAddCallToEvidenceVault}
-                              className="px-3.5 py-1.5 text-xs font-bold text-white bg-[#C84630] hover:bg-[#A8321E] rounded-xl shadow-xs transition-all flex items-center gap-1.5 active:scale-[0.98]"
+                          return (
+                            <div
+                              key={member.id}
+                              className="p-4 bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/15 dark:border-[#2D2B27] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs hover:border-[#181818]/30 transition-all"
                             >
-                              <FilePlus className="w-3.5 h-3.5" />
-                              <span>Log to Evidence Vault</span>
-                            </button>
-                          </div>
-                        )}
+                              <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-full bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] flex items-center justify-center font-mono font-bold text-xs flex-shrink-0">
+                                  {member.relation?.[0] || "M"}
+                                </div>
+                                <div className="space-y-0.5">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-editorial font-bold text-sm text-[#181818] dark:text-[#F6F3EB]">
+                                      {member.name}
+                                    </span>
+                                    <span className={`px-2 py-0.5 text-[10px] font-mono font-bold rounded-full border uppercase ${relationBadgeStyle}`}>
+                                      {member.relation}
+                                    </span>
+                                  </div>
+                                  <div className="text-xs font-mono text-[#747068] dark:text-[#9E998F] flex items-center gap-1.5">
+                                    <Phone className="w-3 h-3 opacity-70" />
+                                    <span>{member.phone}</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 self-end sm:self-center">
+                                <button
+                                  type="button"
+                                  onClick={() => handleSendSafeWordToMember(member)}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#2D6A4F] dark:text-[#74C69D] bg-[#EDF7F1] dark:bg-[#1B2820] border border-[#2D6A4F]/30 hover:bg-[#D8EEDF] rounded-lg transition-all shadow-2xs active:scale-[0.98] cursor-pointer"
+                                  title="Send safe-word instructions via WhatsApp"
+                                >
+                                  <Share2 className="w-3 h-3" />
+                                  <span>Send Safe-Word</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteMember(member.id, member.name, member.relation)}
+                                  className="p-1.5 text-[#747068] hover:text-[#C84630] rounded-lg transition-colors cursor-pointer"
+                                  title="Remove family member"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
                 </div>
               </div>
+
+              {/* Add Family Member Modal (BROADSHEET DIALOG) */}
+              {isAddMemberModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in-0 duration-200">
+                  <div className="bg-[#FCFAF6] dark:bg-[#181715] border border-[#181818]/20 dark:border-[#2D2B27] rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-[0_25px_60px_rgba(0,0,0,0.35)] space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-[#181818]/15 dark:border-[#2D2B27]">
+                      <div className="flex items-center gap-2">
+                        <UserPlus className="w-4 h-4 text-[#181818] dark:text-[#F6F3EB]" />
+                        <h3 className="text-base font-editorial font-bold text-[#181818] dark:text-[#F6F3EB]">
+                          Add Family Member
+                        </h3>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsAddMemberModalOpen(false)}
+                        className="p-1.5 rounded-full text-[#747068] hover:text-[#181818] dark:hover:text-[#F6F3EB] cursor-pointer"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <p className="text-xs text-[#55524B] dark:text-[#A8A29E] leading-relaxed font-serif">
+                      Add a trusted loved one to your Safe-Word circle. You can easily share and sync your family code with them.
+                    </p>
+
+                    <form onSubmit={handleAddMemberSubmit} className="space-y-4">
+                      {/* Relation Selection Chips */}
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] font-bold text-[#181818] dark:text-[#F6F3EB] uppercase font-mono">
+                          Relation
+                        </label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {["Father", "Mother", "Sister", "Brother", "Spouse", "Son", "Daughter", "Other"].map((rel) => (
+                            <button
+                              key={rel}
+                              type="button"
+                              onClick={() => {
+                                setNewMemberRelation(rel);
+                                if (!newMemberName || ["Father", "Mother", "Sister", "Brother", "Spouse", "Son", "Daughter", "Other"].includes(newMemberName)) {
+                                  setNewMemberName(rel === "Other" ? "" : rel);
+                                }
+                              }}
+                              className={`px-3 py-1 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                                newMemberRelation === rel
+                                  ? "bg-[#181818] text-[#F6F3EB] dark:bg-[#F4EFEB] dark:text-[#181818] border-[#181818]"
+                                  : "bg-[#FAF7F0] dark:bg-[#1E1C19] text-[#55524B] dark:text-[#9E998F] border-[#181818]/15 hover:border-[#181818]/40"
+                              }`}
+                            >
+                              {rel}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Member Name */}
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-[#181818] dark:text-[#F6F3EB] uppercase font-mono">
+                          Full Name or Call Name *
+                        </label>
+                        <input
+                          type="text"
+                          value={newMemberName}
+                          onChange={(e) => setNewMemberName(e.target.value)}
+                          placeholder="e.g. Papa, Sunita Sharma, Pooja"
+                          className="w-full px-4 py-2.5 text-xs bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] rounded-xl text-[#181818] dark:text-[#F6F3EB] focus:outline-none focus:ring-1 focus:ring-[#181818] dark:focus:ring-[#F4EFEB] shadow-xs font-medium"
+                          required
+                        />
+                      </div>
+
+                      {/* Phone Number */}
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-[#181818] dark:text-[#F6F3EB] uppercase font-mono">
+                          Phone Number (with Country Code) *
+                        </label>
+                        <input
+                          type="tel"
+                          value={newMemberPhone}
+                          onChange={(e) => setNewMemberPhone(e.target.value)}
+                          placeholder="+91 98765 43210"
+                          className="w-full px-4 py-2.5 font-mono text-xs bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] rounded-xl text-[#181818] dark:text-[#F6F3EB] focus:outline-none focus:ring-1 focus:ring-[#181818] dark:focus:ring-[#F4EFEB] shadow-xs"
+                          required
+                        />
+                      </div>
+
+                      {/* Buttons */}
+                      <div className="pt-3 border-t border-[#181818]/15 dark:border-[#2D2B27] flex gap-2.5">
+                        <button
+                          type="button"
+                          onClick={() => setIsAddMemberModalOpen(false)}
+                          className="flex-1 py-2.5 text-xs font-bold text-[#55524B] dark:text-[#A8A29E] bg-[#FAF7F0] dark:bg-[#1E1C19] border border-[#181818]/20 dark:border-[#2D2B27] hover:bg-[#EFECE4] rounded-full transition-all cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="flex-1 py-2.5 text-xs font-bold text-[#F6F3EB] bg-[#181818] dark:bg-[#F4EFEB] dark:text-[#181818] hover:bg-black rounded-full shadow-md border border-[#181818]/30 transition-all active:scale-[0.98] cursor-pointer"
+                        >
+                          Add to Safe-Word Circle
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
 
               {/* Edit Safe-Word & Duress Word Modal (BROADSHEET DIALOG) */}
               {isEditWordModalOpen && (
@@ -2772,7 +2734,7 @@ function CrosscheckAppContent() {
                       <div className="flex items-center gap-2">
                         <Edit3 className="w-4 h-4 text-[#181818] dark:text-[#F6F3EB]" />
                         <h3 className="text-base font-editorial font-bold text-[#181818] dark:text-[#F6F3EB]">
-                          Edit Family Safe-Word
+                          Edit Safe-Word
                         </h3>
                       </div>
                       <button
@@ -2791,7 +2753,7 @@ function CrosscheckAppContent() {
                     <div className="space-y-3.5">
                       <div className="space-y-1">
                         <label className="text-[11px] font-bold text-[#181818] dark:text-[#F6F3EB] uppercase font-mono">
-                          Family Safe-Word (Confirmation)
+                          Safe-Word (Confirmation)
                         </label>
                         <input
                           type="text"
