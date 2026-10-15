@@ -1,0 +1,71 @@
+[
+  {
+    "id": "case-fake-news",
+    "name": "Case 1: Viral Breaking News Graphic",
+    "category": "misinformation",
+    "badge": "Viral Fake News",
+    "claimText": "Government announcing mandatory biometric chip implants for all citizens by November 2026",
+    "description": "Circulating graphic imitating an official news channel lower-third banner with fake ministerial quote.",
+    "sampleImageUrl": "assets/demo_fake_news.jpg",
+    "components": {
+      "sourceReliability": 22,
+      "independentCoverage": 28,
+      "contradictionStrength": 88,
+      "imageAuthenticity": 32,
+      "claimSpecificity": 75
+    },
+    "metadata": {
+      "sourceClusterCount": 3,
+      "totalArticles": 12,
+      "hasDominantContradiction": true,
+      "sampleArticlesQuery": "biometric chip"
+    },
+    "notes": "Major syndicated republishing network repeating identical headline. High contradiction from official fact-checkers."
+  },
+  {
+    "id": "case-scam-dm",
+    "name": "Case 2: Emergency Voice/Imposter Extortion DM",
+    "category": "scam",
+    "badge": "Impersonation Scam",
+    "claimText": "Urgent: Dad is in emergency hospital ward after highway accident. Transfer 45,000 INR immediately to Dr. Sharma UPI: 9811223344@paytm",
+    "description": "WhatsApp forward and SMS panic message containing urgency cues, emotional manipulation, and an unverified UPI handle.",
+    "sampleImageUrl": "assets/demo_scam_dm.jpg",
+    "components": {
+      "sourceReliability": 10,
+      "independentCoverage": 5,
+      "contradictionStrength": 95,
+      "imageAuthenticity": 20,
+      "claimSpecificity": 90
+    },
+    "metadata": {
+      "sourceClusterCount": 0,
+      "totalArticles": 0,
+      "hasDominantContradiction": true,
+      "sampleArticlesQuery": "none"
+    },
+    "notes": "Emergency scam trigger detected. High linguistic coercion, zero verifiable clinical records, known phishing UPI format."
+  },
+  {
+    "id": "case-morphed-photo",
+    "name": "Case 3: Morphed Celebrity / Political Photo",
+    "category": "morphed_image",
+    "badge": "Manipulated Media",
+    "claimText": "Leaked photograph of high-ranking diplomat meeting foreign arms contractor at private resort",
+    "description": "Viral photo showing spliced head-swap, mismatched specular lighting reflections, and missing original camera EXIF tags.",
+    "sampleImageUrl": "assets/demo_morphed_photo.jpg",
+    "components": {
+      "sourceReliability": 25,
+      "independentCoverage": 30,
+      "contradictionStrength": 70,
+      "imageAuthenticity": 28,
+      "claimSpecificity": 65
+    },
+    "metadata": {
+      "sourceClusterCount": 2,
+      "totalArticles": 8,
+      "hasDominantContradiction": true,
+      "sampleArticlesQuery": "diplomat private resort"
+    },
+    "notes": "ELA heatmap highlights localized high-frequency compression block discrepancies around head and collar borders."
+  }
+]

@@ -1,0 +1,122 @@
+[
+  {
+    "id": "art-01",
+    "url": "https://syndicatewire.net/articles/govt-chip-implant-november",
+    "domain": "syndicatewire.net",
+    "title": "Government Announces Mandatory Biometric Chip Implants For Citizens by November",
+    "snippet": "Official claims suggest digital IDs will be replaced with subcutaneous microchips by end of year.",
+    "stance": "supports",
+    "reliability": 0.25,
+    "publishedAt": "2026-10-10T08:00:00Z"
+  },
+  {
+    "id": "art-02",
+    "url": "https://dailybuzzindia.com/breaking/govt-chip-implant-citizens",
+    "domain": "dailybuzzindia.com",
+    "title": "Breaking: Government Announces Mandatory Biometric Chip Implants For Citizens by November",
+    "snippet": "Viral alerts report widespread implementation of digital chip IDs starting November.",
+    "stance": "supports",
+    "reliability": 0.22,
+    "publishedAt": "2026-10-10T08:30:00Z"
+  },
+  {
+    "id": "art-03",
+    "url": "https://syndicatewire.net/feeds/biometric-chip-order-circulates",
+    "domain": "syndicatewire.net",
+    "title": "Mandatory Biometric Chip Implants For Citizens by November Announced",
+    "snippet": "Wire distribution syndicating initial claims across affiliate media partners.",
+    "stance": "supports",
+    "reliability": 0.25,
+    "publishedAt": "2026-10-10T09:00:00Z"
+  },
+  {
+    "id": "art-04",
+    "url": "https://viralnow.co/trending/biometric-microchip-update",
+    "domain": "viralnow.co",
+    "title": "Government Announces Mandatory Biometric Chip Implants For Citizens November Deadline",
+    "snippet": "Social media outrage follows alleged ministerial declaration regarding smart microchip mandates.",
+    "stance": "supports",
+    "reliability": 0.20,
+    "publishedAt": "2026-10-10T09:15:00Z"
+  },
+  {
+    "id": "art-05",
+    "url": "https://dailybuzzindia.com/tech/microchips-for-all-indians",
+    "domain": "dailybuzzindia.com",
+    "title": "Biometric Microchip Mandate: What You Need To Know Before November",
+    "snippet": "Affiliate blog post echoing unverified claims from anonymous telegram forwards.",
+    "stance": "supports",
+    "reliability": 0.22,
+    "publishedAt": "2026-10-10T10:00:00Z"
+  },
+  {
+    "id": "art-06",
+    "url": "https://newsrepost24.org/asia/chip-implant-claim",
+    "domain": "newsrepost24.org",
+    "title": "Government Announces Mandatory Biometric Chip Implants For Citizens",
+    "snippet": "Republished wire report verbatim without editorial verification.",
+    "stance": "supports",
+    "reliability": 0.18,
+    "publishedAt": "2026-10-10T10:30:00Z"
+  },
+  {
+    "id": "art-07",
+    "url": "https://syndicatewire.net/opinions/chip-tracking-concerns",
+    "domain": "syndicatewire.net",
+    "title": "Government Announces Mandatory Biometric Chip Implants: Privacy Activists Respond",
+    "snippet": "Affiliated column commenting on unverified wire story.",
+    "stance": "supports",
+    "reliability": 0.25,
+    "publishedAt": "2026-10-10T11:00:00Z"
+  },
+  {
+    "id": "art-08",
+    "url": "https://factcheck.org/2026/10/no-biometric-chip-mandate",
+    "domain": "factcheck.org",
+    "title": "Fact Check: Ministry Has NOT Issued Any Biometric Chip Order for Citizens",
+    "snippet": "Press Information Bureau and Ministry of Electronics confirm the circulating order is completely fabricated.",
+    "stance": "refutes",
+    "reliability": 0.95,
+    "publishedAt": "2026-10-11T12:00:00Z"
+  },
+  {
+    "id": "art-09",
+    "url": "https://factcheck.org/investigations/anatomy-of-a-chip-hoax",
+    "domain": "factcheck.org",
+    "title": "Anatomy of a Viral Hoax: How A Fake Gazette Notification Traveled Online",
+    "snippet": "Forensic examination of document metadata tracing origin to a satirical Discord group.",
+    "stance": "refutes",
+    "reliability": 0.95,
+    "publishedAt": "2026-10-11T14:30:00Z"
+  },
+  {
+    "id": "art-10",
+    "url": "https://reuters.com/fact-check/debunk-biometric-chip-claims",
+    "domain": "reuters.com",
+    "title": "Reuters Fact Check: Fabricated Circular Claims Mandatory Biometric Implants",
+    "snippet": "Government spokespersons dismiss circulating PDF as forged document with typographical errors.",
+    "stance": "refutes",
+    "reliability": 0.96,
+    "publishedAt": "2026-10-11T15:00:00Z"
+  },
+  {
+    "id": "art-11",
+    "url": "https://reuters.com/technology/cybersecurity/digital-id-misinformation-spreads",
+    "domain": "reuters.com",
+    "title": "Digital ID Misinformation Spreads Across Messaging Channels in Asia",
+    "snippet": "Independent reporting tracking syndication patterns across coordinated click-farming networks.",
+    "stance": "refutes",
+    "reliability": 0.96,
+    "publishedAt": "2026-10-11T16:00:00Z"
+  },
+  {
+    "id": "art-12",
+    "url": "https://viralnow.co/updates/breaking-chip-story",
+    "domain": "viralnow.co",
+    "title": "Government Announces Mandatory Biometric Chip Implants For Citizens",
+    "snippet": "Mirror of syndication feed.",
+    "stance": "supports",
+    "reliability": 0.20,
+    "publishedAt": "2026-10-10T12:00:00Z"
+  }
+]

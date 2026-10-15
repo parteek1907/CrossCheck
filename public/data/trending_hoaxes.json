@@ -1,0 +1,50 @@
+[
+  {
+    "id": "trend-1",
+    "title": "Viral Deepfake Audio of Chief Election Official",
+    "spreadScore": 89,
+    "platform": "WhatsApp / X",
+    "type": "AI Voice Clone",
+    "verdict": "Likely manipulated",
+    "status": "Rapidly Spreading",
+    "summary": "Synthesized voice note alleging manipulated electoral rolls. Audio analysis shows robotic micro-pause pitch anomalies.",
+    "debunkDate": "Today",
+    "reach": "1.2M impressions"
+  },
+  {
+    "id": "trend-2",
+    "title": "Fake Income Tax Department Refund SMS Campaign",
+    "spreadScore": 94,
+    "platform": "SMS / Telegram",
+    "type": "Phishing / Scam",
+    "verdict": "Likely manipulated",
+    "status": "Active Threat",
+    "summary": "Phishing messages claiming immediate tax refund approval via shortened suspicious domain (incometax-gov-in.biz).",
+    "debunkDate": "Yesterday",
+    "reach": "550K recipients"
+  },
+  {
+    "id": "trend-3",
+    "title": "Morphed Celebrity Endorsement for Crypto App",
+    "spreadScore": 76,
+    "platform": "Instagram Reels",
+    "type": "Video Deepfake",
+    "verdict": "Likely manipulated",
+    "status": "Under Investigation",
+    "summary": "Lip-synced video splicing existing interview footage with AI generated audio promoting an unregulated crypto exchange.",
+    "debunkDate": "2 days ago",
+    "reach": "820K views"
+  },
+  {
+    "id": "trend-4",
+    "title": "Fabricated Press Release on Fuel Price Subsidy Revocation",
+    "spreadScore": 62,
+    "platform": "Facebook Groups",
+    "type": "Forged Document",
+    "verdict": "Likely manipulated",
+    "status": "Debunked",
+    "summary": "Photoshop edited circular with mismatched typography and outdated ministry letterhead insignia.",
+    "debunkDate": "3 days ago",
+    "reach": "310K shares"
+  }
+]

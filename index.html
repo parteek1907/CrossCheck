@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrustLens — Real or Rendered? Digital Media Forensics & Trust Protocol</title>
+  <meta name="description" content="In-browser forensic triage for synthetic media, misinformation, and digital impersonation. 100% client-side Error Level Analysis, deterministic scoring, evidence clustering, and tamper-evident vault.">
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- CDN Libraries (Pinned Versions) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js"></script>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="#" class="brand-wrapper" id="brand-home-link" aria-label="TrustLens Home">
+        <div class="brand-icon">TL</div>
+        <div>
+          <h1 class="brand-title">TrustLens</h1>
+          <div class="brand-tagline">Real or Rendered? Offline Forensic Triage</div>
+        </div>
+      </a>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs" role="tablist" aria-label="Application Sections">
+        <button class="nav-btn active" role="tab" aria-selected="true" data-tab="tab-verify" id="nav-verify">
+          <span>🔍</span> Verify Engine
+        </button>
+        <button class="nav-btn" role="tab" aria-selected="false" data-tab="tab-trending" id="nav-trending">
+          <span>📈</span> Circulating Hoaxes
+        </button>
+        <button class="nav-btn" role="tab" aria-selected="false" data-tab="tab-vault" id="nav-vault">
+          <span>🗄️</span> Evidence Vault <span class="nav-badge" id="vault-badge-count">0</span>
+        </button>
+        <button class="nav-btn" role="tab" aria-selected="false" data-tab="tab-safecircle" id="nav-safecircle">
+          <span>🛡️</span> Safe Circle
+        </button>
+        <button class="nav-btn" role="tab" aria-selected="false" data-tab="tab-actionpath" id="nav-actionpath">
+          <span>🚨</span> Action Path
+        </button>
+      </nav>
+
+      <div class="offline-pill" title="All processing occurs in-browser. Zero data leaves your device.">
+        <span class="pulse-dot"></span>
+        <span>100% In-Browser & Offline</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-content">
+
+    <!-- ========================================================
+         TAB 1: VERIFY ENGINE
+         ======================================================== -->
+    <section class="tab-pane active" id="tab-verify" role="tabpanel" aria-labelledby="nav-verify">
+      
+      <!-- Preloaded Demo Cases Banner -->
+      <aside class="demo-preset-banner" aria-label="Preloaded Test Cases">
+        <div class="demo-title-group">
+          <span class="demo-icon-badge">⚡ Quick Demos</span>
+          <span style="font-size: 0.88rem; color: var(--text-muted);">Test preloaded offline cases:</span>
+        </div>
+        <div class="demo-preset-buttons">
+          <button type="button" class="demo-btn" id="btn-demo-case-1">
+            <span>📰</span> Fake News Graphic
+          </button>
+          <button type="button" class="demo-btn" id="btn-demo-case-2">
+            <span>🚨</span> Urgent Scam DM
+          </button>
+          <button type="button" class="demo-btn" id="btn-demo-case-3">
+            <span>📸</span> Morphed Photo
+          </button>
+        </div>
+      </aside>
+
+      <!-- Input Card -->
+      <section class="input-card" aria-labelledby="heading-input">
+        <div class="input-header">
+          <h2 id="heading-input">Digital Media & Claim Triage</h2>
+          <p>Paste a circulating forward, headline, or upload an image to inspect compression anomalies and corroboration clusters.</p>
+        </div>
+
+        <form id="verify-form" onsubmit="return false;">
+          <div class="form-grid">
+            <div>
+              <label for="claim-input" style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-muted);">
+                Content Text / Claim / Headline
+              </label>
+              <textarea 
+                id="claim-input" 
+                class="claim-textarea" 
+                placeholder="Paste circulating claim, WhatsApp forward, social media post, or transcription..."
+                aria-label="Claim text to verify"
+              ></textarea>
+            </div>
+
+            <div>
+              <label style="display:block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-muted);">
+                Image for ELA & EXIF Forensics
+              </label>
+              <div class="image-dropzone" id="dropzone" tabindex="0" role="button" aria-label="Click or drag image to upload">
+                <input type="file" id="file-input" class="hidden-file-input" accept="image/jpeg,image/png,image/webp">
+                <div id="dropzone-prompt">
+                  <div class="dropzone-icon">🖼️</div>
+                  <div class="dropzone-label">Drop image or click to select</div>
+                  <div class="dropzone-sub">Runs Error Level Analysis locally</div>
+                </div>
+                <img id="dropzone-preview" class="dropzone-preview-thumb" alt="Uploaded preview">
+              </div>
+            </div>
+          </div>
+
+          <div class="action-bar">
+            <div style="font-size: 0.8rem; color: var(--text-dim);">
+              <span id="active-case-label">Custom verification</span>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+              <button type="button" class="reset-btn" id="btn-clear-input">Clear</button>
+              <button type="submit" class="primary-verify-btn" id="btn-run-verify">
+                <span>⚡</span> Run TrustLens Audit
+              </button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- Repeat Claim Alert Banner (Conditional) -->
+      <div id="repeat-claim-container" style="display: none;"></div>
+
+      <!-- Results Section (Engineered for 5-Second Readability) -->
+      <section class="results-container" id="results-container" style="display: none;" aria-live="polite">
+        
+        <!-- Primary Verdict Hero Card -->
+        <div class="verdict-hero-card" id="verdict-hero">
+          <div class="verdict-left">
+            <div class="verdict-badge-row">
+              <span class="verdict-pill danger" id="verdict-pill">LIKELY MANIPULATED</span>
+              <span class="report-id-pill" id="report-id-tag">TL-000000</span>
+            </div>
+            <p class="verdict-summary" id="verdict-summary-text">
+              Multiple critical integrity indicators failed or authoritative refutations exist.
+            </p>
+            <div class="caps-banner" id="caps-notice" style="display: none;"></div>
+          </div>
+
+          <div class="verdict-right">
+            <div class="score-display">
+              <span class="score-number" id="final-score-val" style="color: var(--verdict-danger);">35</span>
+              <span class="score-out-of">/ 100</span>
+            </div>
+            <div class="confidence-meter">
+              <span class="confidence-range" id="confidence-range-val">Score 35 ± 8</span>
+              <span class="confidence-badge" id="confidence-level-badge" style="background: rgba(220, 38, 38, 0.2); color: #fca5a5;">High Confidence</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Two Column Deep Analysis Grid -->
+        <div class="analysis-grid">
+          
+          <!-- Column 1: Deterministic 5-Factor Score Breakdown -->
+          <article class="card" aria-labelledby="heading-breakdown">
+            <div class="card-title-bar">
+              <h3 id="heading-breakdown">📊 Deterministic Component Breakdown</h3>
+              <span class="card-badge">100-Point Model</span>
+            </div>
+            <div class="breakdown-list" id="breakdown-list">
+              <!-- Rendered dynamically -->
+            </div>
+          </article>
+
+          <!-- Column 2: In-Browser Image Forensics (ELA & EXIF) -->
+          <article class="card" aria-labelledby="heading-forensics">
+            <div class="card-title-bar">
+              <h3 id="heading-forensics">🔬 In-Browser Image Forensics</h3>
+              <span class="card-badge" id="forensics-status-badge">Error Level Analysis</span>
+            </div>
+
+            <div class="forensics-viewer">
+              <div class="forensics-canvas-row">
+                <div class="image-canvas-card">
+                  <h4>Original Media</h4>
+                  <img id="forensics-original-img" class="preview-canvas" alt="Original analyzed media">
+                </div>
+                <div class="image-canvas-card">
+                  <h4>ELA Difference Heatmap</h4>
+                  <img id="forensics-ela-img" class="preview-canvas" alt="Error Level Analysis Heatmap">
+                </div>
+              </div>
+
+              <div class="forensics-metrics-bar">
+                <span>Anomaly Score: <strong id="ela-anomaly-score">32/100</strong></span>
+                <span>Suspicion: <strong id="ela-suspicion-level" style="color: var(--verdict-safe);">Low Discrepancy</strong></span>
+                <span style="font-size: 0.75rem; color: var(--text-dim);">Amplification: 20x @ 75% Q</span>
+              </div>
+
+              <div class="exif-summary-box" id="exif-box">
+                <div class="exif-tag-row">
+                  <span style="color: var(--text-dim);">Camera Hardware:</span>
+                  <strong id="exif-camera">Not Recorded / Web Forward</strong>
+                </div>
+                <div class="exif-tag-row">
+                  <span style="color: var(--text-dim);">Editing Software:</span>
+                  <strong id="exif-software">None Detected</strong>
+                </div>
+                <div id="exif-flags-container"></div>
+              </div>
+            </div>
+          </article>
+
+        </div>
+
+        <!-- Evidence Clustering & Syndication Card -->
+        <article class="card" aria-labelledby="heading-clustering">
+          <div class="card-title-bar">
+            <h3 id="heading-clustering">🌐 Evidence Clustering & Source Syndication</h3>
+            <span class="card-badge" id="clustering-ratio-badge">Union-Find Model</span>
+          </div>
+
+          <div class="clustering-summary-card">
+            <div class="clustering-headline" id="cluster-headline-text">
+              <span>📰</span> <span id="cluster-summary-title">12 articles, only 3 independent sources</span>
+            </div>
+            <p class="cluster-subtext">
+              Jaccard title similarity (&ge; 0.55) & domain grouping detected syndicated republishing echo chambers.
+            </p>
+          </div>
+
+          <div class="cluster-item-list" id="cluster-items-list">
+            <!-- Dynamically populated -->
+          </div>
+        </article>
+
+        <!-- Mandatory Limits of This Check Notice -->
+        <aside class="limits-notice-banner" role="note" aria-label="Transparency Notice">
+          <strong>⚠️ Limits of this Check (Transparency Disclosure):</strong>
+          Error Level Analysis (ELA) and EXIF inspection are mathematical compression signals, not judicial proof. Automated scoring is intended for rapid citizen triage against known hoaxes, coordinated syndication rings, and manipulation patterns. Simulated items are explicitly labeled.
+        </aside>
+
+        <!-- One-Click Action Row -->
+        <div class="export-actions-row">
+          <button type="button" class="action-btn primary" id="btn-export-pdf">
+            <span>📄</span> Download PDF Trust Report
+          </button>
+          <button type="button" class="action-btn" id="btn-download-share-card">
+            <span>🖼️</span> Export Context Card (PNG)
+          </button>
+          <button type="button" class="action-btn" id="btn-save-vault">
+            <span>🔒</span> Save to Evidence Vault
+          </button>
+          <button type="button" class="action-btn" id="btn-view-actionpath">
+            <span>⚡</span> Incident Action Path
+          </button>
+        </div>
+
+      </section>
+
+    </section>
+
+    <!-- ========================================================
+         TAB 2: CIRCULATING HOAXES (TRENDING PANEL)
+         ======================================================== -->
+    <section class="tab-pane" id="tab-trending" role="tabpanel" aria-labelledby="nav-trending">
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.4rem; font-weight: 800;">Currently Circulating Hoaxes</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">
+          Real-time monitored viral disinformation, voice clones, and fraudulent campaigns actively spreading online.
+        </p>
+      </div>
+
+      <div class="trending-grid" id="trending-grid">
+        <!-- Loaded dynamically from data/trending_hoaxes.json -->
+      </div>
+    </section>
+
+    <!-- ========================================================
+         TAB 3: EVIDENCE VAULT (TAMPER-EVIDENT LEDGER)
+         ======================================================== -->
+    <section class="tab-pane" id="tab-vault" role="tabpanel" aria-labelledby="nav-vault">
+      <div class="vault-header-row">
+        <div>
+          <h2 style="font-size: 1.4rem; font-weight: 800;">Tamper-Evident Evidence Vault</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Cryptographically chained SHA-256 ledger. Each saved report locks its hash to previous entries for legal provenance.
+          </p>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+          <div class="vault-status-indicator" id="vault-status-indicator">
+            <span>🔒</span> <span id="vault-status-text">Ledger Verified</span>
+          </div>
+          <button type="button" class="action-btn" id="btn-verify-vault">
+            <span>🔄</span> Verify Chain
+          </button>
+          <button type="button" class="action-btn" id="btn-clear-vault" style="color: #fca5a5;">
+            <span>🗑️</span> Reset
+          </button>
+        </div>
+      </div>
+
+      <div class="vault-chain-list" id="vault-chain-list">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ========================================================
+         TAB 4: ROTATING SAFE CIRCLE (OFFLINE TWO-WORD TOTP)
+         ======================================================== -->
+    <section class="tab-pane" id="tab-safecircle" role="tabpanel" aria-labelledby="nav-safecircle">
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.4rem; font-weight: 800;">Rotating Safe Circle Code</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">
+          Defend against AI voice clones and emergency imposter calls. Generates 60-second time-based 2-word passcodes completely offline.
+        </p>
+      </div>
+
+      <div class="safecircle-container">
+        
+        <!-- Live Code Generator Box -->
+        <div class="passcode-hero-box">
+          <span style="font-size: 0.82rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">
+            Active Family Authentication Code
+          </span>
+          <div class="two-word-code-display" id="safecircle-active-code">
+            LOADING...
+          </div>
+          
+          <div class="timer-ring-container">
+            <span>Next rotation in: <strong id="safecircle-sec-left">60s</strong></span>
+            <div class="timer-bar-wrap">
+              <div class="timer-bar-fill" id="safecircle-progress-bar" style="width: 100%;"></div>
+            </div>
+          </div>
+
+          <p style="font-size: 0.82rem; color: var(--text-muted); max-width: 420px; margin-top: 1.25rem;">
+            If someone calls claiming to be a family member in an emergency, ask them: <em>"What is the Safe Circle code right now?"</em> If they cannot speak these two words, hang up immediately.
+          </p>
+        </div>
+
+        <!-- Spoken Code Verification Box -->
+        <div class="safecircle-verify-card">
+          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">
+            Verify Caller's Spoken Words
+          </h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Enter the two words recited by the caller to authenticate their identity:
+          </p>
+
+          <form id="safecircle-verify-form" onsubmit="return false;">
+            <div style="margin-bottom: 1rem;">
+              <input 
+                type="text" 
+                id="safecircle-input" 
+                class="claim-textarea" 
+                style="height: 48px; font-size: 1.1rem; font-family: var(--font-mono); text-transform: uppercase;"
+                placeholder="e.g. SILVER-FALCON" 
+                aria-label="Caller spoken code"
+              >
+            </div>
+            <button type="submit" class="primary-verify-btn" id="btn-safecircle-verify" style="width: 100%; justify-content: center;">
+              Authenticate Caller
+            </button>
+          </form>
+
+          <div id="safecircle-verify-result" style="margin-top: 1rem; display: none;"></div>
+
+          <!-- Secret Configuration Toggle -->
+          <details style="margin-top: 1.5rem; font-size: 0.82rem; color: var(--text-dim);">
+            <summary style="cursor: pointer; font-weight: 600; color: var(--text-muted);">
+              Configure Shared Family Secret
+            </summary>
+            <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
+              <input 
+                type="text" 
+                id="safecircle-secret-input" 
+                style="flex: 1; background: var(--bg-input); border: 1px solid var(--border-medium); border-radius: var(--radius-sm); color: #fff; padding: 0.4rem 0.6rem; font-family: var(--font-mono); font-size: 0.8rem;"
+                placeholder="Enter custom family passphrase..."
+              >
+              <button type="button" class="reset-btn" id="btn-save-secret" style="padding: 0.4rem 0.8rem;">
+                Save Secret
+              </button>
+            </div>
+          </details>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================
+         TAB 5: ACTION PATH & HELPLINES
+         ======================================================== -->
+    <section class="tab-pane" id="tab-actionpath" role="tabpanel" aria-labelledby="nav-actionpath">
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.4rem; font-weight: 800;">Emergency Action Path & Statutory Helplines</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">
+          Verified legal protocols, immediate financial freeze hotlines, and official national reporting portals.
+        </p>
+      </div>
+
+      <!-- Quick Dial Helplines Grid -->
+      <div class="helpline-grid">
+        <a href="tel:1930" class="helpline-card">
+          <div class="helpline-num">1930</div>
+          <div class="helpline-name">National Cyber Fraud Helpline</div>
+          <div class="helpline-desc">Immediate financial fraud reporting & inter-bank freeze intervention.</div>
+        </a>
+        <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer" class="helpline-card">
+          <div class="helpline-num">cybercrime.gov.in</div>
+          <div class="helpline-name">National Cyber Crime Portal</div>
+          <div class="helpline-desc">Official Government portal for FIR registration and takedown orders.</div>
+        </a>
+        <a href="https://wa.me/918799711259" target="_blank" rel="noopener noreferrer" class="helpline-card">
+          <div class="helpline-num">+91 87997 11259</div>
+          <div class="helpline-name">PIB Fact Check (WhatsApp)</div>
+          <div class="helpline-desc">Official fact-checking unit for government circulars and public notices.</div>
+        </a>
+        <a href="tel:181" class="helpline-card">
+          <div class="helpline-num">181</div>
+          <div class="helpline-name">Women Cyber Harassment</div>
+          <div class="helpline-desc">24x7 support for non-consensual morphed photography & extortion.</div>
+        </a>
+      </div>
+
+      <!-- Action Protocol Selector & Checklist -->
+      <div class="card">
+        <div class="card-title-bar">
+          <h3 id="actionpath-title">🚨 Incident Protocol: Financial Scam & Extortion</h3>
+          <span class="card-badge" id="actionpath-urgency" style="background: rgba(220, 38, 38, 0.2); color: #fca5a5;">
+            Golden Window: First 2 Hours
+          </span>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem;">
+          <button type="button" class="demo-btn active" id="btn-proto-scam">Financial Scam (1930)</button>
+          <button type="button" class="demo-btn" id="btn-proto-morphed">Morphed Photo / Deepfake</button>
+          <button type="button" class="demo-btn" id="btn-proto-misinfo">Viral Misinformation</button>
+        </div>
+
+        <div id="action-steps-container">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal Drawer for Formal Complaint Draft -->
+  <div class="modal-overlay" id="complaint-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-title">📄 Formal Cybercrime Complaint Draft</h3>
+        <button type="button" class="modal-close-btn" id="btn-close-modal" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.85rem;">
+          This formal complaint letter is pre-filled with your evidence hash, timestamps, and statutory legal citations under the IT Act 2000. Copy and paste directly into <strong>cybercrime.gov.in</strong> or present it to police authorities.
+        </p>
+        <pre class="complaint-pre" id="complaint-text-pre"></pre>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="reset-btn" id="btn-copy-complaint">Copy to Clipboard</button>
+        <button type="button" class="action-btn primary" id="btn-open-portal">Open cybercrime.gov.in</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <p><strong>TrustLens Prototype</strong> — Built for Hackathon Problem Statement <em>"Real or Rendered?"</em></p>
+    <p>Pure Client-Side Architecture (Vanilla HTML5 / CSS3 / ES Modules) • Zero Server Leakage • Web Crypto SHA-256 Ledger</p>
+  </footer>
+
+  <!-- App Bootstrap Module -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

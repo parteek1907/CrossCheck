@@ -1,0 +1,47 @@
+[
+  {
+    "id": "claim-001",
+    "claim": "Government announcing mandatory biometric chip implants for all citizens by November 2026",
+    "category": "Misinformation",
+    "verdict": "Likely manipulated",
+    "debunkUrl": "https://pib.gov.in/factcheck",
+    "firstSeen": "2026-08-12",
+    "notes": "Recycled chain message falsely attributing statements to the Ministry of Electronics & IT."
+  },
+  {
+    "id": "claim-002",
+    "claim": "UNESCO declares national anthem of India as the best national anthem in the world",
+    "category": "Viral Hoax",
+    "verdict": "Likely manipulated",
+    "debunkUrl": "https://unesco.org",
+    "firstSeen": "2024-05-10",
+    "notes": "Long-running evergreen debunked WhatsApp rumor that periodically resurfaces."
+  },
+  {
+    "id": "claim-003",
+    "claim": "Emergency alert: RBI shutting down online UPI transfers from 11 PM to 6 AM daily",
+    "category": "Financial Panic",
+    "verdict": "Likely manipulated",
+    "debunkUrl": "https://rbi.org.in",
+    "firstSeen": "2026-09-01",
+    "notes": "Phishing lure designed to drive panic clicks to fake banking portals."
+  },
+  {
+    "id": "claim-004",
+    "claim": "Drinking boiled garlic water cures 100% of seasonal viral fever variants",
+    "category": "Health Misinformation",
+    "verdict": "Likely manipulated",
+    "debunkUrl": "https://who.int",
+    "firstSeen": "2025-11-14",
+    "notes": "Medical misinformation without empirical clinical basis."
+  },
+  {
+    "id": "claim-005",
+    "claim": "Leaked defense audio reveals military deployment on southern borders",
+    "category": "Deepfake Audio",
+    "verdict": "Likely manipulated",
+    "debunkUrl": "https://factcheck.org",
+    "firstSeen": "2026-10-02",
+    "notes": "Synthesized voice clone using zero-shot TTS model."
+  }
+]
