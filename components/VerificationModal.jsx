@@ -133,8 +133,13 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
     setSelectedFile(file);
 
     if (ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      const preview = URL.createObjectURL(file);
-      setFilePreviewUrl(preview);
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === "string") {
+          setFilePreviewUrl(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
     } else {
       setFilePreviewUrl(null);
     }
@@ -236,6 +241,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
 
     let payload = {};
     let mediaFile = null;
+    let encodedMediaData = null;
 
     try {
       if (activeTab === "text") {
@@ -247,6 +253,7 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
         mediaFile = selectedFile;
         setProgressMessage(`Reading and encoding ${selectedFile.name}...`);
         const mediaData = await readFileAsBase64(selectedFile);
+        encodedMediaData = mediaData;
         const queryText = (fileContext || textContent).trim();
         payload = {
           content: queryText || `Visual verification for attached file: ${selectedFile.name}`,
@@ -304,16 +311,29 @@ export function VerificationModal({ isOpen, onClose, onComplete, initialData = n
             setProgressPct(100);
             setProgressMessage("Audit complete! Opening report...");
 
+            const serverMedia = data.submittedMedia || {};
+            const persistentPreview =
+              serverMedia.previewUrl ||
+              encodedMediaData?.previewUrl ||
+              filePreviewUrl ||
+              null;
+
             const reportData = {
               ...data,
-              submittedMedia: mediaFile
+              submittedMedia: (mediaFile || data.submittedMedia)
                 ? {
-                    name: mediaFile.name,
-                    size: mediaFile.size,
-                    type: mediaFile.type,
-                    previewUrl: filePreviewUrl,
+                    ...serverMedia,
+                    name: mediaFile?.name || serverMedia.name || "submitted_media",
+                    size: mediaFile?.size || serverMedia.size || 0,
+                    type: mediaFile?.type || serverMedia.mimeType || "image/png",
+                    mimeType: mediaFile?.type || serverMedia.mimeType || "image/png",
+                    previewUrl: persistentPreview,
+                    data: serverMedia.data || encodedMediaData?.data || null,
+                    identifiedEntity: serverMedia.identifiedEntity || data.identifiedEntity || null,
+                    visualContext: serverMedia.visualContext || data.visualContext || null,
+                    mediaAssessment: serverMedia.mediaAssessment || data.mediaAssessment || null,
                   }
-                : (data.submittedMedia || null),
+                : null,
             };
 
             setTimeout(() => {

@@ -42,6 +42,7 @@ function ReportDetailContent() {
   const [exifResult, setExifResult] = useState(null);
   const [elaQuality, setElaQuality] = useState(0.75);
   const [elaAmp, setElaAmp] = useState(20);
+  const [imgLoadError, setImgLoadError] = useState(false);
 
   useEffect(() => {
     if (!reportId) return;
@@ -52,15 +53,20 @@ function ReportDetailContent() {
     }
   }, [reportId]);
 
+  const rawMedia = report?.submittedMedia;
+  const mediaImageSrc =
+    rawMedia?.previewUrl ||
+    (rawMedia?.data ? `data:${rawMedia.mimeType || "image/png"};base64,${rawMedia.data}` : null);
+
   useEffect(() => {
-    if (!report?.submittedMedia?.previewUrl) return;
+    if (!mediaImageSrc) return;
 
     let isMounted = true;
     setForensicsStatus("computing");
 
     const timer = setTimeout(async () => {
       try {
-        const imgUrl = report.submittedMedia.previewUrl;
+        const imgUrl = mediaImageSrc;
         const [ela, exif] = await Promise.all([
           performErrorLevelAnalysis(imgUrl, elaQuality, elaAmp).catch((e) => {
             console.warn("ELA error:", e);
@@ -89,7 +95,7 @@ function ReportDetailContent() {
       isMounted = false;
       clearTimeout(timer);
     };
-  }, [report, elaQuality, elaAmp]);
+  }, [mediaImageSrc, elaQuality, elaAmp]);
 
   if (!report) {
     return (
@@ -113,14 +119,22 @@ function ReportDetailContent() {
   }
 
   const verdictText = report.verdict || "Inconclusive";
-  const isManipulated = verdictText.toLowerCase().includes("manipulated") || verdictText.toLowerCase().includes("false");
-  const isNoSigns = verdictText.toLowerCase().includes("no signs") || verdictText.toLowerCase().includes("verified");
+  const isManipulated =
+    verdictText.toLowerCase().includes("manipulated") ||
+    verdictText.toLowerCase().includes("false") ||
+    verdictText.toLowerCase().includes("fake") ||
+    verdictText.toLowerCase().includes("debunked");
+  const isNoSigns =
+    verdictText.toLowerCase().includes("no signs") ||
+    verdictText.toLowerCase().includes("verified") ||
+    verdictText.toLowerCase().includes("true") ||
+    verdictText.toLowerCase().includes("authentic");
 
   const verdictBadgeStyle = isManipulated
-    ? "bg-red-50 text-red-700 border-red-200"
+    ? "bg-red-50 text-red-800 border-red-300 ring-2 ring-red-100"
     : isNoSigns
-    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-    : "bg-amber-50 text-amber-700 border-amber-200";
+    ? "bg-emerald-50 text-emerald-800 border-emerald-300 ring-2 ring-emerald-100"
+    : "bg-amber-50 text-amber-800 border-amber-300 ring-2 ring-amber-100";
 
   const handleToggleSave = () => {
     const updated = toggleSaveReport(report.reportId);
@@ -210,31 +224,35 @@ function ReportDetailContent() {
             A. VERDICT SECTION
             ======================================================== */}
         <section className="p-8 bg-white border border-gray-200 rounded-3xl shadow-xs space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-gray-100">
-            <div>
-              <div className="flex items-center gap-3 mb-3">
-                <span className={`px-3 py-1 text-xs font-extrabold rounded-full border ${verdictBadgeStyle}`}>
-                  {verdictText}
-                </span>
-                <span className="text-xs font-mono text-gray-400">
-                  Audit #{report.reportId}
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b border-gray-100">
+            <div className="space-y-4 flex-1">
+              {/* Prominent High-Visibility Verdict Badge (Audit ID removed) */}
+              <div className="flex items-center gap-3">
+                <span className={`inline-flex items-center gap-2 px-4 py-2 text-sm sm:text-base font-black uppercase tracking-wider rounded-2xl border shadow-2xs ${verdictBadgeStyle}`}>
+                  {isManipulated ? (
+                    <AlertTriangle className="w-5 h-5 text-red-600 stroke-[2.5]" />
+                  ) : isNoSigns ? (
+                    <CheckCircle className="w-5 h-5 text-emerald-600 stroke-[2.5]" />
+                  ) : (
+                    <HelpCircle className="w-5 h-5 text-amber-600 stroke-[2.5]" />
+                  )}
+                  <span>{verdictText}</span>
                 </span>
               </div>
-              <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight leading-snug">
+
+              {/* Claim headline */}
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight leading-snug">
                 {report.claimText || report.inputText}
               </h1>
             </div>
 
-            {/* Score Pill */}
-            <div className="p-5 bg-gray-50 border border-gray-200 rounded-2xl flex flex-col items-center justify-center flex-shrink-0 min-w-[130px]">
-              <span className="text-[10px] font-mono text-gray-500 uppercase tracking-wider font-semibold">
+            {/* Score Pill (Removed +- margin) */}
+            <div className="p-5 bg-gray-50 border border-gray-200 rounded-2xl flex flex-col items-center justify-center flex-shrink-0 min-w-[130px] shadow-2xs">
+              <span className="text-[10px] font-mono text-gray-500 uppercase tracking-wider font-bold">
                 Trust Score
               </span>
-              <div className="text-4xl font-extrabold font-mono text-gray-900 mt-1">
+              <div className={`text-4xl sm:text-5xl font-black font-mono mt-1 ${isManipulated ? "text-red-700" : isNoSigns ? "text-emerald-700" : "text-gray-900"}`}>
                 {report.score ?? 50}
-              </div>
-              <div className="text-xs font-mono text-gray-500 mt-1 font-medium">
-                {report.confidence?.margin ? `±${report.confidence.margin} margin` : "Evaluated"}
               </div>
             </div>
           </div>
@@ -251,7 +269,7 @@ function ReportDetailContent() {
         {/* ========================================================
             B. ANALYZED VISUAL MEDIA & ENTITY RECOGNITION (When Present)
             ======================================================== */}
-        {report.submittedMedia && (report.submittedMedia.previewUrl || report.submittedMedia.identifiedEntity) && (
+        {report.submittedMedia && (mediaImageSrc || report.submittedMedia.identifiedEntity || report.submittedMedia.name) && (
           <section className="p-6 bg-white border border-gray-200 rounded-3xl shadow-xs space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-gray-100">
               <div className="flex items-center gap-2">
@@ -264,19 +282,30 @@ function ReportDetailContent() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-6 items-start">
-              {report.submittedMedia.previewUrl && (
-                <div className="w-full sm:w-64 flex-shrink-0">
-                  <div className="relative rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 shadow-2xs">
+              {mediaImageSrc && !imgLoadError ? (
+                <div className="w-full sm:w-72 flex-shrink-0">
+                  <div className="relative rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 shadow-2xs p-1">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={report.submittedMedia.previewUrl}
+                      src={mediaImageSrc}
                       alt={report.submittedMedia.identifiedEntity || "Submitted visual media"}
-                      className="w-full h-auto max-h-72 object-contain mx-auto"
+                      className="w-full h-auto max-h-80 object-contain rounded-xl mx-auto bg-white"
+                      onError={() => setImgLoadError(true)}
                     />
                   </div>
                   <div className="mt-2 text-[11px] font-mono text-gray-400 text-center truncate">
                     {report.submittedMedia.name || "submitted_media"}
                   </div>
+                </div>
+              ) : (
+                <div className="w-full sm:w-72 flex-shrink-0 p-6 rounded-2xl border border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center text-center">
+                  <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
+                  <span className="text-xs font-bold text-gray-700 truncate max-w-[200px]">
+                    {report.submittedMedia.name || "Visual Media"}
+                  </span>
+                  <span className="text-[11px] text-gray-400 mt-0.5">
+                    Multimodal analysis processed
+                  </span>
                 </div>
               )}
 
@@ -452,9 +481,9 @@ function ReportDetailContent() {
                       />
                     ) : (
                       <div className="text-xs text-gray-500">
-                        {report.submittedMedia.previewUrl ? (
+                        {mediaImageSrc ? (
                           <img
-                            src={report.submittedMedia.previewUrl}
+                            src={mediaImageSrc}
                             alt="Submitted media"
                             className="max-h-[220px] rounded-xl object-contain"
                           />
