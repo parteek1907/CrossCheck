@@ -12,6 +12,7 @@ import { performErrorLevelAnalysis, inspectImageExif } from "../lib/forensics.js
 import { saveToVault, getVaultEntries, verifyVaultIntegrity, generateComplaintDraft, clearVault } from "../lib/vault.js";
 import { generateSafeCircleCode, verifySafeCircleSpokenCode, getSafeCircleSecret, setSafeCircleSecret } from "../lib/safecircle.js";
 import { getActionProtocol, EMERGENCY_HELPLINES } from "../lib/actionpath.js";
+import { PromptInputBox } from "../components/ui/ai-prompt-box";
 
 export default function ProofDeskApp() {
   const [activeNav, setActiveNav] = useState("analytics");
@@ -744,51 +745,24 @@ export default function ProofDeskApp() {
                 </button>
               </div>
 
-              {/* INPUTS */}
-              <div className="input-two-col">
-                <div>
-                  <label style={{ display: "block", fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--text-muted)", marginBottom: "0.35rem" }}>
-                    CONTENT / CLAIM TEXT TO AUDIT
-                  </label>
-                  <textarea
-                    className="editor-textarea"
-                    value={claimText}
-                    onChange={(e) => setClaimText(e.target.value)}
-                    placeholder="Paste circulating claim, transcript, or social alert..."
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: "block", fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--text-muted)", marginBottom: "0.35rem" }}>
-                    MEDIA FORENSICS ASSET (ELA)
-                  </label>
-                  <div
-                    className="dropzone-box"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      style={{ display: "none" }}
-                      onChange={handleFileUpload}
-                    />
-                    <div style={{ fontSize: "1.4rem", marginBottom: "0.2rem" }}>🖼️</div>
-                    <div style={{ fontSize: "0.78rem", fontWeight: 600 }}>Click or drop image</div>
-                    <div style={{ fontSize: "0.7rem", color: "var(--text-dim)" }}>Runs ELA in-browser</div>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.6rem" }}>
-                <button
-                  type="button"
-                  className="btn-black-primary"
-                  disabled={isAnalyzing}
-                  onClick={() => executeAudit(claimText, imagePreview)}
-                >
-                  {isAnalyzing ? "Processing In-Browser..." : "⚡ Execute Proof Desk Audit"}
-                </button>
+              {/* ADVANCED AI PROMPT BOX (SHADCN / TAILWIND) */}
+              <div style={{ margin: "1.25rem 0" }}>
+                <PromptInputBox
+                  placeholder="Paste circulating claim, transcript, or attach suspicious media to verify..."
+                  isLoading={isAnalyzing}
+                  onSend={(message, files) => {
+                    let text = message;
+                    let img = imagePreview;
+                    if (files && files.length > 0) {
+                      const file = files[0];
+                      img = URL.createObjectURL(file);
+                      setImagePreview(img);
+                      setActiveCaseIdx(-1);
+                    }
+                    setClaimText(text);
+                    executeAudit(text || (files && files[0] ? files[0].name : "Circulating media record"), img);
+                  }}
+                />
               </div>
 
               {/* REPEAT CLAIM WARNING */}

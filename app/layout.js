@@ -2,8 +2,8 @@ import Script from "next/script";
 import "./globals.css";
 
 export const metadata = {
-  title: "TrustLens — Real or Rendered? · Proof Desk",
-  description: "Editorial in-browser digital media forensics, deterministic trust scoring, evidence clustering, and tamper-evident proof vault.",
+  title: "Crosscheck — Real-Time Fact Check & Forensics Desk",
+  description: "Crosscheck: In-browser digital media forensics, deterministic trust scoring, evidence clustering, and tamper-evident proof vault.",
 };
 
 export default function RootLayout({ children }) {
