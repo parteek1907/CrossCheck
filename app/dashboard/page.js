@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   LayoutDashboard,
   History as HistoryIcon,
@@ -32,6 +33,17 @@ import {
   Moon,
   Languages,
   Check,
+  LogOut,
+  ShieldAlert,
+  MessageSquare,
+  Phone,
+  PhoneCall,
+  Smartphone,
+  Mic,
+  Loader2,
+  Copy,
+  CheckCircle2,
+  Zap,
 } from "lucide-react";
 
 import {
@@ -76,6 +88,7 @@ const I18N = {
     quickDropzoneHint: "Click to start check or drag & drop a file here directly",
     recentVerifications: "Recent verifications",
     runFirstCheck: "Run your first check",
+    logout: "Log out",
   },
   hi: {
     dashboard: "डैशबोर्ड",
@@ -99,6 +112,7 @@ const I18N = {
     quickDropzoneHint: "सत्यापन शुरू करने के लिए क्लिक करें या फ़ाइल यहाँ छोड़ें",
     recentVerifications: "हाल के सत्यापन",
     runFirstCheck: "पहला सत्यापन चलाएं",
+    logout: "लॉग आउट",
   },
 };
 
@@ -121,6 +135,22 @@ function CrosscheckAppContent() {
 
   // Settings: Theme & Language
   const [settings, setLocalSettings] = useState({ theme: "light", language: "en" });
+
+  // WhatsApp Linking & Demo Intake state (Step 7)
+  const [whatsappLink, setWhatsappLink] = useState({ authenticated: true, linked: false, phoneNumber: null });
+  const [whatsappPhoneInput, setWhatsappPhoneInput] = useState("");
+  const [whatsappCodeInput, setWhatsappCodeInput] = useState("");
+  const [generatedCode, setGeneratedCode] = useState(null);
+  const [codeExpiresAt, setCodeExpiresAt] = useState(null);
+  const [isLinkingLoading, setIsLinkingLoading] = useState(false);
+  const [linkingError, setLinkingError] = useState("");
+  const [linkingSuccess, setLinkingSuccess] = useState("");
+
+  // Demo mode state
+  const [demoLoading, setDemoLoading] = useState(false);
+  const [customNarrative, setCustomNarrative] = useState("");
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [demoResult, setDemoResult] = useState(null);
 
   // Loading skeleton state
   const [isLoading, setIsLoading] = useState(true);
@@ -171,13 +201,41 @@ function CrosscheckAppContent() {
   }, []);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const p = new URLSearchParams(window.location.search).get("nav");
+      if (p && ["dashboard", "history", "vault", "safecircle", "clustering", "settings", "help"].includes(p)) {
+        setActiveNav(p);
+      }
+    }
     refreshLocalData();
     setIsLoading(false);
+
+    fetch("/api/auth/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.user) {
+          setUserProfile(data.user);
+          setTempName(data.user.displayName || "User");
+        }
+      })
+      .catch(() => {});
 
     fetch("/data/wordlist.json")
       .then((r) => r.json())
       .then((words) => setWordlist(words))
       .catch(() => setWordlist([]));
+
+    fetch("/api/whatsapp/link")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data) {
+          setWhatsappLink(data);
+          if (data.phoneNumber) {
+            setWhatsappPhoneInput(data.phoneNumber);
+          }
+        }
+      })
+      .catch(() => {});
 
     window.addEventListener("crosscheck_reports_updated", refreshLocalData);
     window.addEventListener("crosscheck_profile_updated", refreshLocalData);
@@ -286,6 +344,17 @@ function CrosscheckAppContent() {
     showToast(lang === "hi" ? "भाषा बदलकर हिन्दी की गई" : "Language switched to English", "info");
   };
 
+  const handleLogout = async () => {
+    setIsMobileDrawerOpen(false);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // Ignore
+    }
+    showToast("Logged out of session", "info");
+    router.push("/login");
+  };
+
   const handleVerificationComplete = (report) => {
     saveStoredReport(report);
     refreshLocalData();
@@ -344,6 +413,140 @@ function CrosscheckAppContent() {
       return <LinkIcon className="w-3.5 h-3.5 text-gray-400" title="Web Link" />;
     }
     return <FileText className="w-3.5 h-3.5 text-gray-400" title="Text Statement" />;
+  };
+
+  // WhatsApp Linking Actions (Step 7)
+  const formatPhone = (num) => {
+    if (!num) return "";
+    const clean = String(num).replace(/[^0-9]/g, "");
+    if (clean.length === 12 && clean.startsWith("91")) {
+      return `+91 ${clean.slice(2, 7)} ${clean.slice(7)}`;
+    }
+    if (clean.length === 10) {
+      return `+91 ${clean.slice(0, 5)} ${clean.slice(5)}`;
+    }
+    return String(num).startsWith("+") ? num : `+${num}`;
+  };
+
+  const handleGenerateCode = async () => {
+    setLinkingError("");
+    setLinkingSuccess("");
+    const clean = (whatsappPhoneInput || "").replace(/[^0-9]/g, "");
+    if (clean.length < 10) {
+      setLinkingError("Please enter a valid 10-digit WhatsApp phone number with country code.");
+      return;
+    }
+    setIsLinkingLoading(true);
+    try {
+      const res = await fetch("/api/whatsapp/link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "generate_code", phoneNumber: whatsappPhoneInput }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to generate code");
+      setGeneratedCode(data.code);
+      setCodeExpiresAt(data.expiresAt);
+      setLinkingSuccess(`Verification code generated: ${data.code}`);
+      showToast(`Verification code for ${whatsappPhoneInput}: ${data.code}`, "success");
+    } catch (err) {
+      setLinkingError(err.message);
+      showToast(err.message, "error");
+    } finally {
+      setIsLinkingLoading(false);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    setLinkingError("");
+    setLinkingSuccess("");
+    if (!whatsappCodeInput || whatsappCodeInput.trim().length !== 6) {
+      setLinkingError("Please enter the 6-digit verification code.");
+      return;
+    }
+    setIsLinkingLoading(true);
+    try {
+      const res = await fetch("/api/whatsapp/link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "verify_code",
+          phoneNumber: whatsappPhoneInput,
+          code: whatsappCodeInput.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Verification failed");
+      setWhatsappLink({
+        authenticated: true,
+        linked: true,
+        phoneNumber: data.phoneNumber,
+        linkedAt: data.linkedAt,
+      });
+      setGeneratedCode(null);
+      setWhatsappCodeInput("");
+      setLinkingSuccess("WhatsApp account successfully linked to Crosscheck!");
+      showToast("WhatsApp account successfully linked!", "success");
+    } catch (err) {
+      setLinkingError(err.message);
+      showToast(err.message, "error");
+    } finally {
+      setIsLinkingLoading(false);
+    }
+  };
+
+  const handleUnlinkWhatsApp = async () => {
+    if (!confirm("Are you sure you want to disconnect WhatsApp from this account?")) return;
+    setIsLinkingLoading(true);
+    try {
+      const res = await fetch("/api/whatsapp/link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "unlink" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Unlink failed");
+      setWhatsappLink({ authenticated: true, linked: false, phoneNumber: null, linkedAt: null });
+      setGeneratedCode(null);
+      setWhatsappCodeInput("");
+      setLinkingSuccess("WhatsApp account disconnected.");
+      showToast("WhatsApp account disconnected", "info");
+    } catch (err) {
+      setLinkingError(err.message);
+      showToast(err.message, "error");
+    } finally {
+      setIsLinkingLoading(false);
+    }
+  };
+
+  // WhatsApp Demo Trigger Action (Step 7)
+  const handleRunDemo = async (type = "voice") => {
+    setDemoLoading(true);
+    setDemoResult(null);
+    try {
+      const res = await fetch("/api/whatsapp/demo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type,
+          narrative: customNarrative.trim() || undefined,
+          phoneNumber: whatsappLink.phoneNumber || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Demo simulation failed");
+      setDemoResult(data);
+      showToast(
+        type === "voice"
+          ? "Voice note transcribed & incident extracted!"
+          : "Text report processed & draft prepared!",
+        "success"
+      );
+    } catch (err) {
+      showToast(err.message || "Failed running demo", "error");
+    } finally {
+      setDemoLoading(false);
+    }
   };
 
   const filteredReports = reports.filter((r) => {
@@ -529,14 +732,25 @@ function CrosscheckAppContent() {
             </span>
           </button>
 
+          {/* Logout Button */}
+          <button
+            type="button"
+            title={t.logout}
+            onClick={handleLogout}
+            className="w-full h-10 px-3 rounded-lg flex items-center gap-3 text-xs font-semibold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
+          >
+            <LogOut className="w-5 h-5 flex-shrink-0" />
+            <span className="hidden min-[1100px]:inline">{t.logout}</span>
+          </button>
+
           {/* User Chip */}
           <div className="pt-2">
             <div
-              title={`${userProfile.displayName || "Guest"} — Stored on this device`}
+              title={`${userProfile.displayName || "User"} — Saved to account • Safe Circle secret on this device`}
               className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#16181E] border border-gray-200 dark:border-[#252830] flex items-center gap-2.5"
             >
               <div className="w-7 h-7 rounded-full bg-gray-900 text-white dark:bg-white dark:text-gray-900 flex items-center justify-center text-xs font-bold flex-shrink-0">
-                {userProfile.displayName ? userProfile.displayName.slice(0, 1).toUpperCase() : "G"}
+                {userProfile.displayName ? userProfile.displayName.slice(0, 1).toUpperCase() : "U"}
               </div>
               <div className="hidden min-[1100px]:block overflow-hidden flex-1">
                 {isEditingName ? (
@@ -563,20 +777,29 @@ function CrosscheckAppContent() {
                     title="Click to edit name"
                   >
                     <span className="text-xs font-bold text-gray-900 dark:text-white truncate block">
-                      {userProfile.displayName || "Guest"}
+                      {userProfile.displayName || "User"}
                     </span>
                     <span className="text-[10px] text-gray-400 block truncate">
-                      Stored on this device
+                      {userProfile.email || "Saved to account"}
                     </span>
                   </div>
                 )}
               </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                title={t.logout}
+                className="hidden min-[1100px]:flex p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors flex-shrink-0"
+                aria-label={t.logout}
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
 
           {/* Small Privacy Note */}
           <p className="hidden min-[1100px]:block text-[10px] text-gray-400 text-center pt-1 font-medium">
-            Images are analysed on your device.
+            Reports saved to account • Safe Circle secret on device
           </p>
         </div>
       </aside>
@@ -592,14 +815,34 @@ function CrosscheckAppContent() {
               ======================================================== */}
           {activeNav === "dashboard" && (
             <div className="space-y-8 animate-in fade-in-0 duration-200">
-              {/* Page Header (No buttons here!) */}
-              <div className="pl-12 md:pl-0">
-                <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                  {t.dashboard}
-                </h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Real-time digital forensics, open wire corroboration, and tamper-evident proof ledger.
-                </p>
+              {/* Page Header */}
+              <div className="flex items-start justify-between pl-12 md:pl-0">
+                <div>
+                  <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                    {t.dashboard}
+                  </h1>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Real-time digital forensics, open wire corroboration, and tamper-evident proof ledger.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <Link
+                    href="/report-incident"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-full shadow-2xs transition-colors"
+                  >
+                    <ShieldAlert className="w-3.5 h-3.5" />
+                    <span>Report a scam</span>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    title={t.logout}
+                    className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 bg-white dark:bg-[#16181E] border border-gray-200 dark:border-[#252830] hover:border-red-200 dark:hover:border-red-900/40 rounded-full shadow-2xs transition-colors"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>{t.logout}</span>
+                  </button>
+                </div>
               </div>
 
               {/* QUICK-CHECK DROPZONE CARD (STEP 5) */}
@@ -628,6 +871,99 @@ function CrosscheckAppContent() {
                 <kbd className="hidden sm:inline px-2 py-1 text-[10px] font-mono text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/10 rounded-md border border-gray-200 dark:border-gray-800">
                   Press N
                 </kbd>
+              </div>
+
+              {/* WHATSAPP INTAKE CARD & DEMO BANNER (STEP 7) */}
+              <div className="space-y-3">
+                <div className="p-5 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent border border-emerald-500/25 dark:border-emerald-500/35 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-2xs">
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                      <MessageSquare className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[10px] font-mono uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                          WhatsApp Intake Channel
+                        </span>
+                        {whatsappLink.linked ? (
+                          <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                            Connected ({formatPhone(whatsappLink.phoneNumber)})
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-mono text-gray-500 dark:text-gray-400">
+                            +1 (555) 123-4567 (Business Account)
+                          </span>
+                        )}
+                      </div>
+                      <h2 className="text-xs font-bold text-gray-900 dark:text-white mt-1">
+                        Tell Crosscheck on WhatsApp: Voice Note or Text Intake
+                      </h2>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 max-w-xl">
+                        Victims can voice record in Hindi/English or text what happened. Crosscheck auto-transcribes with Groq Whisper, extracts financial & legal metadata, alerts 1930 Golden Hour, and issues single-use Police & Bank complaint packs.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 w-full md:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => handleRunDemo("voice")}
+                      disabled={demoLoading}
+                      className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-full shadow-2xs transition-all cursor-pointer"
+                    >
+                      {demoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mic className="w-3.5 h-3.5" />}
+                      <span>Test Voice Demo</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveNav("settings")}
+                      className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-[#16181E] border border-gray-200 dark:border-[#252830] hover:bg-gray-50 dark:hover:bg-white/5 rounded-full shadow-2xs transition-all cursor-pointer"
+                    >
+                      <Smartphone className="w-3.5 h-3.5" />
+                      <span>{whatsappLink.linked ? "Settings" : "Connect WhatsApp"}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* DEMO RESULT INTAKE BANNER */}
+                {demoResult && (
+                  <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl animate-in fade-in-0 duration-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        <span className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
+                          {demoResult.simulatedType === "voice" ? "Voice Note Transcribed & Incident Draft Created" : "Text Narrative Extracted & Draft Created"}
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                          Token: {demoResult.token.slice(0, 8)}...
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-emerald-800 dark:text-emerald-300">
+                        {demoResult.incident?.incident_type ? `Type: ${demoResult.incident.incident_type}` : ""}
+                        {demoResult.incident?.amount_inr ? ` • Loss: ₹${Number(demoResult.incident.amount_inr).toLocaleString("en-IN")}` : ""}
+                        {demoResult.incident?.bank_name ? ` • Bank: ${demoResult.incident.bank_name}` : ""}
+                        {demoResult.incident?.transaction_ids?.[0] ? ` • UTR: ${demoResult.incident.transaction_ids[0]}` : ""}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 w-full md:w-auto">
+                      <Link
+                        href={`/report-incident/draft/${demoResult.token}`}
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-full shadow-2xs transition-colors"
+                      >
+                        <span>Review Pre-Filled Pack</span>
+                        <ArrowUpRight className="w-3.5 h-3.5" />
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setDemoResult(null)}
+                        className="p-2 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 rounded-full"
+                        title="Dismiss"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* KPI ROW (4 EQUAL HEIGHT CARDS, DESKTOP 4, TABLET 2, MOBILE 1) */}
@@ -829,7 +1165,7 @@ function CrosscheckAppContent() {
 
                   <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-400 font-mono flex items-center justify-between">
                     <span>Active Storage:</span>
-                    <span className="text-gray-900 dark:text-white font-bold">Stored on this device</span>
+                    <span className="text-gray-900 dark:text-white font-bold">Saved to account</span>
                   </div>
                 </div>
               </div>
@@ -839,7 +1175,7 @@ function CrosscheckAppContent() {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="text-sm font-bold text-gray-900 dark:text-white">{t.recentVerifications}</h3>
-                    <p className="text-xs text-gray-400">Live cryptographic proof records stored on this device</p>
+                    <p className="text-xs text-gray-400">Live cryptographic proof records saved to your account</p>
                   </div>
                   {reports.length > 0 && (
                     <button
@@ -1307,6 +1643,263 @@ function CrosscheckAppContent() {
                     Save
                   </button>
                 </div>
+              </div>
+
+              {/* ========================================================
+                  WHATSAPP CHANNEL & ACCOUNT LINKING (STEP 7)
+                  ======================================================== */}
+              <div className="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                    <MessageSquare className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-gray-900 dark:text-white">
+                      WhatsApp Channel & Account Linking
+                    </h3>
+                    <p className="text-[11px] text-gray-400">
+                      Link your WhatsApp number to associate voice notes and text reports with your Crosscheck account.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Linking Status Box */}
+                {whatsappLink.linked ? (
+                  <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
+                          Connected: {formatPhone(whatsappLink.phoneNumber)}
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
+                          Verified
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
+                        Incident drafts created via WhatsApp messages or voice notes from this phone will automatically link to your workspace.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleUnlinkWhatsApp}
+                      disabled={isLinkingLoading}
+                      className="px-3.5 py-1.5 text-xs font-bold text-red-700 dark:text-red-300 bg-white dark:bg-red-950/50 border border-red-200 dark:border-red-900 rounded-full hover:bg-red-50 dark:hover:bg-red-900/40 transition-colors disabled:opacity-50"
+                    >
+                      Disconnect
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-gray-50 dark:bg-[#111215] border border-gray-200 dark:border-[#252830] rounded-xl space-y-3">
+                    <div className="max-w-md space-y-2">
+                      <label className="block text-[11px] font-bold text-gray-700 dark:text-gray-300">
+                        Connect WhatsApp Phone Number
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="tel"
+                          value={whatsappPhoneInput}
+                          onChange={(e) => setWhatsappPhoneInput(e.target.value)}
+                          placeholder="e.g. +91 98765 43210"
+                          className="flex-1 px-3 py-1.5 text-xs bg-white dark:bg-[#16181E] border border-gray-200 dark:border-[#252830] rounded-full focus:outline-none focus:border-gray-900 dark:focus:border-white font-mono"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleGenerateCode}
+                          disabled={isLinkingLoading}
+                          className="px-4 py-1.5 text-xs font-bold text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-full hover:bg-black dark:hover:bg-gray-100 disabled:opacity-50 transition-all flex items-center gap-1.5"
+                        >
+                          {isLinkingLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                          <span>Request Code</span>
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-gray-400">
+                        Include country code without special characters (e.g., +91 or 919876543210).
+                      </p>
+                    </div>
+
+                    {/* One-Time Code Display & Verification */}
+                    {generatedCode && (
+                      <div className="p-3.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl space-y-2 animate-in fade-in-0 duration-200">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-amber-900 dark:text-amber-200">
+                            Verification Code (Simulated WhatsApp Message):
+                          </span>
+                          <span className="text-base font-extrabold font-mono tracking-widest text-amber-900 dark:text-amber-100 bg-amber-100 dark:bg-amber-900/60 px-2.5 py-0.5 rounded-md border border-amber-300 dark:border-amber-700">
+                            {generatedCode}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-amber-700 dark:text-amber-400">
+                          Enter this 6-digit code below to verify your WhatsApp channel (valid for 10 minutes).
+                        </p>
+                        <div className="flex gap-2 pt-1 max-w-sm">
+                          <input
+                            type="text"
+                            maxLength={6}
+                            value={whatsappCodeInput}
+                            onChange={(e) => setWhatsappCodeInput(e.target.value)}
+                            placeholder="Enter 6-digit code"
+                            className="w-36 px-3 py-1.5 text-xs bg-white dark:bg-[#16181E] border border-amber-300 dark:border-amber-800 rounded-full focus:outline-none font-mono tracking-widest text-center font-bold"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleVerifyCode}
+                            disabled={isLinkingLoading}
+                            className="px-4 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-full disabled:opacity-50 transition-all flex items-center gap-1.5"
+                          >
+                            {isLinkingLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                            <span>Verify & Link</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {linkingError && (
+                      <p className="text-xs font-semibold text-red-600 dark:text-red-400">
+                        ⚠️ {linkingError}
+                      </p>
+                    )}
+                    {linkingSuccess && (
+                      <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                        ✅ {linkingSuccess}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* ========================================================
+                    INTERACTIVE DEMO MODE: SIMULATE WHATSAPP INTAKE
+                    ======================================================== */}
+                <div className="p-4 bg-gradient-to-r from-emerald-500/5 via-teal-500/5 to-transparent border border-emerald-500/20 dark:border-emerald-500/30 rounded-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                          Interactive Demo Mode
+                        </span>
+                        <span className="text-xs font-bold text-gray-900 dark:text-white">
+                          Test WhatsApp Intake Pipeline
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-gray-400 mt-0.5">
+                        Test speech-to-text, incident fact extraction, and draft link generation with 1-click.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Preset Simulation Buttons */}
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => handleRunDemo("voice")}
+                      disabled={demoLoading}
+                      className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-full shadow-2xs transition-all disabled:opacity-50 cursor-pointer"
+                    >
+                      {demoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mic className="w-3.5 h-3.5" />}
+                      <span>Simulate Voice Note (Electricity Scam & ₹48.5k Loss)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRunDemo("text")}
+                      disabled={demoLoading}
+                      className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-[#16181E] border border-gray-200 dark:border-[#252830] hover:bg-gray-50 dark:hover:bg-white/5 rounded-full shadow-2xs transition-all disabled:opacity-50 cursor-pointer"
+                    >
+                      {demoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MessageSquare className="w-3.5 h-3.5" />}
+                      <span>Simulate Text Message (Courier Phishing & ₹65k Loss)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowCustomInput(!showCustomInput)}
+                      className="text-xs text-gray-500 dark:text-gray-400 hover:underline px-2 py-2"
+                    >
+                      {showCustomInput ? "Hide Custom Narrative" : "Custom Narrative..."}
+                    </button>
+                  </div>
+
+                  {/* Custom Narrative Drawer */}
+                  {showCustomInput && (
+                    <div className="pt-2 space-y-2">
+                      <textarea
+                        rows={3}
+                        value={customNarrative}
+                        onChange={(e) => setCustomNarrative(e.target.value)}
+                        placeholder="Type or paste custom Hindi/English narrative here (e.g., 'Kal mujhe ek call aaya SBI officer banke aur ₹25,000 debit karwa liye...')"
+                        className="w-full p-2.5 text-xs bg-white dark:bg-[#16181E] border border-gray-200 dark:border-[#252830] rounded-xl focus:outline-none"
+                      />
+                    </div>
+                  )}
+
+                  {/* Demo Result Card */}
+                  {demoResult && (
+                    <div className="p-3.5 bg-white dark:bg-[#16181E] border border-emerald-500/30 rounded-xl space-y-2 animate-in fade-in-0 duration-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                          <span className="text-xs font-bold text-gray-900 dark:text-white">
+                            Intake Processed Successfully!
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-mono text-gray-400">
+                          Source: {demoResult.simulatedType === "voice" ? "WhatsApp Voice Note" : "WhatsApp Text"}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px]">
+                        <div className="p-2 bg-gray-50 dark:bg-white/5 rounded-lg">
+                          <span className="text-gray-400 block text-[10px] uppercase font-bold">Category</span>
+                          <span className="font-semibold text-gray-900 dark:text-white capitalize">
+                            {demoResult.incident?.incident_type?.replace(/_/g, " ") || "Cybercrime"}
+                          </span>
+                        </div>
+                        <div className="p-2 bg-gray-50 dark:bg-white/5 rounded-lg">
+                          <span className="text-gray-400 block text-[10px] uppercase font-bold">Amount Lost</span>
+                          <span className="font-extrabold text-red-600 dark:text-red-400">
+                            {demoResult.incident?.amount_inr ? `₹${Number(demoResult.incident.amount_inr).toLocaleString("en-IN")}` : "Not stated"}
+                          </span>
+                        </div>
+                        <div className="p-2 bg-gray-50 dark:bg-white/5 rounded-lg">
+                          <span className="text-gray-400 block text-[10px] uppercase font-bold">Bank Name</span>
+                          <span className="font-semibold text-gray-900 dark:text-white">
+                            {demoResult.incident?.bank_name || "Detected"}
+                          </span>
+                        </div>
+                        <div className="p-2 bg-gray-50 dark:bg-white/5 rounded-lg">
+                          <span className="text-gray-400 block text-[10px] uppercase font-bold">UTR Reference</span>
+                          <span className="font-mono font-semibold text-gray-900 dark:text-white truncate block">
+                            {demoResult.incident?.transaction_ids?.[0] || "Detected"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="pt-2 flex items-center justify-between gap-3">
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                          Single-use Link: <code className="font-mono text-emerald-600 dark:text-emerald-400">{demoResult.draftUrl}</code>
+                        </p>
+                        <Link
+                          href={`/report-incident/draft/${demoResult.token}`}
+                          className="shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-full shadow-2xs transition-colors"
+                        >
+                          <span>Review Pre-Filled Pack</span>
+                          <ArrowUpRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Active Session & Logout */}
+              <div className="pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                <div>
+                  <h3 className="text-xs font-bold text-gray-900 dark:text-white">Active Session</h3>
+                  <p className="text-[11px] text-gray-400">Exit workspace and return to the main landing page.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="px-4 py-2 text-xs font-bold text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-full hover:bg-red-100 dark:hover:bg-red-900/60 flex items-center gap-2 transition-colors"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  {t.logout}
+                </button>
               </div>
 
               {/* Clear storage */}

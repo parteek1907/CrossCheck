@@ -4,16 +4,10 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  FileText,
-  ImageIcon,
-  Link2,
   File,
   Search,
-  ShieldCheck,
-  Scan,
-  CheckCircle2,
   ArrowRight,
-  Upload,
+  Paperclip,
   X,
   Loader2,
   AlertCircle,
@@ -23,8 +17,15 @@ import {
 } from "lucide-react";
 import { saveStoredReport } from "../lib/storage.js";
 
-const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024; // 15MB
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25MB
+const ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png", "webp", "pdf"];
+const ALLOWED_MIME_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "application/pdf",
+];
 
 export default function LandingPage() {
   const router = useRouter();
@@ -84,22 +85,25 @@ export default function LandingPage() {
     setErrorMessage("");
     if (!file) return;
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
+    const ext = file.name.split(".").pop()?.toLowerCase() || "";
+    const isAllowed = ALLOWED_MIME_TYPES.includes(file.type) || ALLOWED_EXTENSIONS.includes(ext);
+
+    if (!isAllowed) {
       setErrorMessage(
-        `Unsupported file type "${file.name.split(".").pop()}". Please select a JPG, PNG, WEBP, or PDF.`
+        `Unsupported file type "${ext || file.type}". Supported formats: PDF, JPG, JPEG, PNG, WEBP.`
       );
       return;
     }
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
       setErrorMessage(
-        `File is too large (${(file.size / (1024 * 1024)).toFixed(1)}MB). Limit is 15MB.`
+        `File is too large (${(file.size / (1024 * 1024)).toFixed(1)}MB). Limit is 25MB.`
       );
       return;
     }
 
     setSelectedFile(file);
-    if (file.type.startsWith("image/")) {
+    if (file.type.startsWith("image/") || ["jpg", "jpeg", "png", "webp"].includes(ext)) {
       const url = URL.createObjectURL(file);
       setFilePreviewUrl(url);
     } else {
@@ -259,19 +263,6 @@ export default function LandingPage() {
     }
   };
 
-  const handleTabClick = (tab) => {
-    setErrorMessage("");
-    if (tab === "file") {
-      fileInputRef.current?.click();
-    } else if (tab === "link") {
-      if (!claimInput.startsWith("http")) {
-        setClaimInput("https://");
-      }
-      textInputRef.current?.focus();
-    } else if (tab === "text") {
-      textInputRef.current?.focus();
-    }
-  };
 
   return (
     <div className="h-[100dvh] max-h-[100dvh] w-screen overflow-hidden bg-[#F6F3EB] text-[#181818] font-sans selection:bg-[#181818] selection:text-[#F6F3EB] flex flex-col justify-between">
@@ -280,7 +271,7 @@ export default function LandingPage() {
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        accept="image/jpeg,image/png,image/webp,application/pdf"
+        accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp"
         className="hidden"
       />
 
@@ -358,8 +349,20 @@ export default function LandingPage() {
               <span>INDEPENDENT DIGITAL VERIFICATION</span>
               <span className="text-[#181818]/30">|</span>
             </div>
-            <div className="w-40 text-right font-medium tracking-[0.18em]">
-              ALL FACTS. A CLEARER WORLD.
+            <div className="w-48 text-right flex items-center justify-end">
+              <Link
+                href="/dashboard"
+                className="relative inline-flex items-center gap-1.5 px-3 py-0.5 bg-[#FAF7EE] border border-[#181818]/30 shadow-xs hover:shadow-md transform rotate-1 hover:rotate-0 hover:scale-105 transition-all text-[#181818] group cursor-pointer"
+                title="Go to Forensic Verification Ledger & Dashboard"
+              >
+                {/* Frosted tape strip */}
+                <div className="absolute -top-1.5 left-2 w-6 h-2 bg-white/60 border border-black/10 rotate-[-3deg] pointer-events-none" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#C8372D] group-hover:scale-125 transition-transform" />
+                <span className="font-mono text-[9px] sm:text-[10px] tracking-[0.18em] font-bold uppercase text-[#181818] flex items-center gap-1">
+                  <span>DASHBOARD</span>
+                  <ArrowRight className="w-2.5 h-2.5 group-hover:translate-x-0.5 transition-transform" />
+                </span>
+              </Link>
             </div>
           </div>
         </div>
@@ -368,9 +371,10 @@ export default function LandingPage() {
       {/* ========================================================
           HERO WORKSPACE (FITS COMFORTABLY IN REMAINING VIEWPORT)
           ======================================================== */}
-      <main className="flex-1 max-w-[1360px] mx-auto w-full px-6 sm:px-10 lg:px-16 py-3 sm:py-5 lg:py-6 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center min-h-0">
-        {/* LEFT COLUMN: HERO COPY & SEARCH INPUT */}
-        <div className="lg:col-span-6 xl:col-span-6 space-y-4 sm:space-y-5 lg:space-y-6 pr-0 lg:pr-4">
+      <main className="flex-1 max-w-[1360px] mx-auto w-full px-6 sm:px-10 lg:px-16 py-3 sm:py-5 lg:py-6 flex items-center min-h-0">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 xl:gap-12 items-center w-full">
+          {/* LEFT COLUMN: HERO COPY & SEARCH INPUT */}
+          <div className="lg:col-span-6 xl:col-span-6 space-y-4 sm:space-y-5 lg:space-y-6 pr-0 lg:pr-4">
           {/* Overline with thin dash */}
           <div className="space-y-1.5">
             <div className="w-7 h-[1px] bg-[#181818]/50" />
@@ -434,23 +438,23 @@ export default function LandingPage() {
                   />
                 </div>
 
-                {/* Upload Image Button Right Here in Search Bar */}
+                {/* Simple Paperclip Icon Button */}
                 <button
                   type="button"
                   disabled={isVerifying}
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#181818]/20 hover:border-[#181818] bg-[#F2EDE2] hover:bg-[#EAE4D7] text-[#181818] text-xs font-semibold transition-all flex-shrink-0"
-                  title="Upload an image or document file"
+                  className="p-2 rounded-xl text-[#55524B] hover:text-[#181818] hover:bg-[#EAE4D7] border border-transparent hover:border-[#181818]/15 transition-all flex-shrink-0 cursor-pointer"
+                  title="Attach file (PDF, JPG, JPEG, PNG, WEBP)"
+                  aria-label="Attach file"
                 >
-                  <Upload className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Upload Image</span>
+                  <Paperclip className="w-4 h-4" />
                 </button>
 
                 {/* Verify Now Action Button */}
                 <button
                   type="submit"
                   disabled={isVerifying}
-                  className="px-4 sm:px-5 py-2 rounded-xl bg-[#181818] hover:bg-black text-[#F6F3EB] text-xs font-semibold flex items-center gap-1.5 transition-all flex-shrink-0 disabled:opacity-75 shadow-xs"
+                  className="px-4 sm:px-5 py-2 rounded-xl bg-[#181818] hover:bg-black text-[#F6F3EB] text-xs font-semibold flex items-center gap-1.5 transition-all flex-shrink-0 disabled:opacity-75 shadow-xs cursor-pointer"
                 >
                   {isVerifying ? (
                     <>
@@ -478,7 +482,9 @@ export default function LandingPage() {
                         className="w-5 h-5 rounded object-cover border border-[#181818]/20 flex-shrink-0"
                       />
                     ) : (
-                      <File className="w-4 h-4 text-[#555] flex-shrink-0" />
+                      <div className="px-1.5 py-0.5 rounded bg-[#C8372D] text-white font-mono text-[8px] font-bold uppercase flex-shrink-0">
+                        PDF
+                      </div>
                     )}
                     <span className="font-semibold text-[#181818] truncate max-w-[240px]">
                       {selectedFile.name}
@@ -490,7 +496,7 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={removeSelectedFile}
-                    className="p-1 rounded text-[#777] hover:text-[#181818] transition-colors"
+                    className="p-1 rounded text-[#777] hover:text-[#181818] transition-colors cursor-pointer"
                     title="Remove file"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -515,43 +521,10 @@ export default function LandingPage() {
               </div>
             )}
 
-            {/* Input Type Selectors (Clicking triggers file or input mode directly, NO popup) */}
-            <div className="flex items-center gap-4 sm:gap-5 text-xs font-medium text-[#4A4742] pt-2.5 px-2">
-              <button
-                type="button"
-                onClick={() => handleTabClick("text")}
-                className="flex items-center gap-1.5 hover:text-[#181818] transition-colors"
-              >
-                <FileText className="w-3.5 h-3.5 text-[#666]" />
-                <span>Text</span>
-              </button>
-              <span className="text-[#CCC8BF] select-none">|</span>
-              <button
-                type="button"
-                onClick={() => handleTabClick("file")}
-                className="flex items-center gap-1.5 hover:text-[#181818] transition-colors"
-              >
-                <ImageIcon className="w-3.5 h-3.5 text-[#666]" />
-                <span>Image</span>
-              </button>
-              <span className="text-[#CCC8BF] select-none">|</span>
-              <button
-                type="button"
-                onClick={() => handleTabClick("link")}
-                className="flex items-center gap-1.5 hover:text-[#181818] transition-colors"
-              >
-                <Link2 className="w-3.5 h-3.5 text-[#666]" />
-                <span>Link</span>
-              </button>
-              <span className="text-[#CCC8BF] select-none">|</span>
-              <button
-                type="button"
-                onClick={() => handleTabClick("file")}
-                className="flex items-center gap-1.5 hover:text-[#181818] transition-colors"
-              >
-                <File className="w-3.5 h-3.5 text-[#666]" />
-                <span>Document</span>
-              </button>
+            {/* Local Device Privacy Note */}
+            <div className="pt-2 px-1 text-[11px] font-mono text-[#77736A] flex items-center gap-1.5 select-none">
+              <span>✦</span>
+              <span>Supported files: PDF, JPG, JPEG, PNG, WEBP. Analysed securely on device.</span>
             </div>
           </div>
         </div>
@@ -908,6 +881,25 @@ export default function LandingPage() {
                   <div className="h-[2px] bg-[#C8372D] w-full mt-0.5 rounded-full" />
                 </div>
               </div>
+
+              {/* LAYER 6: Pasted Archival Evidence Slip: Go to Dashboard */}
+              <Link
+                href="/dashboard"
+                className="absolute bottom-1 left-2 sm:left-4 z-25 transform rotate-2 hover:rotate-0 hover:scale-105 transition-all cursor-pointer group select-none"
+                style={{ transform: "translateZ(28px) rotate(2deg)" }}
+                title="Open forensic verification ledger & dashboard"
+              >
+                <div className="relative px-2.5 py-1 bg-[#FAF7EE] border border-[#181818]/35 shadow-[1px_2px_5px_rgba(0,0,0,0.08)] hover:shadow-md flex items-center gap-1.5">
+                  {/* Frosted cellophane tape effect */}
+                  <div className="absolute -top-1.5 left-2 w-6 h-2 bg-white/60 border border-black/10 rotate-[-4deg] pointer-events-none" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#181818] group-hover:bg-[#C8372D] transition-colors" />
+                  <span className="text-[9.5px] font-mono font-bold tracking-[0.16em] text-[#181818] uppercase flex items-center gap-1">
+                    <span>EVIDENCE LEDGER</span>
+                    <ArrowRight className="w-2.5 h-2.5 group-hover:translate-x-0.5 transition-transform" />
+                  </span>
+                  <div className="h-[1.5px] bg-[#181818] group-hover:bg-[#C8372D] w-full absolute bottom-0 left-0 transition-colors rounded-full" />
+                </div>
+              </Link>
             </div>
           )}
 
@@ -919,77 +911,22 @@ export default function LandingPage() {
             <span>VERIFY</span>
             <span>STAY SAFE</span>
           </div>
+          </div>
         </div>
       </main>
 
       {/* ========================================================
-          BOTTOM FEATURE STRIP (4 COLUMNS DIVIDED BY HAIRLINES)
+          ARCHIVAL BASELINE FOOTER (SLIM TICKER STRIP)
           ======================================================== */}
-      <footer className="w-full border-t border-[#181818]/15 bg-[#F6F3EB] flex-shrink-0" id="how-it-works">
-        <div className="max-w-[1360px] mx-auto px-6 sm:px-10 lg:px-16 py-4 sm:py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-0">
-          {/* Column 01: Detect Manipulation */}
-          <div className="lg:pr-8 lg:border-r border-[#181818]/15 flex items-start gap-3.5">
-            <span className="text-xs font-mono font-semibold text-[#55524B] pt-0.5">01</span>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Search className="w-3.5 h-3.5 text-[#181818] flex-shrink-0" />
-                <h2 className="text-[12.5px] font-bold text-[#181818] tracking-tight">
-                  Detect Manipulation
-                </h2>
-              </div>
-              <p className="text-[11px] leading-relaxed text-[#55524B]">
-                Identify AI-generated or edited content.
-              </p>
-            </div>
-          </div>
-
-          {/* Column 02: Spot Online Risks */}
-          <div className="lg:px-8 lg:border-r border-[#181818]/15 flex items-start gap-3.5">
-            <span className="text-xs font-mono font-semibold text-[#55524B] pt-0.5">02</span>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#181818] flex-shrink-0" />
-                <h2 className="text-[12.5px] font-bold text-[#181818] tracking-tight">
-                  Spot Online Risks
-                </h2>
-              </div>
-              <p className="text-[11px] leading-relaxed text-[#55524B]">
-                Detect scams, impersonation and harmful content.
-              </p>
-            </div>
-          </div>
-
-          {/* Column 03: Get Clear Evidence */}
-          <div className="lg:px-8 lg:border-r border-[#181818]/15 flex items-start gap-3.5">
-            <span className="text-xs font-mono font-semibold text-[#55524B] pt-0.5">03</span>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Scan className="w-3.5 h-3.5 text-[#181818] flex-shrink-0" />
-                <h2 className="text-[12.5px] font-bold text-[#181818] tracking-tight">
-                  Get Clear Evidence
-                </h2>
-              </div>
-              <p className="text-[11px] leading-relaxed text-[#55524B]">
-                See why something is flagged with detailed insights.
-              </p>
-            </div>
-          </div>
-
-          {/* Column 04: Take Safer Action */}
-          <div className="lg:pl-8 flex items-start gap-3.5">
-            <span className="text-xs font-mono font-semibold text-[#55524B] pt-0.5">04</span>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#181818] flex-shrink-0" />
-                <h2 className="text-[12.5px] font-bold text-[#181818] tracking-tight">
-                  Take Safer Action
-                </h2>
-              </div>
-              <p className="text-[11px] leading-relaxed text-[#55524B]">
-                Know what to do next — verify, report or ignore.
-              </p>
-            </div>
-          </div>
+      <footer className="w-full border-t border-[#181818]/15 bg-[#F6F3EB] py-2 sm:py-2.5 px-6 sm:px-10 lg:px-16 flex items-center justify-between text-[10px] font-mono tracking-[0.22em] text-[#55524B] uppercase flex-shrink-0 select-none">
+        <div className="w-48 text-left font-medium">EST. 2026</div>
+        <div className="hidden sm:flex items-center gap-6 font-medium tracking-[0.26em]">
+          <span className="text-[#181818]/30">|</span>
+          <span>LOCAL-FIRST PRIVACY • CRYPTOGRAPHIC EVIDENCE LEDGER</span>
+          <span className="text-[#181818]/30">|</span>
+        </div>
+        <div className="w-48 text-right font-medium tracking-[0.18em]">
+          CROSSCHECK PROTOCOL
         </div>
       </footer>
     </div>
