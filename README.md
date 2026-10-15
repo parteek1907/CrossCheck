@@ -1,136 +1,150 @@
-# TrustLens — Digital Media Forensics & Citizen Trust Protocol
-> **Hackathon Prototype for Problem Statement: "Real or Rendered?"**  
-> *Addressing AI-generated synthetic content, viral misinformation, digital impersonation, and harassment.*
+# Crosscheck — AI Misinformation Forensics & Citizen Protection Suite
+
+> **AI Ideathon 2026 Prototype**  
+> *Combating AI-generated synthetic media, voice-clone extortion scams, viral misinformation, and cyber harassment.*
 
 ---
 
-## 🔍 Overview
+## 🛡️ Executive Summary
 
-**TrustLens** is an in-browser, zero-backend, zero-build forensic verification prototype designed to help citizens, fact-checkers, and investigators immediately assess whether circulating digital content is authentic or manipulated.
+**Crosscheck** is a digital forensics and citizen trust platform built to protect individuals, families, and communities from the perils of weaponized generative AI. As deepfakes, AI voice clones, and viral falsehoods become indistinguishable from reality, Crosscheck provides real-time verification tools, out-of-band family protection protocols, and formal incident reporting.
 
-Built strictly with **vanilla HTML5, CSS3, and modern ES Modules**, TrustLens guarantees that **no sensitive user data, private images, or message transcripts ever leave the local device**. All computations — from Error Level Analysis (ELA) and EXIF extraction to deterministic scoring and cryptographic ledger chaining — run locally inside the client browser sandbox.
+Powered by **Next.js 16 (Turbopack)**, **Google Gemini Multimodal AI**, **Web Speech API**, and in-browser forensic canvas algorithms, Crosscheck delivers instant verification while keeping citizen privacy at the core.
 
 ---
 
-## 🎯 Architecture: What is Real vs. What is Simulated
+## ✨ Core Pillars & Features
 
-To deliver an honest, transparent, and 100% offline-resilient hackathon demonstration:
+### 1. 🔍 Multimodal Claim Verification Engine
+- **Text & Viral Claim Analysis**: Paste any news headline, WhatsApp forward, rumor, or question (e.g., *"Is this person deceased?"*).
+- **Multimodal Image Forensics**:
+  - Image recognition & OCR powered by Gemini Vision.
+  - **Error Level Analysis (ELA)**: Recompression delta analysis identifying digital manipulation and composite spliced areas.
+  - **EXIF Metadata Inspection**: Extracts hardware tags, editing software fingerprints, and AI generator signatures.
+- **Always-Sourced Evidence**: Every verification guarantees credible journalistic and authoritative citations with clickable links.
+- **High-Clarity Verdicts**: Clear forensic outcomes (*Authentic*, *Manipulated*, *False*, *Misleading*, or *Unverified*) with actionable risk scores.
 
-| Feature | Implementation Status | Technical Mechanism |
-| :--- | :--- | :--- |
-| **Error Level Analysis (ELA)** | 🟢 **100% REAL** | Canvas-based JPEG re-compression (75% quality), absolute RGB pixel difference extraction, $20\times$ amplification, and interactive false-color heatmap rendering. |
-| **EXIF Metadata Inspection** | 🟢 **100% REAL** | In-browser binary metadata parsing via `exifr` (detects AI generator signatures like Midjourney/Stable Diffusion, editing software, and camera hardware tags). |
-| **Tamper-Evident Evidence Vault** | 🟢 **100% REAL** | Browser `localStorage` ledger where each block contains a SHA-256 digest linked to the previous block's hash (cryptographic hash chain). Full chain audit verification supported. |
-| **Rotating Safe Circle Code** | 🟢 **100% REAL** | Web Crypto API `HMAC-SHA256` of current 60-second UNIX epoch window mapped to two memorable spoken words from a wordlist (offline TOTP against voice clone scams). |
-| **Deterministic Scoring & Caps** | 🟢 **100% REAL** | Mathematical 100-point model ported from Veralon with strict deterministic caps (0 clusters $\le 50$, dominant contradiction $\le 40$, low image authenticity $\le 60$). |
-| **Evidence Clustering** | 🟢 **100% REAL ALGORITHM** | Union-Find disjoint set grouping by publisher domain and title Jaccard word similarity ($\ge 0.55$) exposing syndicated echo chambers. |
-| **Repeat-Claim Trigram Index** | 🟢 **100% REAL ALGORITHM** | Character 3-gram index and Jaccard similarity matcher mirroring PostgreSQL `pg_trgm` to catch repeat hoaxes. |
-| **One-Click PDF Audit Export** | 🟢 **100% REAL** | Vector-rendered executive PDF audit report generated client-side via jsPDF. |
-| **Canvas 1200×630 Context Card** | 🟢 **100% REAL** | Off-screen HTML5 `<canvas>` rendering branded social context cards and direct PNG download. |
-| **External Article Retrieval** | 🟡 **SIMULATED OFFLINE** | Bundled static datasets (`data/sample_articles.json`, `data/trending_hoaxes.json`, `data/known_claims.json`) replacing live scraping / GDELT / Google News APIs for reliable offline evaluation. |
+### 2. 🗣️ The Family Safe-Word Protocol (Anti Voice-Clone Extortion)
+- **Problem Solved**: Criminals use 3-second audio clips to clone children's and relatives' voices, calling parents with fabricated crises (*"Papa, accident ho gaya hai, turant paise bhejo"*).
+- **Out-of-Band Secret Authentication**: Families establish a private, user-editable safe-word and a covert **Silent Duress Code**.
+- **Live Microphone Audio Analysis**:
+  - Hold your phone near the incoming caller speaker or speak their words.
+  - Crosscheck uses browser speech recognition to capture caller speech in real-time.
+  - Click **"Stop & Analyze Call"** to invoke Gemini forensic call analysis, evaluating the transcript for high-pressure extortion signals, fake emergency scripts, and safe-word presence.
+- **Multilingual Support**: Supports English, Hindi, Hinglish, Tamil, Bengali, Telugu, and Marathi.
+- **One-Click Instant Simulation**: Built-in test chips for Safe-word Match, Voice-Clone Scam, and Coercion Duress to demonstrate the protocol immediately.
+
+### 3. 🗄️ Evidence Vault & Incident Reporting
+- **Citizen Intake Portal**: Report incidents of cyber extortion, harassment, online bullying, financial scams, or deepfake impersonation.
+- **Evidence Documentation**: Attach screenshots, identify perpetrator handles/phone numbers, and specify affected communication channels.
+- **Authority-Ready Dossiers**:
+  - Automatically structures formal incident complaints formatted for submission to the National Cyber Crime Reporting Portal (**cybercrime.gov.in**) and Indian Cyber Helpline **1930**.
+  - Provides unique Case Tracking IDs, status queues, and one-click printable formal complaint letters.
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technology |
+| :--- | :--- |
+| **Framework** | Next.js 16.4.1 (Turbopack, App Router) |
+| **Runtime & UI** | React 19, Tailwind CSS, Lucide Icons, Radix UI Primitives |
+| **AI & LLM** | Google Gemini Multimodal API (`@google/genai` / REST) |
+| **Speech & Audio** | Web Speech API (`SpeechRecognition` / `webkitSpeechRecognition`) |
+| **Client Forensics** | HTML5 Canvas (Error Level Analysis - ELA) |
+| **Storage & Persistence** | Browser `localStorage` with real-time cross-tab custom events & URL query synchronization |
 
 ---
 
 ## 📁 Repository Structure
 
 ```text
-AiIdeathon/
-├── index.html              # Clean semantic single-page UI with accessible tabs & focus rings
-├── css/
-│   └── style.css           # Calm, trustworthy dark slate design system & responsive layout
-├── js/
-│   ├── app.js              # Main application controller and event orchestrator
-│   ├── scoring.js          # Deterministic 100-pt scoring & safety caps (adapted from Veralon)
-│   ├── confidence.js       # Statistical margin-of-error & confidence meter (adapted from Veralon)
-│   ├── clustering.js       # Union-Find syndication clustering (adapted from Veralon)
-│   ├── audit.js            # Web Crypto SHA-256 hashing & Report IDs (adapted from Veralon)
-│   ├── exportPdf.js        # Executive PDF audit report export (adapted from Veralon)
-│   ├── similarity.js       # Character trigram pg_trgm repeat-claim matcher (adapted from Veralon)
-│   ├── trending.js         # Circulating hoaxes panel & 1200x630 canvas share card (adapted from Veralon)
-│   ├── forensics.js        # Real in-browser ELA pixel heatmap & EXIF metadata inspection
-│   ├── vault.js            # Cryptographic hash-chained evidence ledger & legal complaint generator
-│   ├── safecircle.js       # Offline Web Crypto HMAC-SHA256 60s rotating two-word passcodes
-│   └── actionpath.js       # Incident response protocols & emergency helplines (1930 / cybercrime.gov.in)
-├── data/
-│   ├── known_claims.json   # Known hoax database for trigram repeat-claim detection
-│   ├── sample_articles.json# Bundled journalistic articles for syndication clustering
-│   ├── trending_hoaxes.json# Circulating hoaxes feed
-│   ├── sample_cases.json   # 3 preloaded offline demonstration cases
-│   └── wordlist.json       # Phonetic English wordlist for Safe Circle TOTP
-├── assets/
-│   ├── demo_fake_news.jpg  # Preloaded asset for Case 1 (Disaster / Biometric Chip Hoax)
-│   ├── demo_scam_dm.jpg    # Preloaded asset for Case 2 (Emergency WhatsApp Extortion)
-│   └── demo_morphed_photo.jpg # Preloaded asset for Case 3 (Composited Photo with ELA Discrepancies)
-├── tests/
-│   ├── test_modules.js     # Unit test runner for ported modules 1-7
-│   └── test_new_features.js# Unit test runner for Vault, Safe Circle, and Action Path
-└── README.md               # Architecture documentation, honesty notice, and setup guide
+AIdeathon/
+├── app/
+│   ├── api/
+│   │   ├── analyze-call/      # Gemini AI incoming phone call audio & transcript analyzer
+│   │   └── verify/            # Multimodal Gemini claim & image verification API
+│   ├── dashboard/             # Comprehensive citizen workspace & Evidence Vault
+│   ├── demo/                  # Interactive presentation demo flow
+│   ├── report/[id]/           # Standalone public forensic dossier report view
+│   ├── layout.js              # Global app shell & metadata
+│   └── page.js                # Landing page & quick verification portal
+├── components/
+│   ├── VerificationModal.jsx  # Main verification submission dialog with image dropzone
+│   ├── ELAViewer.jsx          # Interactive Error Level Analysis canvas viewer
+│   ├── SourceCard.jsx         # Sourced citation cards
+│   └── Toast.jsx              # Accessible user notification system
+├── lib/
+│   ├── geminiClient.js        # Gemini API client with multi-key fallback & JSON modes
+│   ├── safecircle.js          # The Family Safe-Word engine & multilingual configurations
+│   ├── storage.js             # Reports, evidence vault, and user profile persistence
+│   └── ela.js                 # Canvas pixel difference amplification & analysis
+├── public/                    # Static assets & test fixtures
+├── README.md                  # Project documentation & architecture overview
+└── package.json               # Project manifest & dependencies
 ```
 
 ---
 
-## 🚀 How to Run
+## 🚀 Getting Started
 
-### Option 1: Direct File Open (Zero Dependencies)
-Simply double-click or open [index.html](file:///home/parteek1907/Projects/AiIdeathon/index.html) in any modern web browser (Chrome, Edge, Firefox, Safari).
+### Prerequisites
+- Node.js 18.17+ or Node.js 20+
+- Google Gemini API Key ([Get one at Google AI Studio](https://aistudio.google.com/))
 
-### Option 2: Local Static Server (Recommended)
-From the project root directory, run any lightweight static file server:
+### Installation
 
-```bash
-# Using Python 3:
-python3 -m http.server 8080
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/parteek1907/AI-Ideathon.git
+   cd AI-Ideathon
+   ```
 
-# Or using Node:
-npx serve . -l 8080
-```
-Then navigate to `http://localhost:8080` in your browser.
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
----
+3. **Configure Environment Variables:**
+   Create a `.env.local` file in the root directory:
+   ```env
+   GEMINI_API_KEY=your_gemini_api_key_here
+   ```
 
-## 🧪 Automated Test Suite
+4. **Start Development Server:**
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-TrustLens includes automated regression and module verification suites:
-
-```bash
-# Test Ported Modules 1–7 (Scoring, Confidence, Clustering, Audit, Similarity):
-node tests/test_modules.js
-
-# Test New Features (Evidence Vault Hash Chaining, Safe Circle TOTP, Action Path):
-node tests/test_new_features.js
-```
-
----
-
-## 🎬 Hackathon Walkthrough Guide (Under 3 Minutes)
-
-### 1. Verification Engine (Main Triage)
-- Click **"📰 Fake News Graphic" (Case 1)**:  
-  *Observation:* Instantly displays **LIKELY MANIPULATED (Score: 38/100, High Confidence)**. ELA heatmap highlights uniform TV graphics with high syndication (`12 articles, only 3 independent sources`). Trigram matcher flags repeat claim.
-- Click **"🚨 Urgent Scam DM" (Case 2)**:  
-  *Observation:* Detects financial coercion cues and zero independent clusters (`Score capped at max 40`). Action Path links directly to Helpline **1930**.
-- Click **"📸 Morphed Photo" (Case 3)**:  
-  *Observation:* ELA difference heatmap highlights localized high-frequency compression block discrepancies along head and collar borders. Missing camera sensor tags flagged in EXIF box.
-- Click **"📄 Download PDF Trust Report"**: Generates a vector PDF audit report with SHA-256 digest and full breakdown.
-- Click **"🖼️ Export Context Card (PNG)"**: Renders an off-screen 1200×630 social card for WhatsApp/X context sharing.
-
-### 2. Tamper-Evident Evidence Vault
-- Click **"Save to Evidence Vault"** on any analyzed result.
-- Navigate to the **"Evidence Vault"** tab.
-- Inspect the cryptographic chain linking `Previous Hash -> Block Hash`.
-- Click **"Verify Chain"**: Validates the SHA-256 integrity of all blocks.
-- Click **"Draft Complaint"**: Pre-fills an official legal complaint letter ready for **cybercrime.gov.in** and Helpline 1930 citing Section 66D of the IT Act 2000.
-
-### 3. Rotating Safe Circle
-- Navigate to the **"Safe Circle"** tab.
-- Observe the live 60-second rotating two-word passcode (e.g. `SILVER-FALCON`) and real-time countdown bar.
-- Test the caller verification input: Type the active code to confirm authentication; type an invalid word to see the imposter warning. Works 100% offline without cellular or server connectivity.
-
-### 4. Action Path & Statutory Helplines
-- Access direct one-click quick dials for **1930** (Financial Cyber Fraud), **cybercrime.gov.in**, **181** (Women Cyber Harassment), and **PIB Fact Check WhatsApp**.
+5. **Build for Production:**
+   ```bash
+   npm run build
+   npm run start
+   ```
 
 ---
 
-## ⚖️ Transparency & Limits of This Check
+## 🧪 Demonstration Guide
 
-> **Notice:** Error Level Analysis (ELA) and EXIF extraction are mathematical compression indicators, not judicial proof. Automated scoring provides rapid citizen triage against known syndication rings, manipulated compression blocks, and phishing coercion patterns. Users are provided direct statutory referral paths for forensic police reporting.
+1. **Verify a Viral Image / Rumor**:
+   - On the homepage or Dashboard, click **"New Verification"**.
+   - Attach an image and write your claim question (e.g., *"Is this real or morphed?"*).
+   - View the detailed report with the uploaded image, ELA heatmap, and guaranteed source citations.
+
+2. **Test The Family Safe-Word**:
+   - Go to Dashboard $\rightarrow$ **"The Family Safe-Word"**.
+   - Edit your family safe-word or language.
+   - Click **"Tap to Listen to Caller Speech"**, speak into your mic, then click **"Stop & Analyze Call"**.
+   - Or click **"Simulate: Voice-Clone Scam"** to instantly witness the imposter warning and threat signals.
+
+3. **File an Incident in the Evidence Vault**:
+   - Go to Dashboard $\rightarrow$ **"Evidence Vault"**.
+   - Click **"File Incident Report"**, choose an incident type (Scam, Harassment, etc.), add details/screenshots, and submit.
+   - View your case in the docket and click **"Official Formal Complaint"** to generate a pre-formatted legal filing for cybercrime authorities.
+
+---
+
+## ⚖️ License & Ethical Commitment
+
+This project is created for **AI Ideathon 2026**. Designed to empower citizens, uphold digital dignity, and protect vulnerable populations against predatory synthetic media and extortion.

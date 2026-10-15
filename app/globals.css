@@ -2,7 +2,7 @@
    Exact match to the Headway clean, high-contrast, editorial layout
 */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Newsreader:ital,opsz,wght@0,6..72,400..800;1,6..72,400..800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Newsreader:ital,opsz,wght@0,6..72,400..800;1,6..72,400..800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Black+Ops+One&family=Stardos+Stencil:wght@700;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -13,36 +13,37 @@
 }
 
 :root {
-  --bg-page: #F9FAFB;
-  --bg-sidebar: #FFFFFF;
-  --bg-card: #FFFFFF;
-  --bg-card-subtle: #F3F4F6;
-  --bg-hover: #F3F4F6;
-  --bg-input: #F3F4F6;
-  --bg-dark-btn: #111827;
+  --bg-page: #F6F3EB;
+  --bg-sidebar: #FAF7F0;
+  --bg-card: #FCFAF6;
+  --bg-card-subtle: #F0EDE4;
+  --bg-hover: #EFECE3;
+  --bg-input: #FCFAF6;
+  --bg-dark-btn: #181818;
 
-  --border-hairline: #E5E7EB;
-  --border-strong: #D1D5DB;
-  --border-accent: #111827;
+  --border-hairline: #E6E1D6;
+  --border-strong: #D5CEBF;
+  --border-accent: #181818;
 
-  --text-primary: #111827;
-  --text-secondary: #4B5563;
-  --text-muted: #6B7280;
-  --text-dim: #9CA3AF;
+  --text-primary: #181818;
+  --text-secondary: #4A4742;
+  --text-muted: #747068;
+  --text-dim: #9E998F;
 
-  --accent-terracotta: #D95D39;
-  --accent-terracotta-bg: #FEF2F2;
-  --accent-terracotta-border: #FECACA;
+  --accent-terracotta: #C84630;
+  --accent-terracotta-bg: #FDF1EE;
+  --accent-terracotta-border: #F7C4BC;
 
-  --accent-green: #059669;
-  --accent-green-bg: #ECFDF5;
-  --accent-green-border: #A7F3D0;
+  --accent-green: #2D6A4F;
+  --accent-green-bg: #EDF7F1;
+  --accent-green-border: #BCE3CE;
 
-  --accent-amber: #D97706;
-  --accent-amber-bg: #FFFBEB;
+  --accent-amber: #C58F2C;
+  --accent-amber-bg: #FFF9EC;
   --accent-amber-border: #FDE68A;
 
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-editorial: 'Playfair Display', 'Newsreader', Georgia, serif;
   --font-mono: 'JetBrains Mono', 'IBM Plex Mono', monospace;
 
   --radius-xs: 4px;
@@ -54,34 +55,34 @@
 }
 
 .dark {
-  --bg-page: #0B0C0E;
-  --bg-sidebar: #111215;
-  --bg-card: #15171C;
-  --bg-card-subtle: #1C1E24;
-  --bg-hover: #1E2028;
-  --bg-input: #1C1E24;
-  --bg-dark-btn: #FFFFFF;
+  --bg-page: #141312;
+  --bg-sidebar: #191816;
+  --bg-card: #1C1B18;
+  --bg-card-subtle: #24221F;
+  --bg-hover: #292824;
+  --bg-input: #1C1B18;
+  --bg-dark-btn: #F4EFEB;
 
-  --border-hairline: #242730;
-  --border-strong: #323642;
-  --border-accent: #FFFFFF;
+  --border-hairline: #2D2B27;
+  --border-strong: #3D3A34;
+  --border-accent: #F4EFEB;
 
-  --text-primary: #F9FAFB;
-  --text-secondary: #D1D5DB;
-  --text-muted: #9CA3AF;
-  --text-dim: #6B7280;
+  --text-primary: #F4EFEB;
+  --text-secondary: #C8C3BA;
+  --text-muted: #999388;
+  --text-dim: #6E6960;
 
-  --accent-terracotta: #F97316;
-  --accent-terracotta-bg: #451A03;
-  --accent-terracotta-border: #7C2D12;
+  --accent-terracotta: #E05A44;
+  --accent-terracotta-bg: #2B1512;
+  --accent-terracotta-border: #52241D;
 
-  --accent-green: #10B981;
-  --accent-green-bg: #064E3B;
-  --accent-green-border: #047857;
+  --accent-green: #40916C;
+  --accent-green-bg: #0D261B;
+  --accent-green-border: #184A33;
 
-  --accent-amber: #F59E0B;
-  --accent-amber-bg: #78350F;
-  --accent-amber-border: #B45309;
+  --accent-amber: #D48806;
+  --accent-amber-bg: #2B1E08;
+  --accent-amber-border: #573C0C;
 }
 
 * {
@@ -856,3 +857,62 @@ body {
 .preserve-3d {
   transform-style: preserve-3d;
 }
+
+/* ========================================================
+   EDITORIAL NEWSPRINT SURFACES & SMOOTH MOTION
+   ======================================================== */
+.glass-panel {
+  background: #FCFAF6;
+  border: 1px solid rgba(24, 24, 24, 0.12);
+  box-shadow: 0 2px 10px rgba(24, 24, 24, 0.03);
+}
+
+.dark .glass-panel {
+  background: #1C1B18;
+  border: 1px solid #2D2B27;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.glass-modal {
+  background: #FCFAF6;
+  border: 1px solid rgba(24, 24, 24, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(24, 24, 24, 0.25);
+}
+
+.dark .glass-modal {
+  background: #1C1B18;
+  border: 1px solid #3D3A34;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}
+
+.glass-input {
+  background: #FCFAF6;
+  border: 1px solid rgba(24, 24, 24, 0.18);
+  color: #181818;
+}
+
+.dark .glass-input {
+  background: #161513;
+  border: 1px solid #2D2B27;
+  color: #F4EFEB;
+}
+
+/* Fluid Apple/Emil Kowalski Springs */
+.editorial-spring {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.newspaper-card {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+}
+
+.newspaper-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(24, 24, 24, 0.06);
+}
+
+.dark .newspaper-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+
