@@ -48,104 +48,120 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F6F3EB] text-[#181818] font-sans selection:bg-[#181818] selection:text-[#F6F3EB] overflow-x-hidden flex flex-col justify-between">
+    <div className="h-[100dvh] max-h-[100dvh] w-screen overflow-hidden bg-[#F6F3EB] text-[#181818] font-sans selection:bg-[#181818] selection:text-[#F6F3EB] flex flex-col justify-between">
       {/* ========================================================
-          TOP NAVIGATION BAR
+          ARCHIVAL MASTHEAD (EXACT REPLICA OF USER IMAGE)
           ======================================================== */}
-      <header className="w-full">
-        <div className="max-w-[1360px] mx-auto px-6 sm:px-10 lg:px-16 h-20 flex items-center justify-between">
-          {/* Brand Logo */}
-          <Link href="/" className="flex items-start group">
-            <span className="font-editorial text-2xl lg:text-[28px] font-bold tracking-tight text-[#181818]">
-              Crosscheck
-            </span>
-            <span className="text-sm font-bold text-[#181818] ml-0.5 -mt-0.5 font-mono">⁺</span>
-          </Link>
+      <header className="w-full relative pt-4 pb-0 flex-shrink-0">
+        <div className="max-w-[1360px] mx-auto px-6 sm:px-10 lg:px-16">
+          {/* Main Masthead Banner */}
+          <div className="relative flex items-center justify-between pb-3">
+            {/* Left Column: Stacked Mono Quote */}
+            <div className="w-40 hidden sm:block text-left text-[9px] lg:text-[10px] font-mono tracking-[0.25em] text-[#55524B] uppercase leading-[1.65] select-none">
+              TRUTH<br />
+              DESERVES<br />
+              A SECOND<br />
+              LOOK<br />
+              <span className="inline-block mt-0.5 tracking-normal text-[#181818]/50">—</span>
+            </div>
 
-          {/* Center Nav Links */}
-          <nav className="hidden md:flex items-center gap-9 lg:gap-11 text-[13px] font-medium text-[#48453F]">
-            <Link
-              href="/"
-              className="text-[#181818] font-semibold border-b-2 border-[#181818] pb-0.5"
-            >
-              Home
-            </Link>
-            <Link
-              href="/dashboard"
-              className="hover:text-[#181818] transition-colors"
-            >
-              Investigations
-            </Link>
-            <a
-              href="#how-it-works"
-              className="hover:text-[#181818] transition-colors"
-            >
-              How it Works
-            </a>
-            <Link
-              href="/dashboard"
-              className="hover:text-[#181818] transition-colors"
-            >
-              Tools
-            </Link>
-            <a
-              href="#about"
-              className="hover:text-[#181818] transition-colors"
-            >
-              About
-            </a>
-          </nav>
+            {/* Center: Monumental Crosscheck Wordmark with Globe & Plumb Line */}
+            <div className="relative flex-1 flex flex-col items-center justify-center">
+              {/* Vertical Plumb Axis Line Passing All The Way Through */}
+              <div className="absolute -top-3 bottom-[-32px] left-1/2 -translate-x-1/2 w-[1px] bg-[#181818]/60 z-10 pointer-events-none flex flex-col justify-between items-center">
+                {/* Top axis terminal dot */}
+                <div className="w-1.5 h-1.5 rounded-full bg-[#181818] -mt-0.5" />
+                {/* Bottom axis terminal dot */}
+                <div className="w-1.5 h-1.5 rounded-full bg-[#181818] -mb-0.5" />
+              </div>
 
-          {/* Right Action Button */}
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#181818] text-[#F6F3EB] text-xs font-semibold hover:bg-black transition-all hover:gap-2.5 shadow-xs"
-          >
-            <span>Start Verifying</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+              {/* Wireframe Globe Latitude / Longitude Vector (Upper Hemisphere) */}
+              <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-[220px] sm:w-[260px] h-[90px] pointer-events-none z-0 overflow-hidden opacity-35">
+                <svg viewBox="0 0 260 130" fill="none" stroke="#181818" className="w-full h-full">
+                  {/* Outer sphere rim */}
+                  <ellipse cx="130" cy="128" rx="110" ry="110" strokeWidth="0.8" />
+                  {/* Latitude parallels */}
+                  <ellipse cx="130" cy="128" rx="104" ry="75" strokeWidth="0.5" strokeDasharray="3 2" />
+                  <ellipse cx="130" cy="128" rx="92" ry="46" strokeWidth="0.5" />
+                  <ellipse cx="130" cy="128" rx="70" ry="24" strokeWidth="0.5" />
+                  {/* Longitude meridians */}
+                  <path d="M 30 128 C 30 50, 230 50, 230 128" strokeWidth="0.5" />
+                  <path d="M 60 128 C 60 40, 200 40, 200 128" strokeWidth="0.5" />
+                  <path d="M 90 128 C 90 30, 170 30, 170 128" strokeWidth="0.5" />
+                  {/* Vertex nodes */}
+                  <circle cx="130" cy="18" r="1.5" fill="#181818" />
+                  <circle cx="178" cy="38" r="1.2" fill="#181818" />
+                  <circle cx="82" cy="38" r="1.2" fill="#181818" />
+                  <circle cx="212" cy="74" r="1.2" fill="#181818" />
+                </svg>
+              </div>
+
+              {/* The Wordmark */}
+              <div className="relative z-20 flex items-center justify-center">
+                <span className="font-editorial text-[48px] sm:text-[64px] lg:text-[76px] tracking-[-0.01em] font-bold text-[#181818] select-none inline-flex items-center">
+                  <span>Cross</span>
+                  <span className="bg-gradient-to-r from-[#181818] via-[#66635C] to-[#2B2925] bg-clip-text text-transparent">
+                    check
+                  </span>
+                </span>
+                {/* 4-Pointed Sparkle Star */}
+                <span className="text-[#181818] text-[26px] sm:text-[34px] lg:text-[40px] ml-1 sm:ml-2 -mt-1 font-serif select-none inline-block">
+                  ✦
+                </span>
+              </div>
+            </div>
+
+            {/* Right Column: Stacked Mono Guidelines */}
+            <div className="w-40 hidden sm:block text-right text-[9px] lg:text-[10px] font-mono tracking-[0.25em] text-[#55524B] uppercase leading-[1.65] select-none">
+              VERIFY<br />
+              UNDERSTAND<br />
+              QUESTION<br />
+              BE SAFER<br />
+              <span className="inline-block mt-0.5 tracking-normal text-[#181818]/50">—</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Ticker Sub-bar with Hairlines & Dividers */}
+        <div className="w-full border-y border-[#181818]/15 bg-[#F6F3EB]">
+          <div className="max-w-[1360px] mx-auto px-6 sm:px-10 lg:px-16 py-2 flex items-center justify-between text-[10px] sm:text-[11px] font-mono tracking-[0.22em] text-[#55524B] uppercase">
+            <div className="w-40 text-left font-medium">EST. 2026</div>
+            <div className="hidden sm:flex items-center gap-6 font-medium tracking-[0.26em]">
+              <span className="text-[#181818]/30">|</span>
+              <span>INDEPENDENT DIGITAL VERIFICATION</span>
+              <span className="text-[#181818]/30">|</span>
+            </div>
+            <div className="w-40 text-right font-medium tracking-[0.18em]">
+              ALL FACTS. A CLEARER WORLD.
+            </div>
+          </div>
         </div>
       </header>
 
       {/* ========================================================
-          SUBHEADER TICKER BAR (RULED ARCHIVAL BORDER)
+          HERO WORKSPACE (FITS COMFORTABLY IN REMAINING VIEWPORT)
           ======================================================== */}
-      <div className="w-full border-y border-[#181818]/15 bg-[#F6F3EB]">
-        <div className="max-w-[1360px] mx-auto px-6 sm:px-10 lg:px-16 py-2 flex items-center justify-between text-[10px] sm:text-[11px] font-mono tracking-[0.25em] text-[#55524B] uppercase">
-          <div className="font-medium">EST. 2026</div>
-          <div className="hidden sm:block text-center font-medium tracking-[0.28em]">
-            INDEPENDENT DIGITAL VERIFICATION
-          </div>
-          <div className="font-medium text-right">
-            TRUTH DESERVES A SECOND LOOK
-          </div>
-        </div>
-      </div>
-
-      {/* ========================================================
-          MAIN HERO SECTION (2 COLUMNS)
-          ======================================================== */}
-      <main className="flex-1 max-w-[1360px] mx-auto w-full px-6 sm:px-10 lg:px-16 py-10 lg:py-14 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+      <main className="flex-1 max-w-[1360px] mx-auto w-full px-6 sm:px-10 lg:px-16 py-3 sm:py-5 lg:py-6 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center min-h-0">
         {/* LEFT COLUMN: HERO COPY & SEARCH INPUT */}
-        <div className="lg:col-span-6 xl:col-span-6 space-y-7 lg:space-y-8 pr-0 lg:pr-6">
+        <div className="lg:col-span-6 xl:col-span-6 space-y-4 sm:space-y-5 lg:space-y-6 pr-0 lg:pr-4">
           {/* Overline with thin dash */}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <div className="w-7 h-[1px] bg-[#181818]/50" />
-            <div className="text-[10px] sm:text-[11px] font-mono tracking-[0.22em] text-[#55524B] uppercase font-semibold leading-relaxed">
+            <div className="text-[10px] font-mono tracking-[0.22em] text-[#55524B] uppercase font-semibold leading-relaxed">
               REAL INFORMATION<br />
               BUILDS A SAFER TOMORROW —
             </div>
           </div>
 
           {/* Main Editorial Headline */}
-          <h1 className="font-editorial text-[56px] sm:text-[70px] lg:text-[78px] xl:text-[84px] leading-[1.01] tracking-[-0.015em] text-[#181818]">
+          <h1 className="font-editorial text-[44px] sm:text-[56px] lg:text-[64px] xl:text-[70px] leading-[1.01] tracking-[-0.015em] text-[#181818]">
             Before you<br />
             believe it,<br />
             <span className="italic">crosscheck it.</span>
           </h1>
 
           {/* Subtitle */}
-          <p className="text-[14px] sm:text-[15px] leading-relaxed text-[#4A4742] max-w-md font-sans">
+          <p className="text-[13px] sm:text-[14px] leading-relaxed text-[#4A4742] max-w-md font-sans">
             Analyse claims, images, and links. Uncover manipulation,
             misinformation, and online risks — with clear evidence, not opinions.
           </p>
@@ -154,12 +170,12 @@ export default function LandingPage() {
           <div className="pt-1 max-w-xl">
             <form
               onSubmit={handleStartVerification}
-              className="rounded-2xl border border-[#181818] bg-[#FCFAF6] p-2 pl-4 flex items-center justify-between gap-3 shadow-[0_2px_10px_rgba(0,0,0,0.03)] focus-within:ring-2 focus-within:ring-[#181818]/15 transition-all"
+              className="rounded-2xl border border-[#181818] bg-[#FCFAF6] p-1.5 pl-3.5 flex items-center justify-between gap-3 shadow-[0_2px_8px_rgba(0,0,0,0.03)] focus-within:ring-2 focus-within:ring-[#181818]/15 transition-all"
             >
-              <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="flex items-center gap-2.5 flex-1 min-w-0">
                 <div className="text-[#666] flex-shrink-0">
                   <svg
-                    className="w-5 h-5 text-[#444]"
+                    className="w-4 h-4 text-[#444]"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -181,7 +197,7 @@ export default function LandingPage() {
               </div>
               <button
                 type="submit"
-                className="px-5 py-2.5 rounded-xl bg-[#181818] hover:bg-black text-[#F6F3EB] text-xs font-semibold flex items-center gap-1.5 transition-all flex-shrink-0"
+                className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-[#181818] hover:bg-black text-[#F6F3EB] text-xs font-semibold flex items-center gap-1.5 transition-all flex-shrink-0"
               >
                 <span>Verify Now</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -189,7 +205,7 @@ export default function LandingPage() {
             </form>
 
             {/* Input Type Selectors */}
-            <div className="flex items-center gap-4 sm:gap-5 text-xs font-medium text-[#4A4742] pt-3.5 px-2">
+            <div className="flex items-center gap-4 sm:gap-5 text-xs font-medium text-[#4A4742] pt-2.5 px-2">
               <button
                 type="button"
                 onClick={() => handleTabClick("text")}
@@ -230,11 +246,11 @@ export default function LandingPage() {
         </div>
 
         {/* RIGHT COLUMN: ARCHIVAL FORENSIC COLLAGE */}
-        <div className="lg:col-span-6 xl:col-span-6 relative flex justify-center items-center py-4 select-none">
+        <div className="lg:col-span-6 xl:col-span-6 relative flex justify-center items-center py-2 select-none">
           {/* Subtle Technical / Compass Background Graphics */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <svg
-              className="w-full h-full max-w-[560px] opacity-20 text-[#181818]"
+              className="w-full h-full max-w-[520px] opacity-20 text-[#181818]"
               viewBox="0 0 500 500"
               fill="none"
               stroke="currentColor"
@@ -260,40 +276,40 @@ export default function LandingPage() {
           </div>
 
           {/* Composite Collage Canvas */}
-          <div className="relative w-full max-w-[500px] h-[410px] sm:h-[450px]">
+          <div className="relative w-full max-w-[480px] h-[350px] sm:h-[380px] lg:h-[400px]">
             {/* Extended Vertical Technical Ruler Line */}
-            <div className="absolute top-[-20px] bottom-[-20px] left-[55%] w-[1px] bg-[#181818]/70 z-20 pointer-events-none" />
+            <div className="absolute top-[-16px] bottom-[-16px] left-[55%] w-[1px] bg-[#181818]/70 z-20 pointer-events-none" />
 
             {/* LAYER 1: Tilted Vintage Newspaper Fragment (Top Left) */}
             <div
-              className="absolute top-2 left-2 w-48 sm:w-52 bg-[#ECE7DC] border border-[#181818]/20 p-3.5 shadow-sm transform -rotate-3 z-0"
+              className="absolute top-1 left-2 w-44 sm:w-48 bg-[#ECE7DC] border border-[#181818]/20 p-3 shadow-sm transform -rotate-3 z-0"
               style={{
                 clipPath: "polygon(0% 0%, 98% 2%, 100% 96%, 95% 100%, 3% 98%, 0% 95%)",
               }}
             >
-              <div className="border-b border-[#181818]/25 pb-1 mb-2">
+              <div className="border-b border-[#181818]/25 pb-1 mb-1.5 flex items-center justify-between">
                 <span className="font-editorial text-xs font-bold tracking-tight text-[#181818]">
                   The Daily Wire
                 </span>
-                <span className="text-[8px] font-mono text-[#666] ml-2">OCT 1928</span>
+                <span className="text-[8px] font-mono text-[#666]">OCT 1928</span>
               </div>
               <div className="text-[8px] font-mono leading-tight text-[#333] space-y-1">
                 <div className="font-bold uppercase tracking-wider text-[#181818]">
                   MASS ASSEMBLY HELD AT CAPITOL GROUNDS
                 </div>
-                <p className="line-clamp-3 text-[#555]">
-                  Thousands gather on the grand plaza to hear constitutional declaration as reporters observe the proceedings...
+                <p className="line-clamp-2 text-[#555]">
+                  Thousands gather on the grand plaza to hear constitutional declaration...
                 </p>
               </div>
               {/* Fact Check Stamp */}
-              <div className="mt-2.5 inline-block px-1.5 py-0.5 bg-[#FAF8F3] border border-[#181818] text-[8px] font-mono font-bold tracking-wider uppercase text-[#181818]">
+              <div className="mt-2 inline-block px-1.5 py-0.5 bg-[#FAF8F3] border border-[#181818] text-[8px] font-mono font-bold tracking-wider uppercase text-[#181818]">
                 FACT CHECK
               </div>
             </div>
 
             {/* LAYER 2: Main Archival Photograph of Capitol Building */}
             <div
-              className="absolute top-8 left-14 sm:left-16 right-10 sm:right-14 bg-[#FDFBF7] p-2 sm:p-2.5 shadow-lg border border-[#181818]/25 z-10"
+              className="absolute top-6 left-12 sm:left-14 right-8 sm:right-12 bg-[#FDFBF7] p-2 shadow-lg border border-[#181818]/25 z-10"
               style={{
                 clipPath: "polygon(0% 1%, 99% 0%, 100% 98%, 98% 100%, 1% 99%, 0% 97%)",
               }}
@@ -308,20 +324,20 @@ export default function LandingPage() {
 
                 {/* Target Reticle Centered Over Dome */}
                 <div className="absolute top-[22%] left-[44%] -translate-x-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center z-20">
-                  <div className="w-10 h-10 rounded-full border border-[#181818] flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-full border border-[#181818] flex items-center justify-center">
                     <div className="w-1.5 h-1.5 bg-[#C8372D] rounded-xs shadow-xs" />
                   </div>
-                  <div className="absolute w-14 h-[1px] bg-[#181818]" />
-                  <div className="absolute h-14 w-[1px] bg-[#181818]" />
+                  <div className="absolute w-12 h-[1px] bg-[#181818]" />
+                  <div className="absolute h-12 w-[1px] bg-[#181818]" />
                 </div>
               </div>
             </div>
 
             {/* LAYER 3: Red Stamp Badge: MANIPULATED? (Overlapping Top Right) */}
-            <div className="absolute top-16 right-1 sm:right-2 z-20">
-              <div className="px-3 py-1 bg-[#FDF2F1] border border-[#C8372D] shadow-xs flex items-center gap-1.5">
+            <div className="absolute top-14 right-0 sm:right-1 z-20">
+              <div className="px-2.5 py-0.5 sm:py-1 bg-[#FDF2F1] border border-[#C8372D] shadow-xs flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#C8372D]" />
-                <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-[0.2em] text-[#C8372D] uppercase">
+                <span className="text-[10px] font-mono font-bold tracking-[0.2em] text-[#C8372D] uppercase">
                   MANIPULATED?
                 </span>
               </div>
@@ -329,7 +345,7 @@ export default function LandingPage() {
 
             {/* LAYER 4: Inset Glitched Forensic Crop (Bottom Right) */}
             <div
-              className="absolute bottom-5 right-2 sm:right-4 w-20 sm:w-24 h-28 sm:h-32 bg-[#FDFBF7] p-1.5 border border-[#181818]/30 shadow-md z-20"
+              className="absolute bottom-4 right-1 sm:right-3 w-18 sm:w-22 h-24 sm:h-28 bg-[#FDFBF7] p-1 border border-[#181818]/30 shadow-md z-20"
               style={{
                 clipPath: "polygon(1% 0%, 100% 2%, 98% 100%, 0% 98%)",
               }}
@@ -348,9 +364,9 @@ export default function LandingPage() {
             </div>
 
             {/* LAYER 5: Tilted "AI GENERATED?" Paper Scrap (Bottom Center) */}
-            <div className="absolute bottom-8 left-24 sm:left-32 z-20 transform -rotate-1">
-              <div className="px-3.5 py-1.5 bg-[#FAF8F3] border border-[#181818]/25 shadow-xs">
-                <span className="text-xs font-mono font-bold tracking-[0.18em] text-[#181818] uppercase">
+            <div className="absolute bottom-6 left-20 sm:left-28 z-20 transform -rotate-1">
+              <div className="px-3 py-1 bg-[#FAF8F3] border border-[#181818]/25 shadow-xs">
+                <span className="text-[11px] font-mono font-bold tracking-[0.18em] text-[#181818] uppercase">
                   AI GENERATED?
                 </span>
                 {/* Hand-drawn red underline */}
@@ -360,7 +376,7 @@ export default function LandingPage() {
           </div>
 
           {/* Far Right Vertical Stack of Keywords */}
-          <div className="hidden sm:flex flex-col gap-2.5 text-right font-mono text-[9px] tracking-[0.22em] text-[#66625B] uppercase font-semibold absolute right-0 bottom-4 z-20">
+          <div className="hidden sm:flex flex-col gap-2 text-right font-mono text-[8.5px] tracking-[0.22em] text-[#66625B] uppercase font-semibold absolute right-0 bottom-4 z-20">
             <span>ANALYSE</span>
             <span>QUESTION</span>
             <span>UNDERSTAND</span>
@@ -373,15 +389,15 @@ export default function LandingPage() {
       {/* ========================================================
           BOTTOM FEATURE STRIP (4 COLUMNS DIVIDED BY HAIRLINES)
           ======================================================== */}
-      <footer className="w-full border-t border-[#181818]/15 bg-[#F6F3EB]" id="how-it-works">
-        <div className="max-w-[1360px] mx-auto px-6 sm:px-10 lg:px-16 py-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0">
+      <footer className="w-full border-t border-[#181818]/15 bg-[#F6F3EB] flex-shrink-0" id="how-it-works">
+        <div className="max-w-[1360px] mx-auto px-6 sm:px-10 lg:px-16 py-4 sm:py-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-0">
           {/* Column 01: Detect Manipulation */}
-          <div className="lg:pr-8 lg:border-r border-[#181818]/15 flex items-start gap-4">
+          <div className="lg:pr-8 lg:border-r border-[#181818]/15 flex items-start gap-3.5">
             <span className="text-xs font-mono font-semibold text-[#55524B] pt-0.5">01</span>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <Search className="w-4 h-4 text-[#181818] flex-shrink-0" />
-                <h2 className="text-[13px] font-bold text-[#181818] tracking-tight">
+                <Search className="w-3.5 h-3.5 text-[#181818] flex-shrink-0" />
+                <h2 className="text-[12.5px] font-bold text-[#181818] tracking-tight">
                   Detect Manipulation
                 </h2>
               </div>
@@ -392,12 +408,12 @@ export default function LandingPage() {
           </div>
 
           {/* Column 02: Spot Online Risks */}
-          <div className="lg:px-8 lg:border-r border-[#181818]/15 flex items-start gap-4">
+          <div className="lg:px-8 lg:border-r border-[#181818]/15 flex items-start gap-3.5">
             <span className="text-xs font-mono font-semibold text-[#55524B] pt-0.5">02</span>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-[#181818] flex-shrink-0" />
-                <h2 className="text-[13px] font-bold text-[#181818] tracking-tight">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#181818] flex-shrink-0" />
+                <h2 className="text-[12.5px] font-bold text-[#181818] tracking-tight">
                   Spot Online Risks
                 </h2>
               </div>
@@ -408,12 +424,12 @@ export default function LandingPage() {
           </div>
 
           {/* Column 03: Get Clear Evidence */}
-          <div className="lg:px-8 lg:border-r border-[#181818]/15 flex items-start gap-4">
+          <div className="lg:px-8 lg:border-r border-[#181818]/15 flex items-start gap-3.5">
             <span className="text-xs font-mono font-semibold text-[#55524B] pt-0.5">03</span>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <Scan className="w-4 h-4 text-[#181818] flex-shrink-0" />
-                <h2 className="text-[13px] font-bold text-[#181818] tracking-tight">
+                <Scan className="w-3.5 h-3.5 text-[#181818] flex-shrink-0" />
+                <h2 className="text-[12.5px] font-bold text-[#181818] tracking-tight">
                   Get Clear Evidence
                 </h2>
               </div>
@@ -424,12 +440,12 @@ export default function LandingPage() {
           </div>
 
           {/* Column 04: Take Safer Action */}
-          <div className="lg:pl-8 flex items-start gap-4">
+          <div className="lg:pl-8 flex items-start gap-3.5">
             <span className="text-xs font-mono font-semibold text-[#55524B] pt-0.5">04</span>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-[#181818] flex-shrink-0" />
-                <h2 className="text-[13px] font-bold text-[#181818] tracking-tight">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#181818] flex-shrink-0" />
+                <h2 className="text-[12.5px] font-bold text-[#181818] tracking-tight">
                   Take Safer Action
                 </h2>
               </div>
